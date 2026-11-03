@@ -13,6 +13,7 @@ const WHISTLE_TIME_COLOR: Color = Color(1.0, 0.45, 0.35)
 @onready var _loot_list: VBoxContainer = %LootList
 @onready var _banner: Label = %Banner
 @onready var _prompt: Label = %Prompt
+@onready var _zone_title: Label = %ZoneTitle
 
 var _loot_labels: Dictionary[StringName, Label] = {}
 var _loot_types: Array[LootData] = []
@@ -34,6 +35,17 @@ func bind(session: StopSession, player: Player, loot_types: Array[LootData]) -> 
 	_on_time_changed(session.remaining)
 	_on_exposure_changed(player.exposure.value)
 	_on_loot_changed(session.result)
+
+
+## Affiche « Arrêt n°X : nom de la zone » quelques secondes au début de l'arrêt.
+func announce_zone(stop_number: int, zone_name: String) -> void:
+	_zone_title.text = "Arrêt n°%d : %s" % [stop_number, zone_name]
+	_zone_title.visible = true
+	_zone_title.modulate.a = 1.0
+	var tween := create_tween()
+	tween.tween_interval(2.5)
+	tween.tween_property(_zone_title, "modulate:a", 0.0, 0.8)
+	tween.tween_callback(_zone_title.hide)
 
 
 static func format_time(seconds: float) -> String:

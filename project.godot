@@ -11,13 +11,14 @@ config_version=5
 [application]
 
 config/name="Runaway Train"
-run/main_scene="res://levels/stop_zone/stop_zone.tscn"
+run/main_scene="res://levels/journey/journey.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
 
 InputMode="*res://core/input_mode.gd"
+GameState="*res://core/game_state.gd"
 
 [debug]
 
@@ -38,6 +39,7 @@ window/handheld/orientation=4
 [game]
 
 debug/force_touch_controls=false
+debug/fixed_seed=0
 
 [input]
 

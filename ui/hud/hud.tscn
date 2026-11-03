@@ -117,6 +117,24 @@ theme_override_font_sizes/font_size = 16
 text = "Le train siffle ! Remonte à bord !"
 horizontal_alignment = 1
 
+[node name="ZoneTitle" type="Label" parent="Root"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -150.0
+offset_top = 150.0
+offset_right = 150.0
+offset_bottom = 168.0
+grow_horizontal = 2
+theme_override_colors/font_outline_color = Color(0.08, 0.06, 0.06, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 16
+text = "Arrêt n°1 : Plaine abandonnée"
+horizontal_alignment = 1
+
 [node name="Prompt" type="Label" parent="Root"]
 unique_name_in_owner = true
 visible = false

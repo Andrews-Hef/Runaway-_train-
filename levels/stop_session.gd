@@ -29,6 +29,15 @@ func _ready() -> void:
 	remaining = duration
 
 
+## (Re)lance l'arrêt avec une durée donnée (tirée par le générateur de zone).
+func start(stop_duration: float) -> void:
+	duration = stop_duration
+	remaining = stop_duration
+	state = State.RUNNING
+	result = ExpeditionResult.new()
+	time_changed.emit(remaining)
+
+
 func _process(delta: float) -> void:
 	tick(delta)
 

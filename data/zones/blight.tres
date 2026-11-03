@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ZoneProfile" format=3]
+
+[ext_resource type="Script" path="res://core/zone_profile.gd" id="1_7b37p"]
+
+[resource]
+script = ExtResource("1_7b37p")
+id = &"blight"
+display_name = "Terres contaminées"
+description = "La ruche a tout recouvert. Riche en plantes infectées... et dangereux."
+weight = 0.6
+stop_duration = Vector2(60, 75)
+dirt_ratio = 0.15
+grass_variant_ratio = 0.3
+infected_patches = Vector2i(3, 4)
+infected_radius = Vector2(5, 7)
+wrecks = Vector2i(2, 4)
+dead_trees = Vector2i(3, 6)
+rocks = Vector2i(5, 8)
+herbs = Vector2i(2, 4)
+infected_herbs = Vector2i(10, 14)

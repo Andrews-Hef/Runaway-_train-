@@ -1,0 +1,104 @@
+extends Node
+## Autoload « GameState » : la partie en cours, d'un arrêt à l'autre.
+##
+## Il connaît le prochain arrêt (type de zone + graine) et le stock du train,
+## qui grossit à chaque sortie réussie. Il ne connaît aucune scène : les scènes
+## le lisent et lui rapportent les résultats.
+##
+## Graine fixe pour déboguer : Paramètres du projet > game/debug/fixed_seed (0 = aléatoire).
+
+signal storage_changed
+
+const FIXED_SEED_SETTING: String = "game/debug/fixed_seed"
+## Le premier arrêt est toujours celui-ci : une zone simple pour commencer.
+const FIRST_ZONE: ZoneProfile = preload("res://data/zones/plains.tres")
+## Zones possibles pour les arrêts suivants.
+const ZONES: Array[ZoneProfile] = [
+	preload("res://data/zones/plains.tres"),
+	preload("res://data/zones/dead_forest.tres"),
+	preload("res://data/zones/scrapyard.tres"),
+	preload("res://data/zones/blight.tres"),
+]
+
+## Catalogue des ressources, dans l'ordre d'affichage (HUD, bilan, trajet).
+const LOOT_TYPES: Array[LootData] = [
+	preload("res://data/loot/scrap.tres"),
+	preload("res://data/loot/wood.tres"),
+	preload("res://data/loot/herb.tres"),
+	preload("res://data/loot/infected_herb.tres"),
+]
+
+## Numéro de l'arrêt en cours ou à venir (1 = premier arrêt).
+var stop_number: int = 0
+var current_zone: ZoneProfile
+var current_seed: int = 0
+## Ressources rapportées dans le train : id de LootData -> quantité.
+var storage: Dictionary[StringName, int] = {}
+
+var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
+
+
+func _ready() -> void:
+	new_run()
+
+
+## Nouvelle partie. run_seed = 0 : aléatoire (ou graine fixe des paramètres du projet).
+func new_run(run_seed: int = 0) -> void:
+	var fixed_seed: int = ProjectSettings.get_setting(FIXED_SEED_SETTING, 0)
+	if run_seed != 0:
+		_rng.seed = run_seed
+	elif fixed_seed != 0:
+		_rng.seed = fixed_seed
+	else:
+		_rng.randomize()
+	stop_number = 0
+	current_zone = null
+	storage.clear()
+	storage_changed.emit()
+	prepare_next_stop()
+
+
+## Tire le prochain arrêt : type de zone et graine de génération.
+func prepare_next_stop() -> void:
+	stop_number += 1
+	current_zone = FIRST_ZONE if stop_number == 1 else _pick_zone(current_zone)
+	current_seed = _rng.randi()
+
+
+## Range le butin d'une sortie réussie dans le train.
+func record_expedition(result: ExpeditionResult) -> void:
+	if not result.boarded:
+		return
+	for id: StringName in result.loot:
+		storage[id] = storage.get(id, 0) + result.loot[id]
+	storage_changed.emit()
+
+
+func storage_amount(id: StringName) -> int:
+	return storage.get(id, 0)
+
+
+func storage_total() -> int:
+	var total: int = 0
+	for amount: int in storage.values():
+		total += amount
+	return total
+
+
+## Tirage pondéré, en évitant si possible de reprendre la même zone deux fois de suite.
+func _pick_zone(previous: ZoneProfile) -> ZoneProfile:
+	var candidates: Array[ZoneProfile] = []
+	for zone: ZoneProfile in ZONES:
+		if zone != previous:
+			candidates.append(zone)
+	if candidates.is_empty():
+		candidates = ZONES.duplicate()
+	var total: float = 0.0
+	for zone: ZoneProfile in candidates:
+		total += zone.weight
+	var roll: float = _rng.randf() * total
+	for zone: ZoneProfile in candidates:
+		roll -= zone.weight
+		if roll <= 0.0:
+			return zone
+	return candidates.back()

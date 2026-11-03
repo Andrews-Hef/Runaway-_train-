@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ZoneProfile" format=3]
+
+[ext_resource type="Script" path="res://core/zone_profile.gd" id="1_ri27a"]
+
+[resource]
+script = ExtResource("1_ri27a")
+id = &"dead_forest"
+display_name = "Forêt morte"
+description = "Des troncs secs à perte de vue. Beaucoup de bois, peu de ferraille."
+stop_duration = Vector2(75, 90)
+dirt_ratio = 0.3
+grass_variant_ratio = 0.4
+infected_radius = Vector2(4, 6)
+wrecks = Vector2i(0, 2)
+dead_trees = Vector2i(16, 22)
+rocks = Vector2i(4, 7)
+herbs = Vector2i(10, 14)

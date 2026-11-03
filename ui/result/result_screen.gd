@@ -2,7 +2,10 @@ extends CanvasLayer
 ## Écran de fin de sortie : bilan du butin, de l'exposition et du risque d'infection.
 ## Il reste actif quand le jeu est en pause.
 
-signal restart_requested
+## Sortie réussie : on continue vers le prochain arrêt.
+signal continue_requested
+## Train raté : la partie est finie, on recommence.
+signal new_run_requested
 
 const RISK_LOW: Color = Color(0.55, 0.85, 0.45)
 const RISK_MEDIUM: Color = Color(1.0, 0.8, 0.35)
@@ -14,13 +17,23 @@ const RISK_HIGH: Color = Color(1.0, 0.45, 0.35)
 @onready var _loot_list: VBoxContainer = %LootList
 @onready var _exposure: Label = %Exposure
 @onready var _risk: Label = %Risk
-@onready var _restart: Button = %Restart
+@onready var _storage: Label = %Storage
+@onready var _button: Button = %Restart
+
+var _boarded: bool = false
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_root.visible = false
-	_restart.pressed.connect(func() -> void: restart_requested.emit())
+	_button.pressed.connect(_on_button_pressed)
+
+
+func _on_button_pressed() -> void:
+	if _boarded:
+		continue_requested.emit()
+	else:
+		new_run_requested.emit()
 
 
 func show_result(result: ExpeditionResult, loot_types: Array[LootData]) -> void:
@@ -30,6 +43,7 @@ func show_result(result: ExpeditionResult, loot_types: Array[LootData]) -> void:
 	var exposure_percent: int = roundi(result.exposure * 100.0)
 	_exposure.text = "Exposition : %d %%" % exposure_percent
 
+	_boarded = result.boarded
 	if result.boarded:
 		_title.text = "De retour à bord"
 		_subtitle.text = "Le capitaine attend ton rapport."
@@ -43,14 +57,20 @@ func show_result(result: ExpeditionResult, loot_types: Array[LootData]) -> void:
 		_risk.text = "Risque d'infection : %d %%" % roundi(risk * 100.0)
 		_risk.add_theme_color_override(&"font_color", _risk_color(risk))
 		_risk.visible = true
+		_storage.text = "Stock du train : %d ressource(s)" % GameState.storage_total()
+		_storage.visible = true
+		_button.text = "Continuer le voyage"
 	else:
 		_title.text = "Le train est parti sans toi"
 		_subtitle.text = "Seul dans la zone infectée... La sortie est perdue."
 		_add_line("Butin perdu", RISK_HIGH)
 		_risk.visible = false
+		_storage.text = "Tu as tenu %d arrêt(s)." % (GameState.stop_number - 1)
+		_storage.visible = true
+		_button.text = "Nouvelle partie"
 
 	_root.visible = true
-	_restart.grab_focus()
+	_button.grab_focus()
 
 
 func _add_line(text: String, color: Color) -> void:
