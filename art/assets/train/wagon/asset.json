@@ -3,28 +3,581 @@
   "schemaVersion": "1.0.0",
   "id": "train/wagon",
   "type": "prop",
-  "description": "Wagon de passagers blinde, fenetres grillagees, porte coulissante au milieu du cote sud.",
-  "frame": { "width": 104, "height": 80 },
+  "description": "Wagon blinde noir, liseres rouges, porte coulissante rouille au milieu du cote sud. Animation run : roues qui tournent, leger tangage.",
+  "frame": {
+    "width": 104,
+    "height": 80
+  },
   "directions": "d1",
-  "model": {
-    "parts": [
-      { "type": "box", "id": "chassis", "material": "dark", "size": [6.0, 0.45, 2.4], "position": [0, 0.55, 0] },
-      { "type": "box", "id": "body", "material": "olive", "size": [5.8, 2.3, 2.5], "position": [0, 1.95, 0] },
-      { "type": "box", "id": "roof", "material": "steel", "size": [6.0, 0.2, 2.7], "position": [0, 3.2, 0] },
-      { "type": "box", "id": "roof-ridge", "material": "steel", "size": [5.6, 0.2, 1.4], "position": [0, 3.38, 0] },
-      { "type": "box", "id": "door", "material": "rust", "size": [1.1, 1.9, 0.08], "position": [0, 1.85, 1.27] },
-      { "type": "box", "id": "window-l", "material": "glass", "size": [1.0, 0.6, 0.05], "position": [-1.8, 2.4, 1.27] },
-      { "type": "box", "id": "window-r", "material": "glass", "size": [1.0, 0.6, 0.05], "position": [1.8, 2.4, 1.27] },
-      { "type": "box", "id": "stripe", "material": "olive-dark", "size": [5.85, 0.25, 2.55], "position": [0, 1.2, 0] },
+  "rig": {
+    "bones": [
       {
-        "type": "group",
-        "id": "wheels",
-        "parts": [
-          { "type": "cylinder", "id": "wheel", "material": "steel", "radius": 0.38, "height": 0.2, "position": [-2.3, 0.4, 1.15], "rotation": [90, 0, 0] }
-        ],
-        "repeat": { "count": 4, "offset": [1.53, 0, 0], "rotation": [0, 0, 0] }
+        "name": "body",
+        "parent": null,
+        "position": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "wheel-1",
+        "parent": "body",
+        "position": [
+          -2.3,
+          0.42,
+          1.15
+        ]
+      },
+      {
+        "name": "wheel-2",
+        "parent": "body",
+        "position": [
+          -0.77,
+          0.42,
+          1.15
+        ]
+      },
+      {
+        "name": "wheel-3",
+        "parent": "body",
+        "position": [
+          0.77,
+          0.42,
+          1.15
+        ]
+      },
+      {
+        "name": "wheel-4",
+        "parent": "body",
+        "position": [
+          2.3,
+          0.42,
+          1.15
+        ]
       }
     ]
   },
-  "animation": { "fps": 10, "clips": { "idle": { "duration": 0.1 } } }
+  "export": {
+    "formats": [
+      "manifest",
+      "godot-spriteframes"
+    ],
+    "godot": {
+      "directory": "res://assets/sprites/wagon/"
+    }
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "group",
+        "id": "car",
+        "bone": "body",
+        "parts": [
+          {
+            "type": "box",
+            "id": "chassis",
+            "material": "dark",
+            "size": [
+              6.0,
+              0.45,
+              2.4
+            ],
+            "position": [
+              0,
+              0.6,
+              0
+            ]
+          },
+          {
+            "type": "box",
+            "id": "hull",
+            "material": "iron-black",
+            "size": [
+              5.8,
+              2.3,
+              2.5
+            ],
+            "position": [
+              0,
+              1.98,
+              0
+            ]
+          },
+          {
+            "type": "box",
+            "id": "roof",
+            "material": "iron",
+            "size": [
+              6.0,
+              0.2,
+              2.7
+            ],
+            "position": [
+              0,
+              3.23,
+              0
+            ]
+          },
+          {
+            "type": "box",
+            "id": "roof-ridge",
+            "material": "iron",
+            "size": [
+              5.6,
+              0.2,
+              1.4
+            ],
+            "position": [
+              0,
+              3.41,
+              0
+            ]
+          },
+          {
+            "type": "box",
+            "id": "door",
+            "material": "rust",
+            "size": [
+              1.1,
+              1.9,
+              0.08
+            ],
+            "position": [
+              0,
+              1.88,
+              1.27
+            ]
+          },
+          {
+            "type": "box",
+            "id": "window-l",
+            "material": "glass",
+            "size": [
+              1.0,
+              0.6,
+              0.05
+            ],
+            "position": [
+              -1.8,
+              2.43,
+              1.27
+            ]
+          },
+          {
+            "type": "box",
+            "id": "window-r",
+            "material": "glass",
+            "size": [
+              1.0,
+              0.6,
+              0.05
+            ],
+            "position": [
+              1.8,
+              2.43,
+              1.27
+            ]
+          },
+          {
+            "type": "box",
+            "id": "stripe",
+            "material": "train-red",
+            "size": [
+              5.85,
+              0.18,
+              2.55
+            ],
+            "position": [
+              0,
+              1.2,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "type": "group",
+        "id": "wheel-1",
+        "bone": "wheel-1",
+        "position": [
+          -2.3,
+          0.42,
+          1.15
+        ],
+        "parts": [
+          {
+            "type": "cylinder",
+            "id": "rim-1",
+            "material": "iron",
+            "radius": 0.38,
+            "height": 0.18,
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          },
+          {
+            "type": "cylinder",
+            "id": "hub-1",
+            "material": "iron-black",
+            "radius": 0.11399999999999999,
+            "height": 0.22,
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          },
+          {
+            "type": "group",
+            "id": "spokes-1",
+            "parts": [
+              {
+                "type": "box",
+                "id": "spoke-1",
+                "material": "iron-black",
+                "size": [
+                  0.06,
+                  0.684,
+                  0.04
+                ],
+                "position": [
+                  0,
+                  0,
+                  0.1
+                ]
+              }
+            ],
+            "repeat": {
+              "count": 3,
+              "offset": [
+                0,
+                0,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                60
+              ]
+            }
+          },
+          {
+            "type": "box",
+            "id": "crank-1",
+            "material": "brass",
+            "size": [
+              0.12,
+              0.12,
+              0.06
+            ],
+            "position": [
+              0,
+              0.26599999999999996,
+              0.12
+            ]
+          }
+        ]
+      },
+      {
+        "type": "group",
+        "id": "wheel-2",
+        "bone": "wheel-2",
+        "position": [
+          -0.77,
+          0.42,
+          1.15
+        ],
+        "parts": [
+          {
+            "type": "cylinder",
+            "id": "rim-2",
+            "material": "iron",
+            "radius": 0.38,
+            "height": 0.18,
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          },
+          {
+            "type": "cylinder",
+            "id": "hub-2",
+            "material": "iron-black",
+            "radius": 0.11399999999999999,
+            "height": 0.22,
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          },
+          {
+            "type": "group",
+            "id": "spokes-2",
+            "parts": [
+              {
+                "type": "box",
+                "id": "spoke-2",
+                "material": "iron-black",
+                "size": [
+                  0.06,
+                  0.684,
+                  0.04
+                ],
+                "position": [
+                  0,
+                  0,
+                  0.1
+                ]
+              }
+            ],
+            "repeat": {
+              "count": 3,
+              "offset": [
+                0,
+                0,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                60
+              ]
+            }
+          },
+          {
+            "type": "box",
+            "id": "crank-2",
+            "material": "brass",
+            "size": [
+              0.12,
+              0.12,
+              0.06
+            ],
+            "position": [
+              0,
+              0.26599999999999996,
+              0.12
+            ]
+          }
+        ]
+      },
+      {
+        "type": "group",
+        "id": "wheel-3",
+        "bone": "wheel-3",
+        "position": [
+          0.77,
+          0.42,
+          1.15
+        ],
+        "parts": [
+          {
+            "type": "cylinder",
+            "id": "rim-3",
+            "material": "iron",
+            "radius": 0.38,
+            "height": 0.18,
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          },
+          {
+            "type": "cylinder",
+            "id": "hub-3",
+            "material": "iron-black",
+            "radius": 0.11399999999999999,
+            "height": 0.22,
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          },
+          {
+            "type": "group",
+            "id": "spokes-3",
+            "parts": [
+              {
+                "type": "box",
+                "id": "spoke-3",
+                "material": "iron-black",
+                "size": [
+                  0.06,
+                  0.684,
+                  0.04
+                ],
+                "position": [
+                  0,
+                  0,
+                  0.1
+                ]
+              }
+            ],
+            "repeat": {
+              "count": 3,
+              "offset": [
+                0,
+                0,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                60
+              ]
+            }
+          },
+          {
+            "type": "box",
+            "id": "crank-3",
+            "material": "brass",
+            "size": [
+              0.12,
+              0.12,
+              0.06
+            ],
+            "position": [
+              0,
+              0.26599999999999996,
+              0.12
+            ]
+          }
+        ]
+      },
+      {
+        "type": "group",
+        "id": "wheel-4",
+        "bone": "wheel-4",
+        "position": [
+          2.3,
+          0.42,
+          1.15
+        ],
+        "parts": [
+          {
+            "type": "cylinder",
+            "id": "rim-4",
+            "material": "iron",
+            "radius": 0.38,
+            "height": 0.18,
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          },
+          {
+            "type": "cylinder",
+            "id": "hub-4",
+            "material": "iron-black",
+            "radius": 0.11399999999999999,
+            "height": 0.22,
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          },
+          {
+            "type": "group",
+            "id": "spokes-4",
+            "parts": [
+              {
+                "type": "box",
+                "id": "spoke-4",
+                "material": "iron-black",
+                "size": [
+                  0.06,
+                  0.684,
+                  0.04
+                ],
+                "position": [
+                  0,
+                  0,
+                  0.1
+                ]
+              }
+            ],
+            "repeat": {
+              "count": 3,
+              "offset": [
+                0,
+                0,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                60
+              ]
+            }
+          },
+          {
+            "type": "box",
+            "id": "crank-4",
+            "material": "brass",
+            "size": [
+              0.12,
+              0.12,
+              0.06
+            ],
+            "position": [
+              0,
+              0.26599999999999996,
+              0.12
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      },
+      "run": {
+        "duration": 0.8,
+        "generator": {
+          "type": "bob",
+          "bone": "body",
+          "height": 0.03
+        },
+        "layers": [
+          {
+            "type": "spin",
+            "bone": "wheel-1",
+            "axis": "z",
+            "turns": -1
+          },
+          {
+            "type": "spin",
+            "bone": "wheel-2",
+            "axis": "z",
+            "turns": -1
+          },
+          {
+            "type": "spin",
+            "bone": "wheel-3",
+            "axis": "z",
+            "turns": -1
+          },
+          {
+            "type": "spin",
+            "bone": "wheel-4",
+            "axis": "z",
+            "turns": -1
+          }
+        ]
+      }
+    }
+  }
 }

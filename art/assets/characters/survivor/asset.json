@@ -3,44 +3,550 @@
   "schemaVersion": "1.0.0",
   "id": "characters/survivor",
   "type": "character",
-  "description": "Le joueur : survivant recrue, masque a gaz avec verres, veste ocre, sac a dos, pantalon sombre, bottes.",
-  "frame": { "width": 32, "height": 36 },
+  "description": "Le joueur : survivant recrue, masque a gaz avec verres, veste ocre, sac a dos, pantalon sombre, bottes, barre de fer dans la main droite. Clips : idle, walk, harvest (accroupi, fouille), attack (coup de barre).",
+  "frame": {
+    "width": 36,
+    "height": 40
+  },
   "directions": "d4",
   "rig": "humanoid-basic",
-  "export": { "formats": ["manifest", "godot-spriteframes"], "godot": { "directory": "res://assets/sprites/survivor/" } },
+  "export": {
+    "formats": [
+      "manifest",
+      "godot-spriteframes"
+    ],
+    "godot": {
+      "directory": "res://assets/sprites/survivor/"
+    }
+  },
   "materials": {
-    "skin": { "color": "#c98f6b", "bands": 3, "hueShift": 25 },
-    "pants": { "color": "#3a3f4b", "bands": 3, "hueShift": 20 },
-    "boots": { "color": "#2b2522", "bands": 2 },
-    "pack": { "color": "#6b4a2f", "bands": 3, "hueShift": 25 },
-    "lens": { "color": "#8fd3c4", "emissive": "#1f4a40", "bands": 2 },
-    "hood": { "color": "#4b4238", "bands": 3, "hueShift": 25 },
-    "jacket": { "color": "#b0742e", "bands": 3, "hueShift": 30 },
-    "jacket-dark": { "color": "#7d4f22", "bands": 3, "hueShift": 30 }
+    "skin": {
+      "color": "#c98f6b",
+      "bands": 3,
+      "hueShift": 25
+    },
+    "pants": {
+      "color": "#3a3f4b",
+      "bands": 3,
+      "hueShift": 20
+    },
+    "boots": {
+      "color": "#2b2522",
+      "bands": 2
+    },
+    "pack": {
+      "color": "#6b4a2f",
+      "bands": 3,
+      "hueShift": 25
+    },
+    "lens": {
+      "color": "#8fd3c4",
+      "emissive": "#1f4a40",
+      "bands": 2
+    },
+    "hood": {
+      "color": "#4b4238",
+      "bands": 3,
+      "hueShift": 25
+    },
+    "jacket": {
+      "color": "#b0742e",
+      "bands": 3,
+      "hueShift": 30
+    },
+    "jacket-dark": {
+      "color": "#7d4f22",
+      "bands": 3,
+      "hueShift": 30
+    }
   },
   "model": {
     "parts": [
-      { "type": "box", "id": "pelvis", "bone": "hips", "material": "pants", "size": [0.34, 0.18, 0.22], "position": [0, 0.95, 0] },
-      { "type": "box", "id": "torso", "bone": "chest", "material": "jacket", "size": [0.4, 0.5, 0.26], "position": [0, 1.26, 0] },
-      { "type": "box", "id": "belt", "bone": "hips", "material": "pack", "size": [0.36, 0.06, 0.24], "position": [0, 1.03, 0] },
-      { "type": "box", "id": "backpack", "bone": "chest", "material": "pack", "size": [0.32, 0.4, 0.16], "position": [0, 1.27, -0.2] },
-      { "type": "sphere", "id": "head", "bone": "head", "material": "hood", "radius": 0.14, "position": [0, 1.62, -0.01] },
-      { "type": "box", "id": "mask", "bone": "head", "material": "steel", "size": [0.22, 0.14, 0.1], "position": [0, 1.58, 0.1] },
-      { "type": "cylinder", "id": "filter", "bone": "head", "material": "dark", "radius": 0.055, "height": 0.1, "position": [0, 1.52, 0.17], "rotation": [90, 0, 0] },
-      { "type": "sphere", "id": "lens", "bone": "head", "material": "lens", "radius": 0.04, "position": [0.055, 1.63, 0.12], "mirror": "x" },
-      { "type": "capsule", "id": "upper-arm", "bone": "leftUpperArm", "material": "jacket", "radius": 0.065, "length": 0.18, "position": [0.25, 1.3, 0], "mirror": "x" },
-      { "type": "capsule", "id": "lower-arm", "bone": "leftLowerArm", "material": "jacket-dark", "radius": 0.055, "length": 0.18, "position": [0.25, 1.04, 0], "mirror": "x" },
-      { "type": "sphere", "id": "hand", "bone": "leftLowerArm", "material": "skin", "radius": 0.05, "position": [0.25, 0.88, 0], "mirror": "x" },
-      { "type": "capsule", "id": "thigh", "bone": "leftUpperLeg", "material": "pants", "radius": 0.085, "length": 0.24, "position": [0.1, 0.71, 0], "mirror": "x" },
-      { "type": "capsule", "id": "shin", "bone": "leftLowerLeg", "material": "pants", "radius": 0.075, "length": 0.24, "position": [0.1, 0.31, 0], "mirror": "x" },
-      { "type": "box", "id": "boot", "bone": "leftFoot", "material": "boots", "size": [0.13, 0.1, 0.24], "position": [0.1, 0.05, 0.03], "mirror": "x" }
+      {
+        "type": "box",
+        "id": "pelvis",
+        "bone": "hips",
+        "material": "pants",
+        "size": [
+          0.34,
+          0.18,
+          0.22
+        ],
+        "position": [
+          0,
+          0.95,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "torso",
+        "bone": "chest",
+        "material": "jacket",
+        "size": [
+          0.4,
+          0.5,
+          0.26
+        ],
+        "position": [
+          0,
+          1.26,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "belt",
+        "bone": "hips",
+        "material": "pack",
+        "size": [
+          0.36,
+          0.06,
+          0.24
+        ],
+        "position": [
+          0,
+          1.03,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "backpack",
+        "bone": "chest",
+        "material": "pack",
+        "size": [
+          0.32,
+          0.4,
+          0.16
+        ],
+        "position": [
+          0,
+          1.27,
+          -0.2
+        ]
+      },
+      {
+        "type": "sphere",
+        "id": "head",
+        "bone": "head",
+        "material": "hood",
+        "radius": 0.14,
+        "position": [
+          0,
+          1.62,
+          -0.01
+        ]
+      },
+      {
+        "type": "box",
+        "id": "mask",
+        "bone": "head",
+        "material": "steel",
+        "size": [
+          0.22,
+          0.14,
+          0.1
+        ],
+        "position": [
+          0,
+          1.58,
+          0.1
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "filter",
+        "bone": "head",
+        "material": "dark",
+        "radius": 0.055,
+        "height": 0.1,
+        "position": [
+          0,
+          1.52,
+          0.17
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "sphere",
+        "id": "lens",
+        "bone": "head",
+        "material": "lens",
+        "radius": 0.04,
+        "position": [
+          0.055,
+          1.63,
+          0.12
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "capsule",
+        "id": "upper-arm",
+        "bone": "leftUpperArm",
+        "material": "jacket",
+        "radius": 0.065,
+        "length": 0.18,
+        "position": [
+          0.25,
+          1.3,
+          0
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "capsule",
+        "id": "lower-arm",
+        "bone": "leftLowerArm",
+        "material": "jacket-dark",
+        "radius": 0.055,
+        "length": 0.18,
+        "position": [
+          0.25,
+          1.04,
+          0
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "sphere",
+        "id": "hand",
+        "bone": "leftLowerArm",
+        "material": "skin",
+        "radius": 0.05,
+        "position": [
+          0.25,
+          0.88,
+          0
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "capsule",
+        "id": "thigh",
+        "bone": "leftUpperLeg",
+        "material": "pants",
+        "radius": 0.085,
+        "length": 0.24,
+        "position": [
+          0.1,
+          0.71,
+          0
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "capsule",
+        "id": "shin",
+        "bone": "leftLowerLeg",
+        "material": "pants",
+        "radius": 0.075,
+        "length": 0.24,
+        "position": [
+          0.1,
+          0.31,
+          0
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "box",
+        "id": "boot",
+        "bone": "leftFoot",
+        "material": "boots",
+        "size": [
+          0.13,
+          0.1,
+          0.24
+        ],
+        "position": [
+          0.1,
+          0.05,
+          0.03
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "cylinder",
+        "id": "pipe",
+        "bone": "rightLowerArm",
+        "material": "steel",
+        "radius": 0.03,
+        "height": 0.62,
+        "position": [
+          -0.25,
+          0.82,
+          0.16
+        ],
+        "rotation": [
+          70,
+          0,
+          0
+        ]
+      }
     ]
   },
   "animation": {
     "fps": 10,
     "clips": {
-      "idle": { "duration": 1, "generator": { "type": "idle-breathe" } },
-      "walk": { "duration": 0.8, "generator": { "type": "walk-cycle", "stride": 25, "bob": 0.03, "ik": true } }
+      "idle": {
+        "duration": 1,
+        "generator": {
+          "type": "idle-breathe"
+        }
+      },
+      "walk": {
+        "duration": 0.8,
+        "generator": {
+          "type": "walk-cycle",
+          "stride": 25,
+          "bob": 0.03,
+          "ik": true
+        }
+      },
+      "harvest": {
+        "duration": 0.8,
+        "keys": [
+          {
+            "t": 0,
+            "pose": {
+              "hips": {
+                "translation": [
+                  0,
+                  -0.3,
+                  0.02
+                ]
+              },
+              "spine": {
+                "rotation": [
+                  28,
+                  0,
+                  0
+                ]
+              },
+              "chest": {
+                "rotation": [
+                  12,
+                  0,
+                  0
+                ]
+              },
+              "neck": {
+                "rotation": [
+                  10,
+                  0,
+                  0
+                ]
+              },
+              "leftFoot": {
+                "ik": {
+                  "target": [
+                    0.1,
+                    0.08,
+                    0.03
+                  ],
+                  "keepOrientation": true
+                }
+              },
+              "rightFoot": {
+                "ik": {
+                  "target": [
+                    -0.1,
+                    0.08,
+                    0.03
+                  ],
+                  "keepOrientation": true
+                }
+              },
+              "leftUpperArm": {
+                "rotation": [
+                  -50,
+                  0,
+                  0
+                ]
+              },
+              "leftLowerArm": {
+                "rotation": [
+                  -30,
+                  0,
+                  0
+                ]
+              },
+              "rightUpperArm": {
+                "rotation": [
+                  -30,
+                  0,
+                  0
+                ]
+              },
+              "rightLowerArm": {
+                "rotation": [
+                  -50,
+                  0,
+                  0
+                ]
+              }
+            },
+            "easing": "ease-in-out"
+          },
+          {
+            "t": 0.4,
+            "pose": {
+              "hips": {
+                "translation": [
+                  0,
+                  -0.3,
+                  0.02
+                ]
+              },
+              "spine": {
+                "rotation": [
+                  28,
+                  0,
+                  0
+                ]
+              },
+              "chest": {
+                "rotation": [
+                  12,
+                  0,
+                  0
+                ]
+              },
+              "neck": {
+                "rotation": [
+                  10,
+                  0,
+                  0
+                ]
+              },
+              "leftFoot": {
+                "ik": {
+                  "target": [
+                    0.1,
+                    0.08,
+                    0.03
+                  ],
+                  "keepOrientation": true
+                }
+              },
+              "rightFoot": {
+                "ik": {
+                  "target": [
+                    -0.1,
+                    0.08,
+                    0.03
+                  ],
+                  "keepOrientation": true
+                }
+              },
+              "leftUpperArm": {
+                "rotation": [
+                  -30,
+                  0,
+                  0
+                ]
+              },
+              "leftLowerArm": {
+                "rotation": [
+                  -50,
+                  0,
+                  0
+                ]
+              },
+              "rightUpperArm": {
+                "rotation": [
+                  -50,
+                  0,
+                  0
+                ]
+              },
+              "rightLowerArm": {
+                "rotation": [
+                  -30,
+                  0,
+                  0
+                ]
+              }
+            },
+            "easing": "ease-in-out"
+          }
+        ]
+      },
+      "attack": {
+        "duration": 0.6,
+        "loop": false,
+        "motion": true,
+        "keys": [
+          {
+            "t": 0,
+            "pose": {},
+            "easing": "ease-out"
+          },
+          {
+            "t": 0.2,
+            "pose": {
+              "spine": {
+                "rotation": [
+                  -8,
+                  -25,
+                  0
+                ]
+              },
+              "rightUpperArm": {
+                "rotation": [
+                  -150,
+                  0,
+                  -15
+                ]
+              },
+              "rightLowerArm": {
+                "rotation": [
+                  -50,
+                  0,
+                  0
+                ]
+              }
+            },
+            "easing": "ease-in-cubic"
+          },
+          {
+            "t": 0.3,
+            "pose": {
+              "spine": {
+                "rotation": [
+                  18,
+                  20,
+                  0
+                ]
+              },
+              "rightUpperArm": {
+                "rotation": [
+                  -35,
+                  0,
+                  0
+                ]
+              },
+              "rightLowerArm": {
+                "rotation": [
+                  -15,
+                  0,
+                  0
+                ]
+              }
+            }
+          },
+          {
+            "t": 0.6,
+            "pose": {}
+          }
+        ]
+      }
     }
   }
 }

@@ -14,19 +14,21 @@ Ce sont des **assets temporaires**, cohérents entre eux (même caméra, même l
 | Lumière | `studio-toon` | Ombrage en aplats, peu de couleurs |
 | Matériaux | `defaults.materials` | Couleurs partagées (rouille, olive, bois mort…) |
 
+Le train est **noir** (`iron-black`) avec des liserés rouges (`train-red`) et des manetons laiton (`brass`) sur les roues : leur rotation rend le mouvement lisible même à 6 px de rayon.
+
 **Le violet (`infected-glow`, `infected-leaf`) est réservé à l'infection.** Le joueur porte une veste ocre pour rester visible sur l'herbe et sur le violet.
 
 ## Assets
 
 | Id | Directions | Animations | Utilisé par |
 |---|---|---|---|
-| `characters/survivor` | 4 (s, e, n, w) | `idle`, `walk` | Le joueur (`SpriteFrames` Godot) |
+| `characters/survivor` | 4 (s, e, n, w) | `idle`, `walk`, `harvest` (accroupi, fouille), `attack` (coup de barre de fer) | Le joueur (`SpriteFrames` Godot) |
 | `props/wreck` | 1 | — | Épave (ferraille) |
 | `props/dead-tree` | 1 | — | Arbre mort (bois) |
 | `props/herb` | 1 | — | Plante (plantes) |
 | `props/infected-herb` | 1 | — | Plante infectée |
 | `props/rock` | 1 | — | Rocher (obstacle) |
-| `train/locomotive`, `train/wagon` | 1 | — | Le train à quai |
+| `train/locomotive`, `train/wagon` | 1 | `idle`, `run` (roues qui tournent, léger tangage) | Le train, à quai et en marche |
 
 ## Générer et mettre à jour les sprites
 
@@ -44,6 +46,12 @@ python tools/sync_td2d.py            # copie vers assets/sprites/ et affiche les
 ```
 
 Le script affiche le **pivot** de chaque sprite (le point au sol). Dans Godot, le sprite est réglé avec `centered = false` et `offset = -pivot` : la position du nœud est ainsi ses pieds ou sa base, ce qui fait marcher le tri en profondeur (y-sort).
+
+## Animer avec td2d
+
+- **Personnage** : squelette `humanoid-basic`. Les clips sont soit générés (`walk-cycle`, `idle-breathe`), soit composés à la main avec des `keys` (poses des os dans le temps). `harvest` plante les pieds au sol par cinématique inverse (`ik`) pendant que les hanches descendent.
+- **Objets** : un squelette maison (`rig.bones`). Pour le train, chaque roue a son propre os, et le clip `run` empile un générateur `spin` par roue (`layers`) sur un `bob` du châssis.
+- Les animations Godot s'appellent `<clip>_<direction>` : `walk_e`, `attack_s`, `run_s`…
 
 ## Règles des fichiers td2d
 

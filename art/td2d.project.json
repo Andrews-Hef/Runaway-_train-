@@ -9,20 +9,93 @@
     "lighting": "studio-toon",
     "pixel": "outlined",
     "materials": {
-      "rust": { "color": "#8a4b2a", "bands": 3, "hueShift": 25 },
-      "rust-light": { "color": "#b0683a", "bands": 3, "hueShift": 25 },
-      "steel": { "color": "#5f6670", "bands": 3, "hueShift": 20 },
-      "dark": { "color": "#24232b", "bands": 2 },
-      "glass": { "color": "#3a4f5c", "bands": 2 },
-      "olive": { "color": "#5a6b3b", "bands": 3, "hueShift": 25 },
-      "olive-dark": { "color": "#3f4c29", "bands": 3, "hueShift": 25 },
-      "dead-wood": { "color": "#6b5845", "bands": 3, "hueShift": 30 },
-      "foliage": { "color": "#5e8f3a", "bands": 3, "hueShift": 35 },
-      "bud": { "color": "#e0c24a", "bands": 2 },
-      "infected-leaf": { "color": "#3b2450", "bands": 3, "hueShift": 20 },
-      "infected-glow": { "color": "#b45cf0", "emissive": "#5a1f8a", "bands": 2 },
-      "lamp": { "color": "#f2d16b", "emissive": "#806010", "bands": 2 },
-      "stone": { "color": "#7a756d", "bands": 3, "hueShift": 25 }
+      "rust": {
+        "color": "#8a4b2a",
+        "bands": 3,
+        "hueShift": 25
+      },
+      "rust-light": {
+        "color": "#b0683a",
+        "bands": 3,
+        "hueShift": 25
+      },
+      "steel": {
+        "color": "#5f6670",
+        "bands": 3,
+        "hueShift": 20
+      },
+      "dark": {
+        "color": "#24232b",
+        "bands": 2
+      },
+      "glass": {
+        "color": "#3a4f5c",
+        "bands": 2
+      },
+      "olive": {
+        "color": "#5a6b3b",
+        "bands": 3,
+        "hueShift": 25
+      },
+      "olive-dark": {
+        "color": "#3f4c29",
+        "bands": 3,
+        "hueShift": 25
+      },
+      "dead-wood": {
+        "color": "#6b5845",
+        "bands": 3,
+        "hueShift": 30
+      },
+      "foliage": {
+        "color": "#5e8f3a",
+        "bands": 3,
+        "hueShift": 35
+      },
+      "bud": {
+        "color": "#e0c24a",
+        "bands": 2
+      },
+      "infected-leaf": {
+        "color": "#3b2450",
+        "bands": 3,
+        "hueShift": 20
+      },
+      "infected-glow": {
+        "color": "#b45cf0",
+        "emissive": "#5a1f8a",
+        "bands": 2
+      },
+      "lamp": {
+        "color": "#f2d16b",
+        "emissive": "#806010",
+        "bands": 2
+      },
+      "stone": {
+        "color": "#7a756d",
+        "bands": 3,
+        "hueShift": 25
+      },
+      "iron-black": {
+        "color": "#2b2b33",
+        "bands": 3,
+        "hueShift": 20
+      },
+      "iron": {
+        "color": "#4a4c56",
+        "bands": 3,
+        "hueShift": 20
+      },
+      "train-red": {
+        "color": "#8c2f26",
+        "bands": 3,
+        "hueShift": 25
+      },
+      "brass": {
+        "color": "#b8913a",
+        "bands": 3,
+        "hueShift": 25
+      }
     }
   }
 }

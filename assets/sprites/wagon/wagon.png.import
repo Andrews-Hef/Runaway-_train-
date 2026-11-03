@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://corcn2eg05h7h"
-path="res://.godot/imported/locomotive.png-b02de246d2375638aaea8baba05c148c.ctex"
+uid="uid://csa1faxa3mfkn"
+path="res://.godot/imported/wagon.png-797a4115798f46ecd6627cfb6dd91309.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/train/locomotive.png"
-dest_files=["res://.godot/imported/locomotive.png-b02de246d2375638aaea8baba05c148c.ctex"]
+source_file="res://assets/sprites/wagon/wagon.png"
+dest_files=["res://.godot/imported/wagon.png-797a4115798f46ecd6627cfb6dd91309.ctex"]
 
 [params]
 
