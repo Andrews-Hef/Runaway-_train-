@@ -39,10 +39,6 @@ window/handheld/orientation=4
 
 debug/force_touch_controls=false
 
-[gui]
-
-theme/custom="res://ui/theme/game_theme.tres"
-
 [input]
 
 move_left={
