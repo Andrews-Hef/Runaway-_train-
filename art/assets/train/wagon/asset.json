@@ -1,0 +1,30 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "train/wagon",
+  "type": "prop",
+  "description": "Wagon de passagers blinde, fenetres grillagees, porte coulissante au milieu du cote sud.",
+  "frame": { "width": 104, "height": 80 },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      { "type": "box", "id": "chassis", "material": "dark", "size": [6.0, 0.45, 2.4], "position": [0, 0.55, 0] },
+      { "type": "box", "id": "body", "material": "olive", "size": [5.8, 2.3, 2.5], "position": [0, 1.95, 0] },
+      { "type": "box", "id": "roof", "material": "steel", "size": [6.0, 0.2, 2.7], "position": [0, 3.2, 0] },
+      { "type": "box", "id": "roof-ridge", "material": "steel", "size": [5.6, 0.2, 1.4], "position": [0, 3.38, 0] },
+      { "type": "box", "id": "door", "material": "rust", "size": [1.1, 1.9, 0.08], "position": [0, 1.85, 1.27] },
+      { "type": "box", "id": "window-l", "material": "glass", "size": [1.0, 0.6, 0.05], "position": [-1.8, 2.4, 1.27] },
+      { "type": "box", "id": "window-r", "material": "glass", "size": [1.0, 0.6, 0.05], "position": [1.8, 2.4, 1.27] },
+      { "type": "box", "id": "stripe", "material": "olive-dark", "size": [5.85, 0.25, 2.55], "position": [0, 1.2, 0] },
+      {
+        "type": "group",
+        "id": "wheels",
+        "parts": [
+          { "type": "cylinder", "id": "wheel", "material": "steel", "radius": 0.38, "height": 0.2, "position": [-2.3, 0.4, 1.15], "rotation": [90, 0, 0] }
+        ],
+        "repeat": { "count": 4, "offset": [1.53, 0, 0], "rotation": [0, 0, 0] }
+      }
+    ]
+  },
+  "animation": { "fps": 10, "clips": { "idle": { "duration": 0.1 } } }
+}

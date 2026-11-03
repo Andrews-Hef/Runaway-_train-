@@ -1,0 +1,28 @@
+{
+  "$schema": "./.td2d/schemas/project.schema.json",
+  "schemaVersion": "1.0.0",
+  "name": "runaway-train",
+  "description": "Sprites de Runaway Train. Vue de dessus 3/4, 1 m = 16 px (= une tuile), contour sombre, ombrage toon. Le violet est réservé à l'infection.",
+  "defaults": {
+    "pixelsPerUnit": 16,
+    "camera": "three-quarter",
+    "lighting": "studio-toon",
+    "pixel": "outlined",
+    "materials": {
+      "rust": { "color": "#8a4b2a", "bands": 3, "hueShift": 25 },
+      "rust-light": { "color": "#b0683a", "bands": 3, "hueShift": 25 },
+      "steel": { "color": "#5f6670", "bands": 3, "hueShift": 20 },
+      "dark": { "color": "#24232b", "bands": 2 },
+      "glass": { "color": "#3a4f5c", "bands": 2 },
+      "olive": { "color": "#5a6b3b", "bands": 3, "hueShift": 25 },
+      "olive-dark": { "color": "#3f4c29", "bands": 3, "hueShift": 25 },
+      "dead-wood": { "color": "#6b5845", "bands": 3, "hueShift": 30 },
+      "foliage": { "color": "#5e8f3a", "bands": 3, "hueShift": 35 },
+      "bud": { "color": "#e0c24a", "bands": 2 },
+      "infected-leaf": { "color": "#3b2450", "bands": 3, "hueShift": 20 },
+      "infected-glow": { "color": "#b45cf0", "emissive": "#5a1f8a", "bands": 2 },
+      "lamp": { "color": "#f2d16b", "emissive": "#806010", "bands": 2 },
+      "stone": { "color": "#7a756d", "bands": 3, "hueShift": 25 }
+    }
+  }
+}

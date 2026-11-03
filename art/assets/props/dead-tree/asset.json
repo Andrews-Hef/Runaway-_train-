@@ -1,0 +1,21 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/dead-tree",
+  "type": "prop",
+  "description": "Arbre mort sans feuilles, branches tordues. Ressource : bois.",
+  "frame": { "width": 40, "height": 56 },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      { "type": "cylinder", "id": "trunk", "material": "dead-wood", "radius": 0.2, "height": 2.4, "position": [0, 1.2, 0] },
+      { "type": "cone", "id": "root-a", "material": "dead-wood", "radius": 0.35, "height": 0.6, "position": [0, 0.3, 0] },
+      { "type": "cylinder", "id": "branch-a", "material": "dead-wood", "radius": 0.08, "height": 1.1, "position": [0.35, 1.9, 0], "rotation": [0, 0, -40] },
+      { "type": "cylinder", "id": "branch-b", "material": "dead-wood", "radius": 0.07, "height": 0.9, "position": [-0.3, 2.2, 0.1], "rotation": [10, 0, 35] },
+      { "type": "cylinder", "id": "branch-c", "material": "dead-wood", "radius": 0.06, "height": 0.7, "position": [0.1, 2.55, -0.2], "rotation": [-25, 0, -10] },
+      { "type": "cylinder", "id": "twig-a", "material": "dead-wood", "radius": 0.04, "height": 0.5, "position": [0.75, 2.35, 0], "rotation": [0, 0, 20] },
+      { "type": "cylinder", "id": "twig-b", "material": "dead-wood", "radius": 0.04, "height": 0.45, "position": [-0.62, 2.55, 0.1], "rotation": [0, 0, -25] }
+    ]
+  },
+  "animation": { "fps": 10, "clips": { "idle": { "duration": 0.1 } } }
+}

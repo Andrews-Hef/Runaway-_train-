@@ -1,0 +1,27 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/herb",
+  "type": "prop",
+  "description": "Plante medicinale saine, touffe de feuilles avec des bourgeons jaunes. Ressource : plantes.",
+  "frame": { "width": 24, "height": 24 },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      { "type": "group", "id": "plant", "scale": 1.7, "parts": [
+      {
+        "type": "group",
+        "id": "leaves",
+        "parts": [
+          { "type": "cone", "id": "leaf", "material": "foliage", "radius": 0.12, "height": 0.6, "position": [0.18, 0.28, 0], "rotation": [0, 0, -25] }
+        ],
+        "repeat": { "count": 5, "offset": [0, 0, 0], "rotation": [0, 72, 0] }
+      },
+      { "type": "cone", "id": "core", "material": "foliage", "radius": 0.16, "height": 0.7, "position": [0, 0.35, 0] },
+      { "type": "sphere", "id": "bud-a", "material": "bud", "radius": 0.09, "position": [0.12, 0.62, 0.08] },
+      { "type": "sphere", "id": "bud-b", "material": "bud", "radius": 0.08, "position": [-0.14, 0.55, -0.05] }
+      ] }
+    ]
+  },
+  "animation": { "fps": 10, "clips": { "idle": { "duration": 0.1 } } }
+}

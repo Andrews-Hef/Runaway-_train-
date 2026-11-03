@@ -1,0 +1,31 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "train/locomotive",
+  "type": "prop",
+  "description": "Locomotive blindee orientee vers l'est (droite), chaudiere, cheminee, cabine, phare allume.",
+  "frame": { "width": 120, "height": 84 },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      { "type": "box", "id": "chassis", "material": "dark", "size": [6.0, 0.5, 2.4], "position": [0, 0.55, 0] },
+      { "type": "cylinder", "id": "boiler", "material": "olive", "radius": 1.0, "height": 3.6, "position": [0.9, 1.75, 0], "rotation": [0, 0, 90] },
+      { "type": "box", "id": "cab", "material": "olive-dark", "size": [2.0, 2.4, 2.5], "position": [-1.9, 2.0, 0] },
+      { "type": "box", "id": "cab-roof", "material": "steel", "size": [2.3, 0.15, 2.7], "position": [-1.9, 3.28, 0] },
+      { "type": "box", "id": "cab-window", "material": "glass", "size": [0.9, 0.7, 0.05], "position": [-1.9, 2.5, 1.27] },
+      { "type": "cylinder", "id": "chimney", "material": "dark", "radius": 0.25, "height": 0.9, "position": [2.0, 3.0, 0] },
+      { "type": "cylinder", "id": "lamp", "material": "lamp", "radius": 0.28, "height": 0.2, "position": [2.75, 2.0, 0], "rotation": [0, 0, 90] },
+      { "type": "wedge", "id": "plow", "material": "rust", "size": [0.8, 0.6, 2.4], "position": [3.2, 0.45, 0] },
+      { "type": "box", "id": "armor-band", "material": "rust", "size": [3.7, 0.2, 2.1], "position": [0.9, 1.1, 0] },
+      {
+        "type": "group",
+        "id": "wheels",
+        "parts": [
+          { "type": "cylinder", "id": "wheel", "material": "steel", "radius": 0.42, "height": 0.2, "position": [-2.2, 0.44, 1.15], "rotation": [90, 0, 0] }
+        ],
+        "repeat": { "count": 4, "offset": [1.45, 0, 0], "rotation": [0, 0, 0] }
+      }
+    ]
+  },
+  "animation": { "fps": 10, "clips": { "idle": { "duration": 0.1 } } }
+}

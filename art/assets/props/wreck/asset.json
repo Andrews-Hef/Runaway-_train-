@@ -1,0 +1,29 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/wreck",
+  "type": "prop",
+  "description": "Epave de voiture rouillee, un pneu manquant, legerement affaissee. Ressource : ferraille.",
+  "frame": { "width": 72, "height": 48 },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "group",
+        "id": "car",
+        "rotation": [0, 0, 3],
+        "parts": [
+          { "type": "box", "id": "body", "material": "rust", "size": [3.6, 0.7, 1.7], "position": [0, 0.6, 0] },
+          { "type": "box", "id": "hood", "material": "rust-light", "size": [1.0, 0.08, 1.6], "position": [1.25, 0.98, 0], "rotation": [0, 0, -6] },
+          { "type": "box", "id": "cabin", "material": "glass", "size": [1.8, 0.55, 1.5], "position": [-0.3, 1.22, 0] },
+          { "type": "box", "id": "roof", "material": "rust", "size": [1.7, 0.1, 1.45], "position": [-0.3, 1.52, 0], "rotation": [3, 0, 2] },
+          { "type": "box", "id": "bumper", "material": "steel", "size": [0.12, 0.2, 1.6], "position": [1.82, 0.45, 0] },
+          { "type": "cylinder", "id": "wheel-fl", "material": "dark", "radius": 0.33, "height": 0.25, "position": [1.15, 0.36, 0.8], "rotation": [90, 0, 0] },
+          { "type": "cylinder", "id": "wheel-rl", "material": "dark", "radius": 0.33, "height": 0.25, "position": [-1.15, 0.36, 0.8], "rotation": [90, 0, 0] },
+          { "type": "cylinder", "id": "wheel-fr", "material": "dark", "radius": 0.33, "height": 0.25, "position": [1.15, 0.36, -0.8], "rotation": [90, 0, 0] }
+        ]
+      }
+    ]
+  },
+  "animation": { "fps": 10, "clips": { "idle": { "duration": 0.1 } } }
+}
