@@ -13,6 +13,9 @@ en dehors de ceux strictement prévus par les conditions d'utilisation de GitHub
 
 Pour toute demande d'autorisation : https://github.com/Andrews-Hef
 
+Exception : les composants tiers inclus restent sous leur propre licence.
+- Police Tiny5 (assets/fonts/tiny5/) : SIL Open Font License 1.1, voir OFL.txt.
+
 --------------------------------------------------------------------------------
 
 Copyright (c) 2026 Andrews-Hef. All rights reserved.
@@ -29,3 +32,6 @@ Viewing this repository on GitHub does not grant any right of use beyond those
 strictly provided by the GitHub Terms of Service.
 
 For permission requests: https://github.com/Andrews-Hef
+
+Exception: bundled third-party components remain under their own licenses.
+- Tiny5 font (assets/fonts/tiny5/): SIL Open Font License 1.1, see OFL.txt.
