@@ -1,8 +1,8 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://entities/train/train.gd" id="1_train"]
-[ext_resource type="Texture2D" path="res://assets/sprites/train/wagon.png" id="2_wagon"]
-[ext_resource type="Texture2D" path="res://assets/sprites/train/locomotive.png" id="3_loco"]
+[ext_resource type="SpriteFrames" path="res://assets/sprites/wagon/wagon.tres" id="2_wagon"]
+[ext_resource type="SpriteFrames" path="res://assets/sprites/locomotive/locomotive.tres" id="3_loco"]
 [ext_resource type="Script" path="res://entities/interaction/interactable.gd" id="4_interactable"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
@@ -11,28 +11,55 @@ size = Vector2(312, 20)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_door"]
 size = Vector2(28, 18)
 
+[sub_resource type="Curve" id="Curve_smoke_scale"]
+_data = [Vector2(0, 0.4), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Gradient" id="Gradient_smoke"]
+colors = PackedColorArray(0.55, 0.55, 0.58, 0.85, 0.35, 0.35, 0.38, 0)
+
 [node name="Train" type="Node2D"]
 script = ExtResource("1_train")
 
 [node name="Cars" type="Node2D" parent="."]
 
-[node name="WagonRear" type="Sprite2D" parent="Cars"]
+[node name="WagonRear" type="AnimatedSprite2D" parent="Cars"]
 position = Vector2(52, 0)
-texture = ExtResource("2_wagon")
+sprite_frames = ExtResource("2_wagon")
+animation = &"idle_s"
 centered = false
 offset = Vector2(-52, -68)
 
-[node name="WagonFront" type="Sprite2D" parent="Cars"]
+[node name="WagonFront" type="AnimatedSprite2D" parent="Cars"]
 position = Vector2(156, 0)
-texture = ExtResource("2_wagon")
+sprite_frames = ExtResource("2_wagon")
+animation = &"idle_s"
 centered = false
 offset = Vector2(-52, -68)
 
-[node name="Locomotive" type="Sprite2D" parent="Cars"]
+[node name="Locomotive" type="AnimatedSprite2D" parent="Cars"]
 position = Vector2(260, 0)
-texture = ExtResource("3_loco")
+sprite_frames = ExtResource("3_loco")
+animation = &"idle_s"
 centered = false
 offset = Vector2(-60, -72)
+
+[node name="Smoke" type="CPUParticles2D" parent="Cars/Locomotive"]
+position = Vector2(32, -58)
+amount = 6
+lifetime = 1.6
+local_coords = false
+emission_shape = 1
+emission_sphere_radius = 2.0
+direction = Vector2(-0.3, -1)
+spread = 20.0
+gravity = Vector2(-14, -6)
+initial_velocity_min = 6.0
+initial_velocity_max = 10.0
+scale_amount_min = 3.0
+scale_amount_max = 5.0
+scale_amount_curve = SubResource("Curve_smoke_scale")
+color_ramp = SubResource("Gradient_smoke")
 
 [node name="Body" type="StaticBody2D" parent="."]
 

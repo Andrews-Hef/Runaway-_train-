@@ -28,6 +28,11 @@ func _ready() -> void:
 	area_exited.connect(remove_candidate)
 
 
+## true pendant qu'Agir est maintenu sur une cible (le joueur est occupé).
+func is_holding() -> bool:
+	return _hold > 0.0 and is_instance_valid(target)
+
+
 func add_candidate(area: Area2D) -> void:
 	var interactable := area as Interactable
 	if interactable and not _candidates.has(interactable):
