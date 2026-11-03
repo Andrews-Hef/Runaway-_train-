@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="LootData" format=3]
+
+[ext_resource type="Script" path="res://core/loot_data.gd" id="1_levgv"]
+
+[resource]
+script = ExtResource("1_levgv")
+id = &"infected_herb"
+display_name = "Plantes infectées"
+color = Color(0.7529412, 0.41960785, 1, 1)
+infected = true

@@ -1,0 +1,51 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/train/train.gd" id="1_train"]
+[ext_resource type="Texture2D" path="res://assets/sprites/train/wagon.png" id="2_wagon"]
+[ext_resource type="Texture2D" path="res://assets/sprites/train/locomotive.png" id="3_loco"]
+[ext_resource type="Script" path="res://entities/interaction/interactable.gd" id="4_interactable"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(312, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_door"]
+size = Vector2(28, 18)
+
+[node name="Train" type="Node2D"]
+script = ExtResource("1_train")
+
+[node name="Cars" type="Node2D" parent="."]
+
+[node name="WagonRear" type="Sprite2D" parent="Cars"]
+position = Vector2(52, 0)
+texture = ExtResource("2_wagon")
+centered = false
+offset = Vector2(-52, -68)
+
+[node name="WagonFront" type="Sprite2D" parent="Cars"]
+position = Vector2(156, 0)
+texture = ExtResource("2_wagon")
+centered = false
+offset = Vector2(-52, -68)
+
+[node name="Locomotive" type="Sprite2D" parent="Cars"]
+position = Vector2(260, 0)
+texture = ExtResource("3_loco")
+centered = false
+offset = Vector2(-60, -72)
+
+[node name="Body" type="StaticBody2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Body"]
+position = Vector2(160, 0)
+shape = SubResource("RectangleShape2D_body")
+
+[node name="Door" type="Area2D" parent="."]
+position = Vector2(156, 16)
+script = ExtResource("4_interactable")
+prompt = "Monter à bord"
+hold_time = 0.4
+indicator_offset = Vector2(0, -50)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Door"]
+shape = SubResource("RectangleShape2D_door")

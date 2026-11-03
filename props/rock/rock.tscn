@@ -1,16 +1,16 @@
 [gd_scene format=3]
 
-[ext_resource type="Texture2D" path="res://assets/sprites/placeholders/rock.png" id="1_sprite"]
+[ext_resource type="Texture2D" path="res://assets/sprites/props/rock.png" id="1_sprite"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_base"]
-size = Vector2(12, 6)
+size = Vector2(16, 8)
 
 [node name="Rock" type="StaticBody2D"]
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("1_sprite")
-offset = Vector2(0, -8)
+centered = false
+offset = Vector2(-14, -16)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -3)
 shape = SubResource("RectangleShape2D_base")

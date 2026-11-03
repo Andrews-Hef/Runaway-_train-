@@ -1,0 +1,39 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://levels/stop_zone/stop_zone.gd" id="1_zone"]
+[ext_resource type="TileSet" path="res://assets/tiles/ground_tileset.tres" id="2_tileset"]
+[ext_resource type="Script" path="res://levels/infection_ground.gd" id="3_ground"]
+[ext_resource type="PackedScene" path="res://entities/train/train.tscn" id="4_train"]
+[ext_resource type="PackedScene" path="res://entities/player/player.tscn" id="5_player"]
+[ext_resource type="Script" path="res://levels/stop_session.gd" id="6_session"]
+[ext_resource type="PackedScene" path="res://ui/hud/hud.tscn" id="7_hud"]
+[ext_resource type="PackedScene" path="res://ui/result/result_screen.tscn" id="8_result"]
+[ext_resource type="PackedScene" path="res://ui/touch/touch_controls.tscn" id="9_touch"]
+
+[node name="StopZone" type="Node2D"]
+script = ExtResource("1_zone")
+
+[node name="Ground" type="TileMapLayer" parent="."]
+tile_set = ExtResource("2_tileset")
+script = ExtResource("3_ground")
+
+[node name="World" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="Train" parent="World" instance=ExtResource("4_train")]
+
+[node name="Player" parent="World" instance=ExtResource("5_player")]
+
+[node name="Camera2D" type="Camera2D" parent="World/Player"]
+position = Vector2(0, -14)
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0
+
+[node name="StopSession" type="Node" parent="."]
+script = ExtResource("6_session")
+
+[node name="Hud" parent="." instance=ExtResource("7_hud")]
+
+[node name="ResultScreen" parent="." instance=ExtResource("8_result")]
+
+[node name="TouchControls" parent="." instance=ExtResource("9_touch")]

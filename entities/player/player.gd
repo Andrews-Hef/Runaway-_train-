@@ -6,8 +6,8 @@ extends CharacterBody2D
 ## Clavier, manette et contrôles tactiles passent tous par ces actions :
 ## le joueur ne sait pas (et n'a pas à savoir) quel périphérique est utilisé.
 
-## Vitesse de déplacement max, en pixels de jeu par seconde.
-@export var move_speed: float = 80.0
+## Vitesse de déplacement max, en pixels de jeu par seconde (16 px = 1 m).
+@export var move_speed: float = 72.0
 ## Vitesse à laquelle on atteint move_speed (px/s²).
 @export var acceleration: float = 900.0
 ## Vitesse à laquelle on s'arrête quand on lâche les commandes (px/s²).
@@ -15,14 +15,20 @@ extends CharacterBody2D
 
 ## Dernière direction regardée (utile plus tard pour viser, récolter...).
 var facing: Vector2 = Vector2.DOWN
+## false : le joueur ne répond plus aux commandes (fin de sortie, cinématique...).
+var controls_enabled: bool = true
 
-@onready var _sprite: Sprite2D = $Sprite2D
+@onready var exposure: ExposureComponent = $Exposure
+@onready var interactor: Interactor = $Interactor
+@onready var _sprite: AnimatedSprite2D = $AnimatedSprite2D
 
 var _feedback_tween: Tween
 
 
 func _physics_process(delta: float) -> void:
-	var input_dir: Vector2 = Input.get_vector(&"move_left", &"move_right", &"move_up", &"move_down")
+	var input_dir: Vector2 = Vector2.ZERO
+	if controls_enabled:
+		input_dir = Input.get_vector(&"move_left", &"move_right", &"move_up", &"move_down")
 
 	if input_dir != Vector2.ZERO:
 		facing = input_dir.normalized()
@@ -31,24 +37,37 @@ func _physics_process(delta: float) -> void:
 		velocity = velocity.move_toward(Vector2.ZERO, friction * delta)
 
 	move_and_slide()
+	_update_animation(input_dir != Vector2.ZERO)
 
-	if absf(input_dir.x) > 0.1:
-		_sprite.flip_h = input_dir.x < 0.0
+
+func set_controls_enabled(enabled: bool) -> void:
+	controls_enabled = enabled
+	interactor.set_physics_process(enabled)
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed(&"attack"):
-		_play_feedback(Vector2(1.25, 0.8), Color.WHITE)
-	elif event.is_action_pressed(&"interact"):
-		_play_feedback(Vector2.ONE, Color(1.6, 1.6, 1.6))
+	if controls_enabled and event.is_action_pressed(&"attack"):
+		_play_feedback(Vector2(1.25, 0.8))
 
 
-## Retour visuel temporaire, en attendant les vraies animations.
-func _play_feedback(squash: Vector2, flash: Color) -> void:
+## Animations td2d : idle_<dir> et walk_<dir>, avec dir = s, e, n ou w.
+func _update_animation(moving: bool) -> void:
+	var animation_name: StringName = StringName(("walk_" if moving else "idle_") + direction_name(facing))
+	if _sprite.animation != animation_name:
+		_sprite.play(animation_name)
+
+
+## Direction cardinale la plus proche d'un vecteur : "s", "e", "n" ou "w".
+static func direction_name(direction: Vector2) -> String:
+	if absf(direction.x) > absf(direction.y):
+		return "e" if direction.x > 0.0 else "w"
+	return "s" if direction.y >= 0.0 else "n"
+
+
+## Retour visuel temporaire du coup, en attendant le combat et les animations.
+func _play_feedback(squash: Vector2) -> void:
 	if _feedback_tween:
 		_feedback_tween.kill()
 	_sprite.scale = squash
-	_sprite.modulate = flash
-	_feedback_tween = create_tween().set_parallel()
+	_feedback_tween = create_tween()
 	_feedback_tween.tween_property(_sprite, "scale", Vector2.ONE, 0.12)
-	_feedback_tween.tween_property(_sprite, "modulate", Color.WHITE, 0.12)
