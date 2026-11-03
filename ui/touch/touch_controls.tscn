@@ -1,0 +1,70 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/touch/touch_controls.gd" id="1_controls"]
+[ext_resource type="Script" path="res://ui/touch/touch_action_button.gd" id="2_button"]
+
+[node name="TouchControls" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_controls")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Joystick" type="VirtualJoystick" parent="Root"]
+layout_mode = 1
+anchor_top = 0.3
+anchor_right = 0.45
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+joystick_mode = 1
+joystick_size = 56.0
+tip_size = 24.0
+deadzone_ratio = 0.0
+initial_offset_ratio = Vector2(0.2, 0.7)
+action_left = &"move_left"
+action_right = &"move_right"
+action_up = &"move_up"
+action_down = &"move_down"
+
+[node name="AttackButton" type="Control" parent="Root"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -58.0
+offset_top = -58.0
+offset_right = -14.0
+offset_bottom = -14.0
+grow_horizontal = 0
+grow_vertical = 0
+script = ExtResource("2_button")
+action = &"attack"
+text = "Coup"
+radius = 22.0
+
+[node name="InteractButton" type="Control" parent="Root"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -104.0
+offset_top = -86.0
+offset_right = -68.0
+offset_bottom = -50.0
+grow_horizontal = 0
+grow_vertical = 0
+script = ExtResource("2_button")
+action = &"interact"
+text = "Agir"
+radius = 18.0
