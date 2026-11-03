@@ -77,3 +77,7 @@ Code de sortie 0 = tout est vert. Une erreur de script pendant un test le fait �
 ## Assets temporaires
 
 Les sprites actuels sont générés par `python tools/gen_placeholders.py` (Pillow requis). Ils seront remplacés par les vrais assets.
+
+## Licence
+
+**Tous droits réservés.** Aucune utilisation, copie, modification ou distribution du contenu de ce dépôt n'est autorisée sans l'accord écrit de l'auteur. Voir [LICENSE](LICENSE).
