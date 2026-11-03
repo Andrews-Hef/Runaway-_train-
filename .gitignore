@@ -1,0 +1,19 @@
+# Godot 4+
+.godot/
+/android/
+
+# Exports
+/builds/
+*.apk
+*.aab
+*.exe
+*.pck
+
+# Clés de signature Android : ne jamais les versionner
+*.keystore
+*.jks
+
+# OS / éditeurs
+.DS_Store
+Thumbs.db
+.vscode/

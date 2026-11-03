@@ -1,0 +1,12 @@
+# Fins de ligne LF pour tous les fichiers texte (évite les diffs parasites Windows/Linux)
+* text=auto eol=lf
+
+# Binaires
+*.png binary
+*.jpg binary
+*.wav binary
+*.ogg binary
+*.mp3 binary
+*.ttf binary
+*.otf binary
+*.aseprite binary
