@@ -5,12 +5,10 @@
   "type": "prop",
   "description": "Etabli d'atelier : plateau en bois, etau, outils accroches au mur, lampe.",
   "frame": {
-    "width": 96,
-    "height": 80
+    "width": 44,
+    "height": 48
   },
   "directions": "d1",
-  "camera": "side",
-  "pixelsPerUnit": 32,
   "model": {
     "parts": [
       {

@@ -9,7 +9,7 @@ Le design (vision, systèmes, MVP, décisions) est tenu dans le vault Obsidian, 
 Un **voyage** d'arrêt en arrêt :
 
 - **Trajet** : le train roule, le décor défile. On voit le stock du train et le prochain arrêt.
-- **Dans le train** (vue en coupe) : tu marches de wagon en wagon. **Coffre** du stock, **établi** de l'atelier (fabriquer de l'équipement), **casier** (s'équiper), **couchettes** du dortoir (l'équipage), et le **levier** de la cabine pour descendre au prochain arrêt. Le paysage défile aux fenêtres.
+- **Dans le train** (vue de dessus, toit retiré) : tu marches de wagon en wagon par les passerelles. **Coffre** du stock, **établi** de l'atelier (fabriquer de l'équipement), **casier** (s'équiper), **couchettes** du dortoir (l'équipage), et le **levier** de la cabine pour descendre au prochain arrêt. La voie défile sous le train : on la voit entre les wagons, aux deux bouts et au bas de l'écran.
 - **Arrêt** : chaque zone est **générée au hasard** à partir d'un type de zone (plaine, forêt morte, casse automobile, terres contaminées). Le premier arrêt est toujours une plaine.
 - **Points d'intérêt** dans les zones : **village abandonné** (maisons en ruine, caisses à fouiller), **refuge** avec un survivant à **recruter**, **marchand ambulant** pour **échanger**, et petites rencontres (sac abandonné, armoire à forcer).
 - **Retour à bord** : le butin et les recrues rejoignent le train et on repart vers l'arrêt suivant. **Train raté** : la partie est finie, recrues comprises.

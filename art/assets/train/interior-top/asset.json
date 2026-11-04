@@ -1,0 +1,354 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "train/interior-top",
+  "type": "prop",
+  "description": "Wagon sans toit vu de dessus (3/4) : plancher en bois, mur du fond avec fenetres grillagees et lampes, lisere rouge, rebord bas cote camera, murs des bouts avec porte au milieu.",
+  "frame": {
+    "width": 148,
+    "height": 92
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "floor",
+        "material": "floor-wood",
+        "size": [
+          8.2,
+          0.2,
+          5.2
+        ],
+        "position": [
+          0,
+          0.1,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wall-n",
+        "material": "panel-wood",
+        "size": [
+          8.2,
+          2.2,
+          0.2
+        ],
+        "position": [
+          0,
+          1.3,
+          -2.5
+        ]
+      },
+      {
+        "type": "box",
+        "id": "stripe-n",
+        "material": "train-red",
+        "size": [
+          8.2,
+          0.14,
+          0.24
+        ],
+        "position": [
+          0,
+          1.1,
+          -2.48
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wainscot-n",
+        "material": "iron-black",
+        "size": [
+          8.2,
+          0.5,
+          0.24
+        ],
+        "position": [
+          0,
+          0.45,
+          -2.48
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rim-s",
+        "material": "iron-black",
+        "size": [
+          8.2,
+          0.35,
+          0.2
+        ],
+        "position": [
+          0,
+          0.37,
+          2.5
+        ]
+      },
+      {
+        "type": "box",
+        "id": "window-1",
+        "material": "glass",
+        "size": [
+          1.3,
+          0.7,
+          0.06
+        ],
+        "position": [
+          -2.6,
+          1.65,
+          -2.38
+        ]
+      },
+      {
+        "type": "box",
+        "id": "bar-1",
+        "material": "iron",
+        "size": [
+          0.08,
+          0.7,
+          0.08
+        ],
+        "position": [
+          -2.6,
+          1.65,
+          -2.34
+        ]
+      },
+      {
+        "type": "box",
+        "id": "lamp-1",
+        "material": "lamp",
+        "size": [
+          0.3,
+          0.12,
+          0.12
+        ],
+        "position": [
+          -1.3,
+          2.15,
+          -2.35
+        ]
+      },
+      {
+        "type": "box",
+        "id": "window-2",
+        "material": "glass",
+        "size": [
+          1.3,
+          0.7,
+          0.06
+        ],
+        "position": [
+          0.0,
+          1.65,
+          -2.38
+        ]
+      },
+      {
+        "type": "box",
+        "id": "bar-2",
+        "material": "iron",
+        "size": [
+          0.08,
+          0.7,
+          0.08
+        ],
+        "position": [
+          0.0,
+          1.65,
+          -2.34
+        ]
+      },
+      {
+        "type": "box",
+        "id": "lamp-2",
+        "material": "lamp",
+        "size": [
+          0.3,
+          0.12,
+          0.12
+        ],
+        "position": [
+          1.3,
+          2.15,
+          -2.35
+        ]
+      },
+      {
+        "type": "box",
+        "id": "window-3",
+        "material": "glass",
+        "size": [
+          1.3,
+          0.7,
+          0.06
+        ],
+        "position": [
+          2.6,
+          1.65,
+          -2.38
+        ]
+      },
+      {
+        "type": "box",
+        "id": "bar-3",
+        "material": "iron",
+        "size": [
+          0.08,
+          0.7,
+          0.08
+        ],
+        "position": [
+          2.6,
+          1.65,
+          -2.34
+        ]
+      },
+      {
+        "type": "box",
+        "id": "lamp-3",
+        "material": "lamp",
+        "size": [
+          0.3,
+          0.12,
+          0.12
+        ],
+        "position": [
+          3.9000000000000004,
+          2.15,
+          -2.35
+        ]
+      },
+      {
+        "type": "box",
+        "id": "end-w-n",
+        "material": "iron-black",
+        "size": [
+          0.2,
+          2.2,
+          1.9
+        ],
+        "position": [
+          -4.1,
+          1.3,
+          -1.55
+        ]
+      },
+      {
+        "type": "box",
+        "id": "end-w-s",
+        "material": "iron-black",
+        "size": [
+          0.2,
+          0.35,
+          1.9
+        ],
+        "position": [
+          -4.1,
+          0.37,
+          1.55
+        ]
+      },
+      {
+        "type": "box",
+        "id": "end-e-n",
+        "material": "iron-black",
+        "size": [
+          0.2,
+          2.2,
+          1.9
+        ],
+        "position": [
+          4.1,
+          1.3,
+          -1.55
+        ]
+      },
+      {
+        "type": "box",
+        "id": "end-e-s",
+        "material": "iron-black",
+        "size": [
+          0.2,
+          0.35,
+          1.9
+        ],
+        "position": [
+          4.1,
+          0.37,
+          1.55
+        ]
+      },
+      {
+        "type": "box",
+        "id": "plank-1",
+        "material": "wood",
+        "size": [
+          1.6,
+          0.02,
+          0.18
+        ],
+        "position": [
+          -3.0,
+          0.21,
+          -1.0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "plank-2",
+        "material": "wood",
+        "size": [
+          1.6,
+          0.02,
+          0.18
+        ],
+        "position": [
+          -1.0,
+          0.21,
+          1.2
+        ]
+      },
+      {
+        "type": "box",
+        "id": "plank-3",
+        "material": "wood",
+        "size": [
+          1.6,
+          0.02,
+          0.18
+        ],
+        "position": [
+          1.5,
+          0.21,
+          -0.4
+        ]
+      },
+      {
+        "type": "box",
+        "id": "plank-4",
+        "material": "wood",
+        "size": [
+          1.6,
+          0.02,
+          0.18
+        ],
+        "position": [
+          3.2,
+          0.21,
+          1.4
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

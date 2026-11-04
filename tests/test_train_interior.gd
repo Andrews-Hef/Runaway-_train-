@@ -21,10 +21,9 @@ func after_each() -> void:
 
 func _find(prefix: String) -> Array[Node]:
 	var found: Array[Node] = []
-	for wagon: Node in _interior.get_node("Train/Wagons").get_children():
-		for child: Node in wagon.get_children():
-			if child.name.begins_with(prefix):
-				found.append(child)
+	for child: Node in _interior.get_node("Train/World").get_children():
+		if child.name.begins_with(prefix):
+			found.append(child)
 	return found
 
 
@@ -42,14 +41,21 @@ func test_les_postes_sont_interactifs() -> void:
 
 
 func test_l_equipage_est_dans_le_dortoir() -> void:
-	var crew_sprites: int = 0
-	for child: Node in _interior.get_node("Train/Wagons/Wagon0").get_children():
-		if child is AnimatedSprite2D:
-			crew_sprites += 1
-	assert_true(crew_sprites == 2, "2 équipiers visibles, obtenu %d" % crew_sprites)
+	var crew: Array[String] = []
+	for child: Node in _interior.get_node("Train/World").get_children():
+		if child.name.begins_with("Crew_"):
+			crew.append(child.name)
+	assert_true(crew.size() == 2, "2 équipiers visibles, obtenu %d" % crew.size())
+	assert_true("Crew_Léa" in crew, "Léa est à bord")
 
 
-func test_le_joueur_reste_dans_le_train() -> void:
-	var player: InteriorPlayer = _interior.get_node("Train/InteriorPlayer")
-	assert_true(player.min_x < player.position.x and player.position.x < player.max_x, "départ dans le train")
-	assert_true(player.max_x - player.min_x > 900.0, "on peut traverser les 4 wagons")
+func test_le_joueur_est_celui_de_dehors() -> void:
+	var player: Node = _interior.get_node("Train/World/Player")
+	assert_true(player is Player, "même personnage que dans les zones")
+
+
+func test_le_joueur_apparait_dans_le_train() -> void:
+	var player: Node2D = _interior.get_node("Train/World/Player")
+	var length: float = _interior.call(&"train_length")
+	assert_true(player.position.x > -64.0 and player.position.x < length - 64.0, "dans la longueur du train")
+	assert_true(absf(player.position.y) < 18.0, "sur le plancher")

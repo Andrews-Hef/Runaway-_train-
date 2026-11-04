@@ -5,12 +5,10 @@
   "type": "prop",
   "description": "Coffre de stockage du train entoure de caisses et de sacs : c'est le stock.",
   "frame": {
-    "width": 96,
-    "height": 64
+    "width": 64,
+    "height": 44
   },
   "directions": "d1",
-  "camera": "side",
-  "pixelsPerUnit": 32,
   "model": {
     "parts": [
       {

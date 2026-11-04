@@ -2,80 +2,47 @@
 
 [ext_resource type="Script" path="res://levels/train_interior/train_interior.gd" id="1_interior"]
 [ext_resource type="TileSet" path="res://assets/tiles/ground_tileset.tres" id="2_tileset"]
-[ext_resource type="Script" path="res://levels/train_interior/wheel_strip.gd" id="3_wheels"]
-[ext_resource type="PackedScene" path="res://entities/interior_player/interior_player.tscn" id="4_player"]
-[ext_resource type="Theme" path="res://ui/theme/game_theme.tres" id="5_theme"]
-[ext_resource type="PackedScene" path="res://ui/train/train_menu.tscn" id="6_menu"]
-[ext_resource type="PackedScene" path="res://ui/touch/touch_controls.tscn" id="7_touch"]
+[ext_resource type="PackedScene" path="res://entities/player/player.tscn" id="3_player"]
+[ext_resource type="Theme" path="res://ui/theme/game_theme.tres" id="4_theme"]
+[ext_resource type="PackedScene" path="res://ui/train/train_menu.tscn" id="5_menu"]
+[ext_resource type="PackedScene" path="res://ui/touch/touch_controls.tscn" id="6_touch"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 content_margin_left = 6.0
 content_margin_top = 3.0
 content_margin_right = 6.0
 content_margin_bottom = 4.0
-bg_color = Color(0.05, 0.05, 0.07, 0.7)
+bg_color = Color(0.05, 0.05, 0.07, 0.75)
 
 [node name="TrainInterior" type="Node2D"]
 script = ExtResource("1_interior")
 
-[node name="Sky" type="CanvasLayer" parent="."]
-layer = -10
-
-[node name="Color" type="ColorRect" parent="Sky"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0.49, 0.55, 0.59, 1)
-
-[node name="FarScenery" type="Parallax2D" parent="."]
-scroll_scale = Vector2(0.3, 1)
-repeat_size = Vector2(640, 0)
-autoscroll = Vector2(-30, 0)
-repeat_times = 3
-
-[node name="Hills" type="Polygon2D" parent="FarScenery"]
-color = Color(0.24, 0.3, 0.23, 1)
-polygon = PackedVector2Array(0, -78, 50, -90, 110, -84, 170, -96, 240, -80, 300, -74, 360, -88, 420, -98, 490, -82, 560, -76, 640, -78, 640, 60, 0, 60)
-
-[node name="NearScenery" type="Parallax2D" parent="."]
+[node name="Ground" type="Parallax2D" parent="."]
 repeat_size = Vector2(768, 0)
-autoscroll = Vector2(-200, 0)
+autoscroll = Vector2(-240, 0)
 repeat_times = 3
 
-[node name="Props" type="Node2D" parent="NearScenery"]
-
-[node name="Ground" type="TileMapLayer" parent="NearScenery"]
+[node name="Tiles" type="TileMapLayer" parent="Ground"]
+position = Vector2(0, -8)
 tile_set = ExtResource("2_tileset")
 
-[node name="Ballast" type="ColorRect" parent="NearScenery"]
-offset_top = 22.0
-offset_right = 768.0
-offset_bottom = 32.0
-mouse_filter = 2
-color = Color(0.33, 0.31, 0.28, 1)
-
-[node name="Rail" type="ColorRect" parent="NearScenery"]
-offset_top = 22.0
-offset_right = 768.0
-offset_bottom = 24.0
-mouse_filter = 2
-color = Color(0.6, 0.62, 0.66, 1)
+[node name="Props" type="Node2D" parent="Ground"]
 
 [node name="Train" type="Node2D" parent="."]
 
-[node name="Wheels" type="Node2D" parent="Train"]
-position = Vector2(0, 12)
-script = ExtResource("3_wheels")
+[node name="Floors" type="Node2D" parent="Train"]
 
-[node name="Wagons" type="Node2D" parent="Train"]
+[node name="World" type="Node2D" parent="Train"]
+y_sort_enabled = true
 
-[node name="InteriorPlayer" parent="Train" instance=ExtResource("4_player")]
+[node name="Player" parent="Train/World" instance=ExtResource("3_player")]
+
+[node name="Walls" type="StaticBody2D" parent="Train"]
 
 [node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(0, -52)
+position = Vector2(0, -17)
+position_smoothing_enabled = true
+position_smoothing_speed = 10.0
 
 [node name="Ui" type="CanvasLayer" parent="."]
 
@@ -87,7 +54,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme = ExtResource("5_theme")
+theme = ExtResource("4_theme")
 
 [node name="Top" type="PanelContainer" parent="Ui/Root"]
 layout_mode = 1
@@ -151,6 +118,6 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 0)
 
-[node name="TrainMenu" parent="." instance=ExtResource("6_menu")]
+[node name="TrainMenu" parent="." instance=ExtResource("5_menu")]
 
-[node name="TouchControls" parent="." instance=ExtResource("7_touch")]
+[node name="TouchControls" parent="." instance=ExtResource("6_touch")]

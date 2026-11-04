@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bjna2p8v8hhih"
-path="res://.godot/imported/survivor-side.png-d96e6408ebbda4fee204a5a508a61e89.ctex"
+uid="uid://d0lsn56pfjyu5"
+path="res://.godot/imported/interior_top.png-f5a5da430ed89f0be3724ba30dae1399.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/survivor_side/survivor-side.png"
-dest_files=["res://.godot/imported/survivor-side.png-d96e6408ebbda4fee204a5a508a61e89.ctex"]
+source_file="res://assets/sprites/train/interior_top.png"
+dest_files=["res://.godot/imported/interior_top.png-f5a5da430ed89f0be3724ba30dae1399.ctex"]
 
 [params]
 

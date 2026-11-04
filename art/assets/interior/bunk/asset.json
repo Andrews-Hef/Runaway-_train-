@@ -5,12 +5,10 @@
   "type": "prop",
   "description": "Couchettes superposees du dortoir, couvertures rouges.",
   "frame": {
-    "width": 96,
-    "height": 88
+    "width": 44,
+    "height": 48
   },
   "directions": "d1",
-  "camera": "side",
-  "pixelsPerUnit": 32,
   "model": {
     "parts": [
       {

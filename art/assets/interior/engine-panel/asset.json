@@ -5,12 +5,10 @@
   "type": "prop",
   "description": "Cabine de la locomotive : chaudiere avec porte du foyer rougeoyante, manometres en laiton, levier rouge de freinage.",
   "frame": {
-    "width": 112,
-    "height": 96
+    "width": 52,
+    "height": 56
   },
   "directions": "d1",
-  "camera": "side",
-  "pixelsPerUnit": 32,
   "model": {
     "parts": [
       {
