@@ -34,14 +34,45 @@ const RULES: Dictionary[StringName, Array] = {
 }
 
 
+## Taille au sol de chaque point d'intérêt, en pixels.
+const POI_SIZES: Dictionary[StringName, Vector2] = {
+	&"village": Vector2(208.0, 120.0),
+	&"refuge": Vector2(72.0, 52.0),
+	&"merchant": Vector2(72.0, 52.0),
+	&"lone_event": Vector2(28.0, 28.0),
+}
+## Écart minimal entre deux points d'intérêt, en pixels.
+const POI_GAP: float = 24.0
+## Plan d'un village : maisons et caches, relatifs au coin haut-gauche du village.
+const VILLAGE_HOUSES: Array[Vector2] = [Vector2(40.0, 40.0), Vector2(128.0, 30.0), Vector2(170.0, 100.0)]
+const VILLAGE_CACHES: Array[Vector2] = [Vector2(86.0, 78.0), Vector2(30.0, 104.0), Vector2(118.0, 104.0)]
+## Endroit d'une petite rencontre (sac abandonné) dans le village.
+const VILLAGE_EVENT: Vector2 = Vector2(176.0, 56.0)
+## Types de petites rencontres possibles (chacun a son pool dans EncounterLibrary).
+const LONE_EVENT_KINDS: Array[StringName] = [&"backpack", &"locker"]
+
+
 ## Un objet à faire apparaître.
 class Spawn:
 	var kind: StringName
 	var position: Vector2
+	## Donnée en plus selon le type : identifiant de rencontre pour un PNJ ou un sac.
+	var data: StringName
 
-	func _init(spawn_kind: StringName, spawn_position: Vector2) -> void:
+	func _init(spawn_kind: StringName, spawn_position: Vector2, spawn_data: StringName = &"") -> void:
 		kind = spawn_kind
 		position = spawn_position
+		data = spawn_data
+
+
+## Un point d'intérêt : village, refuge, marchand, rencontre isolée.
+class Poi:
+	var kind: StringName
+	var rect: Rect2
+
+	func _init(poi_kind: StringName, poi_rect: Rect2) -> void:
+		kind = poi_kind
+		rect = poi_rect
 
 
 ## Le plan complet d'une zone.
@@ -50,6 +81,7 @@ class Layout:
 	## Tuile de chaque cellule, ligne par ligne (index = y * largeur + x).
 	var tiles: PackedInt32Array
 	var spawns: Array[Spawn] = []
+	var pois: Array[Poi] = []
 	## Centre et rayon (en tuiles) de chaque zone infectée.
 	var infected_patches: Array[Vector3] = []
 	var stop_duration: float = 90.0
@@ -74,6 +106,19 @@ class Layout:
 	func size_in_pixels() -> Vector2i:
 		return size_in_tiles * TILE_SIZE
 
+	func has_poi(kind: StringName) -> bool:
+		for poi: Poi in pois:
+			if poi.kind == kind:
+				return true
+		return false
+
+	## Le point est-il dans (ou tout près de) un point d'intérêt ?
+	func is_in_poi(world_position: Vector2, margin: float = 8.0) -> bool:
+		for poi: Poi in pois:
+			if poi.rect.grow(margin).has_point(world_position):
+				return true
+		return false
+
 
 ## reserved : points à garder dégagés (ex. l'apparition du joueur), voir RESERVED_RADIUS.
 static func generate(profile: ZoneProfile, zone_seed: int, reserved: Array[Vector2] = []) -> Layout:
@@ -83,10 +128,14 @@ static func generate(profile: ZoneProfile, zone_seed: int, reserved: Array[Vecto
 	layout.size_in_tiles = profile.size_in_tiles
 	layout.stop_duration = roundf(rng.randf_range(profile.stop_duration.x, profile.stop_duration.y))
 
+	_place_pois(layout, profile, rng)
 	_place_infected_patches(layout, profile, rng)
 	_paint_tiles(layout, profile, rng)
+	_fill_pois(layout, rng)
 
 	var occupied: Array[Vector2] = []
+	for spawn: Spawn in layout.spawns:
+		occupied.append(spawn.position)
 	for kind: StringName in RULES:
 		var range_: Vector2i = profile.count_range(kind)
 		var wanted: int = rng.randi_range(range_.x, range_.y)
@@ -94,16 +143,113 @@ static func generate(profile: ZoneProfile, zone_seed: int, reserved: Array[Vecto
 	return layout
 
 
+# --- Points d'intérêt ------------------------------------------------------------
+
+static func _place_pois(layout: Layout, profile: ZoneProfile, rng: RandomNumberGenerator) -> void:
+	var wanted: Array[StringName] = []
+	if rng.randf() < profile.village_chance:
+		wanted.append(&"village")
+	if rng.randf() < profile.refuge_chance:
+		wanted.append(&"refuge")
+	if rng.randf() < profile.merchant_chance:
+		wanted.append(&"merchant")
+	for i: int in rng.randi_range(profile.lone_events.x, profile.lone_events.y):
+		wanted.append(&"lone_event")
+
+	var size_px := Vector2(layout.size_in_pixels())
+	var min_y: float = (RAILS_ROW + PLATFORM_ROWS + 2) * TILE_SIZE
+	for kind: StringName in wanted:
+		var poi_size: Vector2 = POI_SIZES[kind]
+		for attempt: int in 40:
+			var origin := Vector2(
+				rng.randf_range(BORDER * TILE_SIZE, size_px.x - BORDER * TILE_SIZE - poi_size.x),
+				rng.randf_range(min_y, size_px.y - BORDER * TILE_SIZE - poi_size.y)
+			).round()
+			var rect := Rect2(origin, poi_size)
+			if _overlaps_poi(layout, rect.grow(POI_GAP)):
+				continue
+			layout.pois.append(Poi.new(kind, rect))
+			break
+
+
+static func _overlaps_poi(layout: Layout, rect: Rect2) -> bool:
+	for poi: Poi in layout.pois:
+		if poi.rect.intersects(rect):
+			return true
+	return false
+
+
+## Remplit chaque point d'intérêt avec ses objets et ses rencontres.
+static func _fill_pois(layout: Layout, rng: RandomNumberGenerator) -> void:
+	for poi: Poi in layout.pois:
+		var center: Vector2 = poi.rect.get_center()
+		match poi.kind:
+			&"village":
+				var mirrored: bool = rng.randf() < 0.5
+				for point: Vector2 in VILLAGE_HOUSES:
+					layout.spawns.append(Spawn.new(&"house", _village_point(poi.rect, point, mirrored, rng)))
+				for point: Vector2 in VILLAGE_CACHES:
+					layout.spawns.append(Spawn.new(&"cache", _village_point(poi.rect, point, mirrored, rng)))
+				if rng.randf() < 0.6:
+					var event_kind: StringName = LONE_EVENT_KINDS[rng.randi_range(0, LONE_EVENT_KINDS.size() - 1)]
+					layout.spawns.append(Spawn.new(event_kind, _village_point(poi.rect, VILLAGE_EVENT, mirrored, rng), _pick_encounter(event_kind, rng)))
+			&"refuge":
+				layout.spawns.append(Spawn.new(&"shelter", center + Vector2(0.0, -8.0)))
+				layout.spawns.append(Spawn.new(&"refugee", center + Vector2(10.0, 16.0), _pick_encounter(&"refugee", rng)))
+			&"merchant":
+				layout.spawns.append(Spawn.new(&"cart", center + Vector2(0.0, -8.0)))
+				layout.spawns.append(Spawn.new(&"merchant", center + Vector2(-14.0, 16.0), _pick_encounter(&"merchant", rng)))
+			&"lone_event":
+				var event_kind: StringName = LONE_EVENT_KINDS[rng.randi_range(0, LONE_EVENT_KINDS.size() - 1)]
+				layout.spawns.append(Spawn.new(event_kind, center, _pick_encounter(event_kind, rng)))
+			_:
+				push_warning("Point d'intérêt inconnu : %s" % poi.kind)
+
+
+static func _village_point(rect: Rect2, point: Vector2, mirrored: bool, rng: RandomNumberGenerator) -> Vector2:
+	var local: Vector2 = point
+	if mirrored:
+		local.x = rect.size.x - point.x
+	var jitter := Vector2(rng.randf_range(-4.0, 4.0), rng.randf_range(-3.0, 3.0))
+	return (rect.position + local + jitter).round()
+
+
+static func _pick_encounter(pool_kind: StringName, rng: RandomNumberGenerator) -> StringName:
+	var pool: Array = EncounterLibrary.POOLS.get(pool_kind, [])
+	if pool.is_empty():
+		return &""
+	return pool[rng.randi_range(0, pool.size() - 1)]
+
+
+# --- Sol --------------------------------------------------------------------------
+
 static func _place_infected_patches(layout: Layout, profile: ZoneProfile, rng: RandomNumberGenerator) -> void:
 	var count: int = rng.randi_range(profile.infected_patches.x, profile.infected_patches.y)
 	var min_y: float = RAILS_ROW + PLATFORM_ROWS + 2.0
 	for i: int in count:
 		var radius: float = rng.randf_range(profile.infected_radius.x, profile.infected_radius.y)
-		var center := Vector2(
-			rng.randf_range(BORDER + 2.0, layout.size_in_tiles.x - BORDER - 2.0),
-			rng.randf_range(min_y, layout.size_in_tiles.y - BORDER - 1.0)
+		# On évite de recouvrir un point d'intérêt (le village reste praticable).
+		for attempt: int in 30:
+			var center := Vector2(
+				rng.randf_range(BORDER + 2.0, layout.size_in_tiles.x - BORDER - 2.0),
+				rng.randf_range(min_y, layout.size_in_tiles.y - BORDER - 1.0)
+			)
+			if not _patch_touches_poi(layout, center, radius):
+				layout.infected_patches.append(Vector3(center.x, center.y, radius))
+				break
+
+
+static func _patch_touches_poi(layout: Layout, center_tiles: Vector2, radius_tiles: float) -> bool:
+	var center: Vector2 = center_tiles * TILE_SIZE
+	var reach: float = (radius_tiles + 1.5) * TILE_SIZE
+	for poi: Poi in layout.pois:
+		var closest := Vector2(
+			clampf(center.x, poi.rect.position.x, poi.rect.end.x),
+			clampf(center.y, poi.rect.position.y, poi.rect.end.y)
 		)
-		layout.infected_patches.append(Vector3(center.x, center.y, radius))
+		if center.distance_to(closest) < reach:
+			return true
+	return false
 
 
 static func _paint_tiles(layout: Layout, profile: ZoneProfile, rng: RandomNumberGenerator) -> void:
@@ -151,6 +297,8 @@ static func _scatter(layout: Layout, kind: StringName, wanted: int, rng: RandomN
 		if not _placement_allows(layout, placement, pos) or not _is_free(pos, spacing, occupied):
 			continue
 		if not _is_free(pos, RESERVED_RADIUS, reserved):
+			continue
+		if layout.is_in_poi(pos):
 			continue
 		layout.spawns.append(Spawn.new(kind, pos))
 		occupied.append(pos)

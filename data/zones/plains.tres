@@ -11,3 +11,6 @@ stop_duration = Vector2(85, 100)
 infected_radius = Vector2(3, 5)
 herbs = Vector2i(9, 13)
 infected_herbs = Vector2i(3, 6)
+village_chance = 0.5
+refuge_chance = 0.6
+merchant_chance = 0.4

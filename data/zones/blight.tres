@@ -18,3 +18,7 @@ dead_trees = Vector2i(3, 6)
 rocks = Vector2i(5, 8)
 herbs = Vector2i(2, 4)
 infected_herbs = Vector2i(10, 14)
+village_chance = 0.45
+refuge_chance = 0.25
+merchant_chance = 0.1
+lone_events = Vector2i(1, 2)

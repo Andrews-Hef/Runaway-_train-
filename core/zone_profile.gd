@@ -30,6 +30,16 @@ extends Resource
 @export var herbs: Vector2i = Vector2i(8, 12)
 @export var infected_herbs: Vector2i = Vector2i(4, 7)
 
+@export_group("Points d'intérêt")
+## Chance qu'un village abandonné (maisons en ruine, caches à fouiller) soit présent.
+@export_range(0.0, 1.0) var village_chance: float = 0.3
+## Chance qu'un refuge avec un survivant à recruter soit présent.
+@export_range(0.0, 1.0) var refuge_chance: float = 0.4
+## Chance qu'un marchand ambulant soit présent.
+@export_range(0.0, 1.0) var merchant_chance: float = 0.3
+## Nombre de petites rencontres isolées (sac abandonné...), (min, max).
+@export var lone_events: Vector2i = Vector2i(0, 1)
+
 
 ## Fourchette (min, max) du nombre d'objets d'un type.
 func count_range(kind: StringName) -> Vector2i:
