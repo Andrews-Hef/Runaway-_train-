@@ -86,7 +86,7 @@ static func apply(choice: EncounterChoice, result: ExpeditionResult, rng: Random
 
 	if choice.recruits():
 		var infected: bool = rng.randf() < choice.recruit_infection_chance
-		outcome.recruit = CrewMember.create(_pick_name(rng, taken_names), choice.recruit_role, choice.recruit_role_label, infected)
+		outcome.recruit = CrewMember.create(pick_name(rng, taken_names), choice.recruit_role, choice.recruit_role_label, infected)
 		result.recruits.append(outcome.recruit)
 		outcome.text = outcome.text.replace("{nom}", outcome.recruit.display_name)
 
@@ -105,7 +105,7 @@ static func _gain(outcome: Outcome, result: ExpeditionResult, id: StringName, am
 	outcome.gained[id] = outcome.gained.get(id, 0) + amount
 
 
-static func _pick_name(rng: RandomNumberGenerator, taken: Array[String]) -> String:
+static func pick_name(rng: RandomNumberGenerator, taken: Array[String]) -> String:
 	var free: Array[String] = []
 	for candidate: String in NAMES:
 		if not candidate in taken:

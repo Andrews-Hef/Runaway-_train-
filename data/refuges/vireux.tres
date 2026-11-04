@@ -1,0 +1,62 @@
+[gd_resource type="Resource" script_class="RefugeData" format=3]
+
+[ext_resource type="Script" path="res://core/refuge_offer.gd" id="1_offer"]
+[ext_resource type="Script" path="res://core/refuge_data.gd" id="2_refuge"]
+
+[sub_resource type="Resource" id="Resource_t0"]
+script = ExtResource("1_offer")
+label = "L'infirmerie achète tes plantes infectées"
+cost = Dictionary[StringName, int]({
+&"infected_herb": 4
+})
+reward = Dictionary[StringName, int]({
+&"parts": 2
+})
+
+[sub_resource type="Resource" id="Resource_t1"]
+script = ExtResource("1_offer")
+label = "Ferraille contre bois"
+cost = Dictionary[StringName, int]({
+&"scrap": 4
+})
+reward = Dictionary[StringName, int]({
+&"wood": 3
+})
+
+[sub_resource type="Resource" id="Resource_t2"]
+script = ExtResource("1_offer")
+label = "Plantes contre tissu"
+cost = Dictionary[StringName, int]({
+&"herb": 3
+})
+reward = Dictionary[StringName, int]({
+&"cloth": 2
+})
+
+[sub_resource type="Resource" id="Resource_r0"]
+script = ExtResource("1_offer")
+label = "Une infirmière sortie de quarantaine"
+cost = Dictionary[StringName, int]({
+&"herb": 5,
+&"cloth": 3
+})
+recruit_role = &"medic"
+recruit_role_label = "soins"
+
+[sub_resource type="Resource" id="Resource_r1"]
+script = ExtResource("1_offer")
+label = "Un mécanicien sorti de quarantaine"
+cost = Dictionary[StringName, int]({
+&"scrap": 6,
+&"herb": 4
+})
+recruit_role = &"mechanic"
+recruit_role_label = "mécanique"
+
+[resource]
+script = ExtResource("2_refuge")
+id = &"vireux"
+display_name = "Gare refuge de Vireux"
+description = "Un bourg ferroviaire au bord du fleuve. Les marchands y sont durs en affaires, mais l'infirmerie est la meilleure de la ligne."
+trades = Array[ExtResource("1_offer")]([SubResource("Resource_t0"), SubResource("Resource_t1"), SubResource("Resource_t2")])
+recruits = Array[ExtResource("1_offer")]([SubResource("Resource_r0"), SubResource("Resource_r1")])

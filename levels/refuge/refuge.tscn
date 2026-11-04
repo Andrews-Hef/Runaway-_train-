@@ -1,0 +1,114 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://levels/refuge/refuge.gd" id="1_refuge"]
+[ext_resource type="TileSet" path="res://assets/tiles/ground_tileset.tres" id="2_tileset"]
+[ext_resource type="PackedScene" path="res://entities/train/train.tscn" id="3_train"]
+[ext_resource type="PackedScene" path="res://entities/player/player.tscn" id="4_player"]
+[ext_resource type="Theme" path="res://ui/theme/game_theme.tres" id="5_theme"]
+[ext_resource type="PackedScene" path="res://ui/refuge/refuge_menu.tscn" id="6_menu"]
+[ext_resource type="PackedScene" path="res://ui/touch/touch_controls.tscn" id="7_touch"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 6.0
+content_margin_top = 3.0
+content_margin_right = 6.0
+content_margin_bottom = 4.0
+bg_color = Color(0.05, 0.05, 0.07, 0.75)
+
+[node name="Refuge" type="Node2D"]
+script = ExtResource("1_refuge")
+
+[node name="Ground" type="TileMapLayer" parent="."]
+tile_set = ExtResource("2_tileset")
+
+[node name="World" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="Train" parent="World" instance=ExtResource("3_train")]
+
+[node name="Player" parent="World" instance=ExtResource("4_player")]
+
+[node name="Camera2D" type="Camera2D" parent="World/Player"]
+position = Vector2(0, -14)
+limit_left = 0
+limit_top = 0
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0
+
+[node name="Ui" type="CanvasLayer" parent="."]
+
+[node name="Root" type="Control" parent="Ui"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("5_theme")
+
+[node name="Top" type="PanelContainer" parent="Ui/Root"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -160.0
+offset_top = 6.0
+offset_right = 160.0
+offset_bottom = 36.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBox" type="VBoxContainer" parent="Ui/Root/Top"]
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="Title" type="Label" parent="Ui/Root/Top/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.82, 0.35, 1)
+text = "Arrêt n°5 : Gare refuge"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Ui/Root/Top/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.78, 0.82, 1)
+text = "Zone sûre"
+horizontal_alignment = 1
+
+[node name="Prompt" type="Label" parent="Ui/Root"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -130.0
+offset_top = -24.0
+offset_right = 130.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0.08, 0.06, 0.06, 1)
+theme_override_constants/outline_size = 4
+text = "Maintenir E : Échanger"
+horizontal_alignment = 1
+
+[node name="Fade" type="ColorRect" parent="Ui/Root"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
+
+[node name="RefugeMenu" parent="." instance=ExtResource("6_menu")]
+
+[node name="TouchControls" parent="." instance=ExtResource("7_touch")]

@@ -13,6 +13,7 @@ extends Node2D
 ## donc celles qui existent déjà ne bougent pas.
 
 const STOP_SCENE: String = "res://levels/stop_zone/stop_zone.tscn"
+const REFUGE_SCENE: String = "res://levels/refuge/refuge.tscn"
 const TrainMenu = preload("res://ui/train/train_menu.gd")
 
 const TILE_SIZE: int = 16
@@ -239,6 +240,8 @@ func _add_furniture(wagon_x: float, entry: Array) -> void:
 	var spot := Interactable.new()
 	spot.name = "Station_" + String(station)
 	spot.prompt = entry[3]
+	if station == &"lever" and GameState.is_refuge_stop():
+		spot.prompt = "Descendre à la gare refuge"
 	spot.hold_time = 0.7 if station == &"lever" else 0.25
 	spot.indicator_offset = Vector2(0.0, -40.0)
 	spot.position = position_ + Vector2(0.0, 8.0)
@@ -366,13 +369,18 @@ func _leave_for_stop() -> void:
 	var slow := create_tween()
 	slow.tween_property(_ground, "autoscroll:x", 0.0, 1.0).set_ease(Tween.EASE_OUT)
 	slow.tween_property(_fade, "color:a", 1.0, 0.4)
-	slow.tween_callback(func() -> void: get_tree().change_scene_to_file(STOP_SCENE))
+	slow.tween_callback(func() -> void: get_tree().change_scene_to_file(next_scene()))
+
+
+## Scène de l'arrêt à venir : gare refuge ou zone à fouiller.
+func next_scene() -> String:
+	return REFUGE_SCENE if GameState.is_refuge_stop() else STOP_SCENE
 
 
 # --- Interface -------------------------------------------------------------------------
 
 func _refresh_texts() -> void:
-	_destination.text = "En route vers l'arrêt n°%d : %s" % [GameState.stop_number, GameState.current_zone.display_name]
+	_destination.text = "En route vers l'arrêt n°%d : %s" % [GameState.stop_number, GameState.stop_name()]
 	_summary.text = "Stock : %d/%d · Équipage : %d/%d · Voitures : %d/%d" % [
 		GameState.storage_total(), GameState.storage_capacity(), GameState.crew.size(), GameState.beds(),
 		GameState.train.size(), GameState.max_cars()]

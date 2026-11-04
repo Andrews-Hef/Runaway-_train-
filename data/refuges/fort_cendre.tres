@@ -1,0 +1,72 @@
+[gd_resource type="Resource" script_class="RefugeData" format=3]
+
+[ext_resource type="Script" path="res://core/refuge_offer.gd" id="1_offer"]
+[ext_resource type="Script" path="res://core/refuge_data.gd" id="2_refuge"]
+
+[sub_resource type="Resource" id="Resource_t0"]
+script = ExtResource("1_offer")
+label = "Le dispensaire achète tes plantes infectées"
+cost = Dictionary[StringName, int]({
+&"infected_herb": 3
+})
+reward = Dictionary[StringName, int]({
+&"cloth": 2
+})
+
+[sub_resource type="Resource" id="Resource_t1"]
+script = ExtResource("1_offer")
+label = "Plantes contre pièces mécaniques"
+cost = Dictionary[StringName, int]({
+&"herb": 4
+})
+reward = Dictionary[StringName, int]({
+&"parts": 1
+})
+
+[sub_resource type="Resource" id="Resource_t2"]
+script = ExtResource("1_offer")
+label = "Ferraille contre pièces mécaniques"
+cost = Dictionary[StringName, int]({
+&"scrap": 6
+})
+reward = Dictionary[StringName, int]({
+&"parts": 2
+})
+
+[sub_resource type="Resource" id="Resource_t3"]
+script = ExtResource("1_offer")
+label = "Bois contre tissu"
+cost = Dictionary[StringName, int]({
+&"wood": 5
+})
+reward = Dictionary[StringName, int]({
+&"cloth": 2
+})
+
+[sub_resource type="Resource" id="Resource_r0"]
+script = ExtResource("1_offer")
+label = "Une mécanicienne sortie de quarantaine"
+cost = Dictionary[StringName, int]({
+&"herb": 6,
+&"cloth": 2
+})
+recruit_role = &"mechanic"
+recruit_role_label = "mécanique"
+
+[sub_resource type="Resource" id="Resource_r1"]
+script = ExtResource("1_offer")
+label = "Un éclaireur sorti de quarantaine"
+cost = Dictionary[StringName, int]({
+&"herb": 4,
+&"wood": 4
+})
+recruit_role = &"scout"
+recruit_role_label = "repérage"
+
+[resource]
+script = ExtResource("2_refuge")
+id = &"fort_cendre"
+display_name = "Gare refuge de Fort-Cendre"
+description = "Une ancienne gare de triage derrière une palissade. On y échange, on y soigne, et le dépôt répare les locomotives."
+trades = Array[ExtResource("1_offer")]([SubResource("Resource_t0"), SubResource("Resource_t1"), SubResource("Resource_t2"), SubResource("Resource_t3")])
+recruits = Array[ExtResource("1_offer")]([SubResource("Resource_r0"), SubResource("Resource_r1")])

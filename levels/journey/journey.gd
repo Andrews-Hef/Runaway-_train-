@@ -89,15 +89,17 @@ static func _ground_tile(rng: RandomNumberGenerator) -> int:
 
 
 func _fill_texts() -> void:
-	var zone: ZoneProfile = GameState.current_zone
 	if GameState.stop_number == 1:
 		_title.text = "Tu viens d'être recruté."
 		_subtitle.text = "Le capitaine t'envoie au premier arrêt. Rapporte ce que tu peux."
+	elif GameState.is_refuge_stop():
+		_title.text = "Une gare refuge en vue"
+		_subtitle.text = "Des murs, des gens, pas d'infection. On va pouvoir souffler."
 	else:
 		_title.text = "En route"
 		_subtitle.text = "Le train file vers l'arrêt suivant."
-	_next_stop.text = "Arrêt n°%d : %s" % [GameState.stop_number, zone.display_name]
-	_description.text = zone.description
+	_next_stop.text = "Arrêt n°%d : %s" % [GameState.stop_number, GameState.stop_name()]
+	_description.text = GameState.stop_description()
 	_storage.text = _storage_summary() + "\n" + _crew_summary()
 
 

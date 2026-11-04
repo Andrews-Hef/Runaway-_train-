@@ -23,6 +23,14 @@ const ZONES: Array[ZoneProfile] = [
 	preload("res://data/zones/blight.tres"),
 ]
 
+## Une gare refuge tous les N arrêts (arrêts n°5, 10, 15...).
+const REFUGE_EVERY: int = 5
+## Gares refuges de la ligne, dans l'ordre où le train les rencontre (puis on recommence).
+const REFUGES: Array[RefugeData] = [
+	preload("res://data/refuges/fort_cendre.tres"),
+	preload("res://data/refuges/vireux.tres"),
+]
+
 ## Catalogue des ressources, dans l'ordre d'affichage (HUD, bilan, trajet).
 const LOOT_TYPES: Array[LootData] = [
 	preload("res://data/loot/scrap.tres"),
@@ -48,7 +56,10 @@ const BUILDABLE_WAGONS: Array[WagonData] = [
 
 ## Numéro de l'arrêt en cours ou à venir (1 = premier arrêt).
 var stop_number: int = 0
+## Type de zone de l'arrêt (le dernier tiré, si l'arrêt est une gare refuge).
 var current_zone: ZoneProfile
+## Gare refuge de l'arrêt, ou null si c'est une zone à fouiller.
+var current_refuge: RefugeData
 var current_seed: int = 0
 ## Ressources rapportées dans le train : id de LootData -> quantité.
 var storage: Dictionary[StringName, int] = {}
@@ -80,6 +91,7 @@ func new_run(run_seed: int = 0) -> void:
 		_rng.randomize()
 	stop_number = 0
 	current_zone = null
+	current_refuge = null
 	storage.clear()
 	crew.clear()
 	owned_items = ItemCatalog.starters()
@@ -95,11 +107,35 @@ func new_run(run_seed: int = 0) -> void:
 	prepare_next_stop()
 
 
-## Tire le prochain arrêt : type de zone et graine de génération.
+## Tire le prochain arrêt : gare refuge (tous les REFUGE_EVERY arrêts) ou type de
+## zone, et graine de génération.
 func prepare_next_stop() -> void:
 	stop_number += 1
-	current_zone = FIRST_ZONE if stop_number == 1 else _pick_zone(current_zone)
+	if stop_number % REFUGE_EVERY == 0:
+		current_refuge = REFUGES[(stop_number / REFUGE_EVERY - 1) % REFUGES.size()]
+	else:
+		current_refuge = null
+		current_zone = FIRST_ZONE if stop_number == 1 else _pick_zone(current_zone)
 	current_seed = _rng.randi()
+
+
+func is_refuge_stop() -> bool:
+	return current_refuge != null
+
+
+## Numéro de la prochaine gare refuge (l'arrêt en cours s'il en est une).
+func next_refuge_stop() -> int:
+	var rest: int = stop_number % REFUGE_EVERY
+	return stop_number if rest == 0 else stop_number + REFUGE_EVERY - rest
+
+
+## Nom de l'arrêt à venir, gare refuge ou zone.
+func stop_name() -> String:
+	return current_refuge.display_name if current_refuge else current_zone.display_name
+
+
+func stop_description() -> String:
+	return current_refuge.description if current_refuge else current_zone.description
 
 
 ## Range le butin d'une sortie réussie dans le train et accueille les recrues.
@@ -195,7 +231,21 @@ func build_wagon(wagon: WagonData) -> bool:
 	return true
 
 
-## Renforce la locomotive : elle tire une voiture de plus.
+## Prend une offre de gare refuge (échange ou recrue), payée avec le stock.
+## `done` : offre déjà prise pendant ce passage. Renvoie false si c'est impossible.
+func use_refuge_offer(offer: RefugeOffer, rng: RandomNumberGenerator, done: bool = false) -> bool:
+	if RefugeRules.problem(offer, storage, storage_free(), free_beds(), done) != RefugeRules.Problem.NONE:
+		return false
+	var recruit: CrewMember = RefugeRules.apply(offer, storage, rng, crew_names())
+	storage_changed.emit()
+	if recruit:
+		crew.append(recruit)
+		crew_changed.emit()
+	return true
+
+
+## Renforce la locomotive : elle tire une voiture de plus. Se fait au dépôt d'une
+## gare refuge (c'est l'interface de la gare qui le propose).
 func upgrade_locomotive() -> bool:
 	if TrainRules.upgrade_problem(locomotive_level, storage) != TrainRules.Problem.NONE:
 		return false

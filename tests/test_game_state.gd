@@ -45,6 +45,8 @@ func test_jamais_deux_fois_la_meme_zone_de_suite() -> void:
 	var previous: ZoneProfile = GameState.current_zone
 	for i: int in 30:
 		GameState.prepare_next_stop()
+		if GameState.is_refuge_stop():
+			continue # une gare refuge n'est pas une zone : on compare les zones entre elles
 		assert_true(GameState.current_zone != previous, "même zone deux fois de suite à l'arrêt %d" % GameState.stop_number)
 		previous = GameState.current_zone
 

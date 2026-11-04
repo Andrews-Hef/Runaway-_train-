@@ -12,9 +12,10 @@ Un **voyage** d'arrêt en arrêt :
 - **Dans le train** (vue de dessus, toit retiré) : tu marches de wagon en wagon par les passerelles. **Coffre** du stock, **établi** de l'atelier (fabriquer de l'équipement), **casier** (s'équiper), **couchettes** du dortoir (l'équipage), **table du capitaine** (construire des voitures, renforcer la locomotive) et le **levier** de la cabine pour descendre au prochain arrêt. La voie défile sous le train : on la voit entre les wagons, aux deux bouts et au bas de l'écran.
 - **Arrêt** : chaque zone est **générée au hasard** à partir d'un type de zone (plaine, forêt morte, casse automobile, terres contaminées). Le premier arrêt est toujours une plaine.
 - **Points d'intérêt** dans les zones : **village abandonné** (maisons en ruine, caisses à fouiller), **refuge** avec un survivant à **recruter**, **marchand ambulant** pour **échanger**, et petites rencontres (sac abandonné, armoire à forcer).
+- **Gare refuge** (arrêts n°5, 10, 15…) : une ville fortifiée sur la ligne, **zone sûre** sans infection ni chrono. **Comptoir** pour échanger le surplus du stock, **bureau de quarantaine** pour recruter des survivants sains, **dépôt** pour renforcer la locomotive. On repart en remontant à bord.
 - **Retour à bord** : le butin et les recrues rejoignent le train et on repart vers l'arrêt suivant. **Train raté** : la partie est finie, recrues comprises.
 
-**Le train** : la locomotive tire un nombre limité de voitures, cabine comprise. On part avec 4 voitures (dortoir, atelier, stock, cabine) et une locomotive qui en tire 5 ; chaque renfort en ajoute une, **jusqu'à 8**. Les voitures se construisent avec le stock et s'attellent en queue.
+**Le train** : la locomotive tire un nombre limité de voitures, cabine comprise. On part avec 4 voitures (dortoir, atelier, stock, cabine) et une locomotive qui en tire 5 ; chaque renfort, fait au **dépôt d'une gare refuge**, en ajoute une, **jusqu'à 8**. Les voitures se construisent à bord avec le stock et s'attellent en queue.
 
 | Voiture | Effet | Coût |
 |---|---|---|
@@ -100,6 +101,9 @@ Le forçage est ignoré dans un build release.
 | `Crafting` | `core/crafting.gd` | Fabrication avec les matériaux du stock (pur, testable) |
 | `WagonData` / `LocomotiveLevel` | `core/` | Un type de voiture (`data/wagons/*.tres`) et un niveau de locomotive (`data/locomotive/*.tres`) |
 | `TrainRules` | `core/train_rules.gd` | Règles du train : traction, construction, couchettes, places (pur, testable) |
+| `RefugeData` / `RefugeOffer` | `core/` | Une gare refuge et ses offres (échanges, recrues), en `.tres` dans `data/refuges/` |
+| `RefugeRules` | `core/refuge_rules.gd` | Règles des offres d'une gare, payées avec le stock (pur, testable) |
+| `MenuKit` | `ui/common/menu_kit.gd` | Morceaux d'interface partagés par les menus (lignes, coûts, couleurs) |
 
 **Ajouter une rencontre** : créer un `EncounterData` dans `data/encounters/` (titre, texte, choix réglés dans l'inspecteur), puis l'ajouter à `BY_ID` et à un pool dans `core/encounter_library.gd`. Chaque rencontre doit proposer un choix « Partir » (vérifié par les tests).
 
@@ -109,17 +113,19 @@ Le forçage est ignoré dans un build release.
 
 **Régler la traction** : `max_cars` et le coût de chaque niveau dans `data/locomotive/level_*.tres`.
 
+**Ajouter une gare refuge** : créer un `RefugeData` dans `data/refuges/` (nom, texte, échanges, recrues), puis l'ajouter à `REFUGES` dans `core/game_state.gd`. Les gares se succèdent dans l'ordre de la liste, puis on recommence. Le rythme (une gare tous les 5 arrêts) est `REFUGE_EVERY`.
+
 **Ajouter un type de zone** : dupliquer un fichier de `data/zones/`, régler ses fourchettes dans l'inspecteur, puis l'ajouter à `ZONES` dans `core/game_state.gd`. Aucun autre code à toucher.
 
 ```
 art/         définitions des sprites td2d (JSON), voir art/README.md
 assets/      sprites, tuiles, police
 core/        données et services partagés (LootData, ExpeditionResult, InputMode…)
-data/        ressources de jeu (.tres) : matériaux, équipements, types de zones, rencontres, voitures, locomotive
+data/        ressources de jeu (.tres) : matériaux, équipements, types de zones, rencontres, voitures, locomotive, gares refuges
 entities/    joueur, train, PNJ, interactions
 props/       objets du décor : épave, arbre mort, plantes, rocher, maison, abri, charrette, caisse…
-levels/      trajet, intérieur du train, zone d'arrêt, générateur de zones, règles d'un arrêt
-ui/          HUD, menu du train, fenêtre de rencontre, écran de bilan, contrôles tactiles, thème
+levels/      trajet, intérieur du train, zone d'arrêt, gare refuge, générateur de zones, règles d'un arrêt
+ui/          HUD, menu du train, menu de la gare, fenêtre de rencontre, écran de bilan, contrôles tactiles, thème
 tests/       tests automatiques headless
 tools/       scripts hors Godot (ignorés par Godot via .gdignore)
 ```

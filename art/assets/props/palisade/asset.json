@@ -1,0 +1,222 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/palisade",
+  "type": "prop",
+  "description": "Palissade de pieux tailles en pointe, deux traverses.",
+  "frame": {
+    "width": 60,
+    "height": 56
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "id": "stake-0",
+        "material": "dead-wood",
+        "radius": 0.11,
+        "height": 1.9,
+        "position": [
+          -1.35,
+          0.95,
+          0
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "tip-0",
+        "material": "dead-wood",
+        "radius": 0.11,
+        "height": 0.28,
+        "position": [
+          -1.35,
+          2.04,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "stake-1",
+        "material": "dead-wood",
+        "radius": 0.11,
+        "height": 2.05,
+        "position": [
+          -0.9,
+          1.025,
+          0
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "tip-1",
+        "material": "dead-wood",
+        "radius": 0.11,
+        "height": 0.28,
+        "position": [
+          -0.9,
+          2.19,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "stake-2",
+        "material": "dead-wood",
+        "radius": 0.11,
+        "height": 1.9,
+        "position": [
+          -0.45,
+          0.95,
+          0
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "tip-2",
+        "material": "dead-wood",
+        "radius": 0.11,
+        "height": 0.28,
+        "position": [
+          -0.45,
+          2.04,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "stake-3",
+        "material": "dead-wood",
+        "radius": 0.11,
+        "height": 2.05,
+        "position": [
+          0.0,
+          1.025,
+          0
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "tip-3",
+        "material": "dead-wood",
+        "radius": 0.11,
+        "height": 0.28,
+        "position": [
+          0.0,
+          2.19,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "stake-4",
+        "material": "dead-wood",
+        "radius": 0.11,
+        "height": 1.9,
+        "position": [
+          0.45,
+          0.95,
+          0
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "tip-4",
+        "material": "dead-wood",
+        "radius": 0.11,
+        "height": 0.28,
+        "position": [
+          0.45,
+          2.04,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "stake-5",
+        "material": "dead-wood",
+        "radius": 0.11,
+        "height": 2.05,
+        "position": [
+          0.9,
+          1.025,
+          0
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "tip-5",
+        "material": "dead-wood",
+        "radius": 0.11,
+        "height": 0.28,
+        "position": [
+          0.9,
+          2.19,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "stake-6",
+        "material": "dead-wood",
+        "radius": 0.11,
+        "height": 1.9,
+        "position": [
+          1.35,
+          0.95,
+          0
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "tip-6",
+        "material": "dead-wood",
+        "radius": 0.11,
+        "height": 0.28,
+        "position": [
+          1.35,
+          2.04,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "bar-low",
+        "material": "wood",
+        "size": [
+          3.0,
+          0.12,
+          0.08
+        ],
+        "position": [
+          0,
+          0.6,
+          0.14
+        ]
+      },
+      {
+        "type": "box",
+        "id": "bar-high",
+        "material": "wood",
+        "size": [
+          3.0,
+          0.12,
+          0.08
+        ],
+        "position": [
+          0,
+          1.5,
+          0.14
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}
