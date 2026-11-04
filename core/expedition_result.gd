@@ -12,12 +12,28 @@ var loot: Dictionary[StringName, int] = {}
 var exposure: float = 0.0
 ## Le joueur est-il remonté à bord avant le départ du train ?
 var boarded: bool = false
+## Personnes recrutées pendant la sortie : elles montent à bord avec le joueur.
+var recruits: Array[CrewMember] = []
 
 
 func add_loot(id: StringName, amount: int) -> void:
 	if amount <= 0:
 		return
 	loot[id] = get_amount(id) + amount
+
+
+## Retire une quantité (échange, paiement). Renvoie false si le joueur n'en a pas assez.
+func remove_loot(id: StringName, amount: int) -> bool:
+	if amount <= 0:
+		return true
+	var current: int = get_amount(id)
+	if current < amount:
+		return false
+	if current == amount:
+		loot.erase(id)
+	else:
+		loot[id] = current - amount
+	return true
 
 
 func get_amount(id: StringName) -> int:

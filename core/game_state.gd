@@ -8,6 +8,7 @@ extends Node
 ## Graine fixe pour déboguer : Paramètres du projet > game/debug/fixed_seed (0 = aléatoire).
 
 signal storage_changed
+signal crew_changed
 
 const FIXED_SEED_SETTING: String = "game/debug/fixed_seed"
 ## Le premier arrêt est toujours celui-ci : une zone simple pour commencer.
@@ -34,6 +35,8 @@ var current_zone: ZoneProfile
 var current_seed: int = 0
 ## Ressources rapportées dans le train : id de LootData -> quantité.
 var storage: Dictionary[StringName, int] = {}
+## Équipage recruté pendant les sorties.
+var crew: Array[CrewMember] = []
 
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
@@ -54,7 +57,9 @@ func new_run(run_seed: int = 0) -> void:
 	stop_number = 0
 	current_zone = null
 	storage.clear()
+	crew.clear()
 	storage_changed.emit()
+	crew_changed.emit()
 	prepare_next_stop()
 
 
@@ -65,13 +70,24 @@ func prepare_next_stop() -> void:
 	current_seed = _rng.randi()
 
 
-## Range le butin d'une sortie réussie dans le train.
+## Range le butin d'une sortie réussie dans le train et accueille les recrues.
 func record_expedition(result: ExpeditionResult) -> void:
 	if not result.boarded:
 		return
 	for id: StringName in result.loot:
 		storage[id] = storage.get(id, 0) + result.loot[id]
 	storage_changed.emit()
+	if not result.recruits.is_empty():
+		crew.append_array(result.recruits)
+		crew_changed.emit()
+
+
+## Prénoms déjà pris dans l'équipage (pour ne pas recruter deux « Léa »).
+func crew_names() -> Array[String]:
+	var names: Array[String] = []
+	for member: CrewMember in crew:
+		names.append(member.display_name)
+	return names
 
 
 func storage_amount(id: StringName) -> int:

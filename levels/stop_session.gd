@@ -12,6 +12,7 @@ signal time_changed(remaining: float)
 signal whistle_blown
 signal ended(result: ExpeditionResult)
 signal loot_changed(result: ExpeditionResult)
+signal recruited(member: CrewMember)
 
 ## Durée de l'arrêt, en secondes.
 @export var duration: float = 90.0
@@ -59,6 +60,21 @@ func add_loot(loot: LootData, amount: int) -> void:
 		return
 	result.add_loot(loot.id, amount)
 	loot_changed.emit(result)
+
+
+## Applique un choix de rencontre (échange, recrutement...) au butin de la sortie.
+## Renvoie null si la sortie est finie ou si le joueur ne peut pas payer.
+func resolve_choice(choice: EncounterChoice, rng: RandomNumberGenerator, taken_names: Array[String] = []) -> EncounterResolver.Outcome:
+	if state == State.ENDED or not EncounterResolver.can_afford(choice, result):
+		return null
+	var names: Array[String] = taken_names.duplicate()
+	for member: CrewMember in result.recruits:
+		names.append(member.display_name)
+	var outcome := EncounterResolver.apply(choice, result, rng, names)
+	loot_changed.emit(result)
+	if outcome.recruit:
+		recruited.emit(outcome.recruit)
+	return outcome
 
 
 ## Le joueur remonte à bord : la sortie se termine tout de suite.

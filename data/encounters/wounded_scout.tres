@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://core/encounter_choice.gd" id="1_xjxqd"]
+[ext_resource type="Script" path="res://core/encounter_data.gd" id="2_4t4bo"]
+
+[sub_resource type="Resource" id="Resource_3fpoi"]
+script = ExtResource("1_xjxqd")
+label = "Le soigner (2 plantes) et l'emmener"
+cost = Dictionary[StringName, int]({
+&"herb": 2
+})
+recruit_role = &"scout"
+recruit_role_label = "repérage"
+recruit_infection_chance = 0.3
+outcome_text = "Tu bandes la plaie avec les plantes. {nom} se relève en grimaçant et te suit."
+
+[sub_resource type="Resource" id="Resource_tqwrf"]
+script = ExtResource("1_xjxqd")
+label = "L'emmener sans le soigner"
+exposure = 0.05
+recruit_role = &"scout"
+recruit_role_label = "repérage"
+recruit_infection_chance = 0.6
+outcome_text = "{nom} s'appuie sur ton épaule. Sa plaie a une drôle de couleur..."
+
+[sub_resource type="Resource" id="Resource_xcbb8"]
+script = ExtResource("1_xjxqd")
+label = "Le laisser"
+leave = true
+outcome_text = "Tu détournes le regard et repars."
+
+[resource]
+script = ExtResource("2_4t4bo")
+id = &"wounded_scout"
+title = "Un survivant blessé"
+text = "Quelqu'un est adossé à un mur, la jambe en sang. « J'ai repéré des caches dans le coin... Soigne-moi et je te suis. »"
+choices = Array[ExtResource("1_xjxqd")]([SubResource("Resource_3fpoi"), SubResource("Resource_tqwrf"), SubResource("Resource_xcbb8")])

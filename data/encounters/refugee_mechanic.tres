@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://core/encounter_choice.gd" id="1_721hb"]
+[ext_resource type="Script" path="res://core/encounter_data.gd" id="2_1h2ga"]
+
+[sub_resource type="Resource" id="Resource_8pbu3"]
+script = ExtResource("1_721hb")
+label = "L'emmener à bord"
+recruit_role = &"mechanic"
+recruit_role_label = "mécanique"
+recruit_infection_chance = 0.15
+outcome_text = "{nom} attrape son sac et te suit. Il faudra remonter à bord avant le départ."
+
+[sub_resource type="Resource" id="Resource_tdo6k"]
+script = ExtResource("1_721hb")
+label = "Lui laisser 2 plantes et repartir"
+cost = Dictionary[StringName, int]({
+&"herb": 2
+})
+outcome_text = "Un hochement de tête reconnaissant. Peut-être qu'on se reverra."
+
+[sub_resource type="Resource" id="Resource_5madt"]
+script = ExtResource("1_721hb")
+label = "Partir"
+leave = true
+outcome_text = "Tu t'éloignes sans te retourner."
+
+[resource]
+script = ExtResource("2_1h2ga")
+id = &"refugee_mechanic"
+title = "Un abri de fortune"
+text = "Quelqu'un sort d'un abri bricolé avec des tôles. « Vous êtes du train ? Emmenez-moi. Je sais faire tourner un moteur. »"
+choices = Array[ExtResource("1_721hb")]([SubResource("Resource_8pbu3"), SubResource("Resource_tdo6k"), SubResource("Resource_5madt")])

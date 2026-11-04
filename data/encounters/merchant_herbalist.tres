@@ -1,0 +1,51 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://core/encounter_choice.gd" id="1_wf7sd"]
+[ext_resource type="Script" path="res://core/encounter_data.gd" id="2_6jr0v"]
+
+[sub_resource type="Resource" id="Resource_tsecm"]
+script = ExtResource("1_wf7sd")
+label = "3 ferrailles contre 2 plantes"
+cost = Dictionary[StringName, int]({
+&"scrap": 3
+})
+reward = Dictionary[StringName, int]({
+&"herb": 2
+})
+outcome_text = "Marché conclu."
+
+[sub_resource type="Resource" id="Resource_wshjt"]
+script = ExtResource("1_wf7sd")
+label = "2 bois contre 1 plante"
+cost = Dictionary[StringName, int]({
+&"wood": 2
+})
+reward = Dictionary[StringName, int]({
+&"herb": 1
+})
+outcome_text = "Il empile le bois sur sa charrette."
+
+[sub_resource type="Resource" id="Resource_lqya8"]
+script = ExtResource("1_wf7sd")
+label = "2 plantes infectées contre 4 ferrailles"
+cost = Dictionary[StringName, int]({
+&"infected_herb": 2
+})
+reward = Dictionary[StringName, int]({
+&"scrap": 4
+})
+outcome_text = "Il range les plantes violettes avec précaution. « Il y a des gens qui paient cher pour ça... »"
+
+[sub_resource type="Resource" id="Resource_87cg6"]
+script = ExtResource("1_wf7sd")
+label = "Partir"
+leave = true
+outcome_text = "« Reviens quand tu veux. Enfin, si tu reviens. »"
+
+[resource]
+script = ExtResource("2_6jr0v")
+id = &"merchant_herbalist"
+title = "Un marchand ambulant"
+text = "Un marchand masqué attend près de sa charrette. « Des plantes contre de la ferraille ? J'ai ce qu'il te faut. »"
+choices = Array[ExtResource("1_wf7sd")]([SubResource("Resource_tsecm"), SubResource("Resource_wshjt"), SubResource("Resource_lqya8"), SubResource("Resource_87cg6")])
+repeatable = true
