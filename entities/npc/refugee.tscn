@@ -1,0 +1,32 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/interaction/encounter_spot.gd" id="1_spot"]
+[ext_resource type="SpriteFrames" path="res://assets/sprites/refugee/refugee.tres" id="2_frames"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_reach"]
+radius = 16.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(10, 6)
+
+[node name="Refugee" type="Area2D"]
+script = ExtResource("1_spot")
+prompt = "Parler"
+hold_time = 0.3
+indicator_offset = Vector2(0, -44)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = ExtResource("2_frames")
+animation = &"idle_s"
+autoplay = "idle_s"
+centered = false
+offset = Vector2(-18, -36)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_reach")
+
+[node name="Blocker" type="StaticBody2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Blocker"]
+position = Vector2(0, -3)
+shape = SubResource("RectangleShape2D_body")

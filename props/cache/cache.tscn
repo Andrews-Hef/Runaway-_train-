@@ -1,0 +1,37 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/interaction/harvestable.gd" id="1_harvest"]
+[ext_resource type="Resource" path="res://data/loot/scrap.tres" id="2_scrap"]
+[ext_resource type="Resource" path="res://data/loot/wood.tres" id="3_wood"]
+[ext_resource type="Resource" path="res://data/loot/herb.tres" id="4_herb"]
+[ext_resource type="Texture2D" path="res://assets/sprites/props/cache.png" id="5_sprite"]
+[ext_resource type="Script" path="res://core/loot_data.gd" id="6_loot_script"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_reach"]
+radius = 14.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(12, 8)
+
+[node name="Cache" type="Area2D"]
+script = ExtResource("1_harvest")
+loot_pool = Array[ExtResource("6_loot_script")]([ExtResource("2_scrap"), ExtResource("3_wood"), ExtResource("4_herb")])
+amount_min = 2
+amount_max = 3
+remove_when_depleted = false
+prompt = "Fouiller la caisse"
+hold_time = 1.2
+indicator_offset = Vector2(0, -24)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("5_sprite")
+centered = false
+offset = Vector2(-14, -19)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_reach")
+
+[node name="Blocker" type="StaticBody2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Blocker"]
+shape = SubResource("RectangleShape2D_body")

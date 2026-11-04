@@ -47,23 +47,27 @@ func show_result(result: ExpeditionResult, loot_types: Array[LootData]) -> void:
 	if result.boarded:
 		_title.text = "De retour à bord"
 		_subtitle.text = "Le capitaine attend ton rapport."
-		if result.total_items() == 0:
+		if result.total_items() == 0 and result.recruits.is_empty():
 			_add_line("Tu reviens les mains vides.", Color(0.7, 0.7, 0.7))
 		for loot: LootData in loot_types:
 			var amount: int = result.get_amount(loot.id)
 			if amount > 0:
 				_add_line("%s : %d" % [loot.display_name, amount], loot.color)
+		for member: CrewMember in result.recruits:
+			_add_line("Recrue : " + member.describe(), Color(1.0, 0.82, 0.35))
 		var risk: float = result.infection_risk()
 		_risk.text = "Risque d'infection : %d %%" % roundi(risk * 100.0)
 		_risk.add_theme_color_override(&"font_color", _risk_color(risk))
 		_risk.visible = true
-		_storage.text = "Stock du train : %d ressource(s)" % GameState.storage_total()
+		_storage.text = "Stock du train : %d ressource(s) · Équipage : %d" % [GameState.storage_total(), GameState.crew.size()]
 		_storage.visible = true
 		_button.text = "Continuer le voyage"
 	else:
 		_title.text = "Le train est parti sans toi"
 		_subtitle.text = "Seul dans la zone infectée... La sortie est perdue."
 		_add_line("Butin perdu", RISK_HIGH)
+		if not result.recruits.is_empty():
+			_add_line("%d recrue(s) perdue(s) avec toi" % result.recruits.size(), RISK_HIGH)
 		_risk.visible = false
 		_storage.text = "Tu as tenu %d arrêt(s)." % (GameState.stop_number - 1)
 		_storage.visible = true

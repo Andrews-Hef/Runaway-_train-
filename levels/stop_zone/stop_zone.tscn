@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://ui/hud/hud.tscn" id="7_hud"]
 [ext_resource type="PackedScene" path="res://ui/result/result_screen.tscn" id="8_result"]
 [ext_resource type="PackedScene" path="res://ui/touch/touch_controls.tscn" id="9_touch"]
+[ext_resource type="PackedScene" path="res://ui/encounter/encounter_dialog.tscn" id="10_dialog"]
 
 [node name="StopZone" type="Node2D"]
 script = ExtResource("1_zone")
@@ -33,6 +34,8 @@ position_smoothing_speed = 8.0
 script = ExtResource("6_session")
 
 [node name="Hud" parent="." instance=ExtResource("7_hud")]
+
+[node name="EncounterDialog" parent="." instance=ExtResource("10_dialog")]
 
 [node name="ResultScreen" parent="." instance=ExtResource("8_result")]
 

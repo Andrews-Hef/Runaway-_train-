@@ -15,6 +15,14 @@ const SCENES: Dictionary[StringName, PackedScene] = {
 	&"rock": preload("res://props/rock/rock.tscn"),
 	&"herb": preload("res://props/plant/herb.tscn"),
 	&"infected_herb": preload("res://props/plant/infected_herb.tscn"),
+	&"house": preload("res://props/house_ruin/house_ruin.tscn"),
+	&"cache": preload("res://props/cache/cache.tscn"),
+	&"shelter": preload("res://props/shelter/shelter.tscn"),
+	&"cart": preload("res://props/cart/cart.tscn"),
+	&"refugee": preload("res://entities/npc/refugee.tscn"),
+	&"merchant": preload("res://entities/npc/merchant.tscn"),
+	&"backpack": preload("res://props/backpack/backpack.tscn"),
+	&"locker": preload("res://props/locker/locker.tscn"),
 }
 
 const GROUND_SOURCE_ID: int = 0
@@ -32,9 +40,15 @@ const GROUND_SOURCE_ID: int = 0
 @onready var _session: StopSession = $StopSession
 @onready var _hud: CanvasLayer = $Hud
 @onready var _result_screen: CanvasLayer = $ResultScreen
+@onready var _dialog: CanvasLayer = $EncounterDialog
 
 var layout: ZoneGenerator.Layout
 var zone: ZoneProfile
+
+## Hasard des rencontres (gains aléatoires, prénoms, infection cachée).
+var _encounter_rng: RandomNumberGenerator = RandomNumberGenerator.new()
+## Rencontre en cours (null si aucune fenêtre ouverte).
+var _active_spot: EncounterSpot
 
 
 func _ready() -> void:
@@ -42,6 +56,7 @@ func _ready() -> void:
 	var zone_seed: int = seed_override if seed_override != 0 else GameState.current_seed
 	var player_spawn: Vector2 = ZoneGenerator.TRAIN_POSITION + _train.door.position + Vector2(0.0, 40.0)
 	layout = ZoneGenerator.generate(zone, zone_seed, [player_spawn])
+	_encounter_rng.seed = zone_seed + 1
 	_apply_layout()
 	_build_bounds()
 	_setup_camera()
@@ -67,6 +82,10 @@ func _apply_layout() -> void:
 		_world.add_child(node)
 		if node is Harvestable:
 			_connect_harvestable(node as Harvestable)
+		elif node is EncounterSpot:
+			var spot := node as EncounterSpot
+			spot.encounter = EncounterLibrary.get_encounter(spawn.data)
+			spot.encounter_requested.connect(_open_encounter)
 
 
 ## Quatre murs invisibles autour de la zone.
@@ -109,6 +128,8 @@ func _wire_systems() -> void:
 	_session.ended.connect(_on_session_ended)
 	_hud.call(&"bind", _session, _player, GameState.LOOT_TYPES)
 	_hud.call(&"announce_zone", GameState.stop_number, zone.display_name)
+	_dialog.connect(&"choice_selected", _on_choice_selected)
+	_dialog.connect(&"closed", _on_dialog_closed)
 	_result_screen.connect(&"continue_requested", _continue_journey)
 	_result_screen.connect(&"new_run_requested", _new_run)
 
@@ -120,7 +141,42 @@ func _connect_harvestable(harvestable: Harvestable) -> void:
 	)
 
 
+# --- Rencontres -------------------------------------------------------------------
+
+func _open_encounter(spot: EncounterSpot) -> void:
+	if not _session.is_running() or _dialog.call(&"is_open"):
+		return
+	_active_spot = spot
+	_player.set_controls_enabled(false)
+	_dialog.call(&"open", spot.encounter, _session.result)
+
+
+func _on_choice_selected(choice: EncounterChoice) -> void:
+	if _active_spot == null:
+		return
+	if choice.leave:
+		_dialog.call(&"show_outcome", choice.outcome_text, {} as Dictionary[StringName, int], false)
+		return
+	var outcome := _session.resolve_choice(choice, _encounter_rng, GameState.crew_names())
+	if outcome == null:
+		return
+	_player.exposure.add(outcome.exposure)
+	var repeatable: bool = _active_spot.encounter.repeatable
+	if not repeatable:
+		_active_spot.mark_resolved(outcome.recruit != null)
+	_dialog.call(&"show_outcome", outcome.text, outcome.gained, repeatable)
+
+
+func _on_dialog_closed() -> void:
+	_active_spot = null
+	if _session.is_running():
+		_player.set_controls_enabled(true)
+
+
+# --- Fin de la sortie -------------------------------------------------------------
+
 func _on_session_ended(result: ExpeditionResult) -> void:
+	_dialog.call(&"close")
 	_player.set_controls_enabled(false)
 	GameState.record_expedition(result)
 	if result.boarded:

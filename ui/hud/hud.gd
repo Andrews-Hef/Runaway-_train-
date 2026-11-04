@@ -27,6 +27,7 @@ func bind(session: StopSession, player: Player, loot_types: Array[LootData]) -> 
 	session.time_changed.connect(_on_time_changed)
 	session.whistle_blown.connect(_on_whistle_blown)
 	session.loot_changed.connect(_on_loot_changed)
+	session.recruited.connect(_on_recruited)
 	session.ended.connect(func(_result: ExpeditionResult) -> void: visible = false)
 	player.exposure.changed.connect(_on_exposure_changed)
 	player.exposure.zone_changed.connect(_on_zone_changed)
@@ -86,6 +87,13 @@ func _on_whistle_blown() -> void:
 func _on_loot_changed(result: ExpeditionResult) -> void:
 	for loot: LootData in _loot_types:
 		_loot_labels[loot.id].text = "%s %d" % [loot.display_name, result.get_amount(loot.id)]
+
+
+func _on_recruited(member: CrewMember) -> void:
+	var label := Label.new()
+	label.text = "Recrue : " + member.display_name
+	label.add_theme_color_override(&"font_color", Color(1.0, 0.82, 0.35))
+	_loot_list.add_child(label)
 
 
 func _on_exposure_changed(value: float) -> void:

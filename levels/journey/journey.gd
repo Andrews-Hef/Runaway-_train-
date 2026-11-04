@@ -95,7 +95,7 @@ func _fill_texts() -> void:
 		_subtitle.text = "Le train file vers l'arrêt suivant."
 	_next_stop.text = "Arrêt n°%d : %s" % [GameState.stop_number, zone.display_name]
 	_description.text = zone.description
-	_storage.text = _storage_summary()
+	_storage.text = _storage_summary() + "\n" + _crew_summary()
 
 
 static func _storage_summary() -> String:
@@ -107,6 +107,15 @@ static func _storage_summary() -> String:
 		if amount > 0:
 			parts.append("%s %d" % [loot.display_name, amount])
 	return "Stock du train : " + " · ".join(parts)
+
+
+static func _crew_summary() -> String:
+	if GameState.crew.is_empty():
+		return "Équipage : personne pour l'instant"
+	var names: PackedStringArray = []
+	for member: CrewMember in GameState.crew:
+		names.append(member.describe())
+	return "Équipage : " + ", ".join(names)
 
 
 func _refresh_hint() -> void:

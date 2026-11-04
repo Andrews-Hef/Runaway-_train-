@@ -8,6 +8,8 @@ extends Interactable
 signal harvested(loot: LootData, amount: int, exposure: float)
 
 @export var loot: LootData
+## Si non vide, chaque récolte tire une ressource au hasard ici (caisses, cachettes).
+@export var loot_pool: Array[LootData] = []
 @export var amount_min: int = 1
 @export var amount_max: int = 2
 ## Exposition ajoutée au joueur à la récolte (ressources infectées).
@@ -19,7 +21,7 @@ var depleted: bool = false
 
 
 func can_interact() -> bool:
-	return not depleted and loot != null
+	return not depleted and (loot != null or not loot_pool.is_empty())
 
 
 func interact(actor: Node2D) -> void:
@@ -28,7 +30,10 @@ func interact(actor: Node2D) -> void:
 	depleted = true
 	set_focused(false)
 	set_progress(0.0)
-	harvested.emit(loot, randi_range(amount_min, amount_max), exposure_on_harvest)
+	var found: LootData = loot
+	if not loot_pool.is_empty():
+		found = loot_pool.pick_random()
+	harvested.emit(found, randi_range(amount_min, amount_max), exposure_on_harvest)
 	super(actor)
 	_play_depleted()
 
