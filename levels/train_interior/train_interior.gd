@@ -91,6 +91,7 @@ const STATION_TABS: Dictionary[StringName, int] = {
 @onready var _menu: CanvasLayer = $TrainMenu
 @onready var _destination: Label = %Destination
 @onready var _summary: Label = %Summary
+@onready var _order: Label = %Order
 @onready var _prompt: Label = %Prompt
 @onready var _fade: ColorRect = %Fade
 
@@ -107,7 +108,7 @@ func _ready() -> void:
 	_camera.reset_smoothing()
 	_player.interactor.target_changed.connect(_on_target_changed)
 	_menu.connect(&"closed", _on_menu_closed)
-	for signal_name: StringName in [&"storage_changed", &"crew_changed", &"equipment_changed", &"train_changed"]:
+	for signal_name: StringName in [&"storage_changed", &"crew_changed", &"equipment_changed", &"train_changed", &"career_changed"]:
 		GameState.connect(signal_name, _refresh_texts)
 	GameState.train_changed.connect(_build_train)
 	InputMode.changed.connect(func(_device: int) -> void: _refresh_prompt())
@@ -381,6 +382,11 @@ func next_scene() -> String:
 
 func _refresh_texts() -> void:
 	_destination.text = "En route vers l'arrêt n°%d : %s" % [GameState.stop_number, GameState.stop_name()]
+	var order: CaptainOrders.Order = GameState.current_order
+	_order.text = "%s · %s" % [GameState.grade().display_name,
+		("Ordre du capitaine : " + order.text()) if order else "Pas d'ordre en gare"]
+	if not GameState.pending_promotions.is_empty():
+		_order.text += " · Talent à choisir (onglet Grade)"
 	_summary.text = "Stock : %d/%d · Équipage : %d/%d · Voitures : %d/%d" % [
 		GameState.storage_total(), GameState.storage_capacity(), GameState.crew.size(), GameState.beds(),
 		GameState.train.size(), GameState.max_cars()]

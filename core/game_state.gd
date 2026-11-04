@@ -11,6 +11,8 @@ signal storage_changed
 signal crew_changed
 signal equipment_changed
 signal train_changed
+## Mérite, grade, talents ou ordre du capitaine ont changé.
+signal career_changed
 
 const FIXED_SEED_SETTING: String = "game/debug/fixed_seed"
 ## Le premier arrêt est toujours celui-ci : une zone simple pour commencer.
@@ -23,6 +25,8 @@ const ZONES: Array[ZoneProfile] = [
 	preload("res://data/zones/blight.tres"),
 ]
 
+## Points de vie du joueur sans talent.
+const BASE_HEALTH: int = 10
 ## Une gare refuge tous les N arrêts (arrêts n°5, 10, 15...).
 const REFUGE_EVERY: int = 5
 ## Gares refuges de la ligne, dans l'ordre où le train les rencontre (puis on recommence).
@@ -81,6 +85,12 @@ var loadout: Loadout = Loadout.new()
 ## Composition du train, de la queue à la tête. Les règles sont dans TrainRules.
 var train: Array[WagonData] = []
 var locomotive_level: int = 1
+## Carrière : mérite cumulé, talents choisis, grades obtenus dont le talent reste à choisir.
+var merit: int = 0
+var perks: Array[PerkData] = []
+var pending_promotions: Array[GradeData] = []
+## Ordre du capitaine pour l'arrêt à venir (null en gare refuge).
+var current_order: CaptainOrders.Order
 
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
@@ -109,11 +119,15 @@ func new_run(run_seed: int = 0) -> void:
 		loadout.equip(item)
 	train = START_TRAIN.duplicate()
 	locomotive_level = 1
+	merit = 0
+	perks.clear()
+	pending_promotions.clear()
 	storage_changed.emit()
 	crew_changed.emit()
 	equipment_changed.emit()
 	train_changed.emit()
 	prepare_next_stop()
+	career_changed.emit()
 
 
 ## Tire le prochain arrêt : gare refuge (tous les REFUGE_EVERY arrêts) ou type de
@@ -126,6 +140,13 @@ func prepare_next_stop() -> void:
 		current_refuge = null
 		current_zone = FIRST_ZONE if stop_number == 1 else _pick_zone(current_zone)
 	current_seed = _rng.randi()
+	# L'ordre a son propre hasard, tiré de la graine de l'arrêt : il ne change pas le voyage.
+	current_order = null
+	if current_refuge == null:
+		var order_rng := RandomNumberGenerator.new()
+		order_rng.seed = current_seed + 7
+		current_order = CaptainOrders.pick(current_zone, stop_number, order_rng, bag_capacity())
+	career_changed.emit()
 
 
 func is_refuge_stop() -> bool:
@@ -149,9 +170,13 @@ func stop_description() -> String:
 
 ## Range le butin d'une sortie réussie dans le train et accueille les recrues.
 ## Ce qui ne rentre pas dans le stock reste sur le quai (result.left_behind).
+## Compte aussi le mérite : ennemis éliminés et ordre du capitaine (rempli dans result).
 func record_expedition(result: ExpeditionResult) -> void:
 	if not result.boarded:
 		return
+	result.order_completed = current_order != null and current_order.is_completed(result)
+	result.merit_gained = result.kill_merit() + (current_order.data.merit if result.order_completed else 0)
+	result.promotions = add_merit(result.merit_gained)
 	var free: int = storage_free()
 	result.left_behind.clear()
 	for id: StringName in result.loot:
@@ -203,6 +228,54 @@ func crew_names() -> Array[String]:
 	for member: CrewMember in crew:
 		names.append(member.display_name)
 	return names
+
+
+# --- Carrière ----------------------------------------------------------------------
+
+func grade_index() -> int:
+	return Career.grade_index_for(merit)
+
+
+func grade() -> GradeData:
+	return Career.GRADES[grade_index()]
+
+
+## Ajoute du mérite. Renvoie les grades obtenus (leur talent est à choisir).
+func add_merit(amount: int) -> Array[GradeData]:
+	var gained: Array[GradeData] = []
+	if amount <= 0:
+		return gained
+	var before: int = grade_index()
+	merit += amount
+	for i: int in range(before + 1, grade_index() + 1):
+		gained.append(Career.GRADES[i])
+		pending_promotions.append(Career.GRADES[i])
+	career_changed.emit()
+	return gained
+
+
+## Choisit le talent de la plus ancienne promotion en attente.
+func choose_perk(perk: PerkData) -> bool:
+	if pending_promotions.is_empty() or not perk in pending_promotions[0].perks:
+		return false
+	perks.append(perk)
+	pending_promotions.pop_front()
+	career_changed.emit()
+	return true
+
+
+## Somme d'un bonus de talent (nom de propriété de PerkData : &"max_health", &"armor"...).
+func perk_bonus(stat: StringName) -> float:
+	return Career.bonus(perks, stat)
+
+
+func max_health() -> int:
+	return BASE_HEALTH + int(perk_bonus(&"max_health"))
+
+
+## Taille du sac : celle du sac porté, plus les talents.
+func bag_capacity() -> int:
+	return loadout.capacity() + int(perk_bonus(&"capacity"))
 
 
 # --- Train ------------------------------------------------------------------------
@@ -303,6 +376,11 @@ func to_save() -> Dictionary:
 		"equipped": equipped,
 		"train": train.map(func(wagon: WagonData) -> String: return String(wagon.id)),
 		"locomotive_level": locomotive_level,
+		"merit": merit,
+		"perks": perks.map(func(perk: PerkData) -> String: return String(perk.id)),
+		"pending_promotions": pending_promotions.map(func(g: GradeData) -> String: return String(g.id)),
+		"order": String(current_order.data.id) if current_order else "",
+		"order_amount": current_order.amount if current_order else 0,
 	}
 
 
@@ -345,10 +423,24 @@ func load_save(data: Dictionary) -> bool:
 	if train.is_empty():
 		train = START_TRAIN.duplicate()
 	locomotive_level = clampi(int(data.get("locomotive_level", 1)), 1, TrainRules.max_level())
+	merit = int(data.get("merit", 0))
+	perks.clear()
+	for id: String in data.get("perks", []):
+		var perk: PerkData = Career.find_perk(StringName(id))
+		if perk:
+			perks.append(perk)
+	pending_promotions.clear()
+	for id: String in data.get("pending_promotions", []):
+		var promotion: GradeData = _find_by_id(Career.GRADES, id)
+		if promotion:
+			pending_promotions.append(promotion)
+	var order_data: OrderData = CaptainOrders.find(StringName(data.get("order", "")))
+	current_order = CaptainOrders.Order.new(order_data, int(data.get("order_amount", 0))) if order_data else null
 	storage_changed.emit()
 	crew_changed.emit()
 	equipment_changed.emit()
 	train_changed.emit()
+	career_changed.emit()
 	return true
 
 

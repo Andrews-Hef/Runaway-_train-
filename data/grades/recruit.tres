@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GradeData" format=3]
+
+[ext_resource type="Script" path="res://core/perk_data.gd" id="1_perk"]
+[ext_resource type="Script" path="res://core/grade_data.gd" id="2_grade"]
+
+[resource]
+script = ExtResource("2_grade")
+id = &"recruit"
+display_name = "Recrue"
+description = "Tu viens d'arriver. Tu exécutes les ordres du capitaine."
+merit_needed = 0

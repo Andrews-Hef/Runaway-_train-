@@ -16,6 +16,8 @@ Un **voyage** d'arrêt en arrêt :
 - **Retour à bord** : le butin et les recrues rejoignent le train et on repart vers l'arrêt suivant.
 - **Campagne continue et sauvegarde** : chaque gare refuge est un **point de reprise**. **Train raté** : on reprend à la dernière gare (ou au départ du train), tout ce qui s'est passé depuis est perdu. La session est aussi sauvegardée à chaque trajet (`user://saves/`), pour reprendre après avoir fermé le jeu.
 
+**Grades et ordres du capitaine** : à chaque arrêt (sauf en gare), le capitaine donne un **ordre** adapté à la zone : « Ramène 6 ferrailles », « Élimine 2 pilleurs », « Reviens avec moins de 25 % d'exposition »… Il est suivi en haut de l'écran. Ordre rempli et ennemis éliminés rapportent du **mérite**. Au fil du mérite, tu montes en grade : **Recrue → Soldat → Caporal → Sergent → Lieutenant → Capitaine**. À chaque promotion, tu choisis **un talent parmi deux** (+2 PV, sac +4, dégâts +1, se dégager plus vite, récolte plus rapide, armure…). Onglet **Grade** du menu du train : grade, mérite, ordre en cours, talents.
+
 **Le train** : la locomotive tire un nombre limité de voitures, cabine comprise. On part avec 4 voitures (dortoir, atelier, stock, cabine) et une locomotive qui en tire 5 ; chaque renfort, fait au **dépôt d'une gare refuge**, en ajoute une, **jusqu'à 8**. Les voitures se construisent à bord avec le stock et s'attellent en queue.
 
 | Voiture | Effet | Coût |
@@ -28,7 +30,7 @@ Un **voyage** d'arrêt en arrêt :
 
 | Emplacement | Effet |
 |---|---|
-| Tenue, masque | Protection : l'exposition monte moins vite (plafonnée à 80 %) |
+| Tenue, masque | **Protection** : l'exposition monte moins vite (plafonnée à 80 %). **Armure** : dégâts en moins par coup (il en reste toujours 1) — gilet en kevlar (armure 2, acheté au ferrailleur), plastron en tôle (armure 1, fabriqué). Tenue anti-infection ou anti-coups : à choisir selon la zone. |
 | Sac | Capacité : nombre de ressources rapportées par sortie (« Sac plein ! ») |
 | Outil | Récolte plus rapide d'un type d'objet (pied-de-biche, hachette, sécateur) |
 | Arme | Dégâts, pour le futur combat |
@@ -123,6 +125,8 @@ Le forçage est ignoré dans un build release.
 | `HealthComponent` | `entities/combat/health_component.gd` | Points de vie (joueur et ennemis), invincibilité après un coup |
 | `Enemy` / `EnemyData` / `EnemyCatalog` | `entities/enemy/`, `core/` | Ennemi à états (errance, poursuite, élan, tir, prise, recul) réglé par un `.tres` de `data/enemies/` (faction + profil) |
 | `Projectile` | `entities/enemy/projectile.gd` | Balle ou crachat : file tout droit, arrêté par le décor |
+| `Career` / `GradeData` / `PerkData` | `core/` | Grades (`data/grades/*.tres`, avec leurs deux talents), mérite, bonus des talents |
+| `CaptainOrders` / `OrderData` | `core/` | Ordres du capitaine (`data/orders/*.tres`) : tirage adapté à la zone, suivi, évaluation au retour |
 | `MenuKit` | `ui/common/menu_kit.gd` | Morceaux d'interface partagés par les menus (lignes, coûts, couleurs) |
 
 **Ajouter une rencontre** : créer un `EncounterData` dans `data/encounters/` (titre, texte, choix réglés dans l'inspecteur), puis l'ajouter à `BY_ID` et à un pool dans `core/encounter_library.gd`. Chaque rencontre doit proposer un choix « Partir » (vérifié par les tests).
@@ -134,6 +138,8 @@ Le forçage est ignoré dans un build release.
 **Régler la traction** : `max_cars` et le coût de chaque niveau dans `data/locomotive/level_*.tres`.
 
 **Ajouter un type d'ennemi** : créer un `EnemyData` dans `data/enemies/` (faction, profil, vie, vitesses, portée, dégâts, exposition, vol, butin, premier arrêt), l'ajouter à `ALL` dans `core/enemy_catalog.gd`, puis régler son nombre dans `enemies` des types de zones.
+
+**Ajouter un ordre du capitaine** : créer un `OrderData` dans `data/orders/` (texte avec `{n}`, type, cible, fourchette, mérite, premier arrêt) et l'ajouter à `ORDERS` dans `core/captain_orders.gd`. Il n'est tiré que s'il est faisable dans la zone.
 
 **Ajouter une gare refuge** : créer un `RefugeData` dans `data/refuges/` (nom, texte, échanges, recrues), puis l'ajouter à `REFUGES` dans `core/game_state.gd`. Les gares se succèdent dans l'ordre de la liste, puis on recommence. Le rythme (une gare tous les 5 arrêts) est `REFUGE_EVERY`.
 

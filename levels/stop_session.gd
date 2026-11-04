@@ -115,6 +115,14 @@ func steal(amount: int, rng: RandomNumberGenerator) -> Dictionary[StringName, in
 	return stolen
 
 
+## Un ennemi est éliminé (pour le mérite et les ordres « Élimine N... »).
+func record_kill(enemy: EnemyData) -> void:
+	if state == State.ENDED:
+		return
+	result.record_kill(enemy)
+	loot_changed.emit(result)
+
+
 ## Le joueur tombe au combat : la sortie se termine, il ne remonte pas à bord.
 func fall() -> void:
 	if state != State.ENDED:

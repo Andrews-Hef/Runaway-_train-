@@ -19,6 +19,7 @@ const RISK_HIGH: Color = Color(1.0, 0.45, 0.35)
 @onready var _risk: Label = %Risk
 @onready var _storage: Label = %Storage
 @onready var _button: Button = %Restart
+@onready var _career: VBoxContainer = %Career
 
 var _boarded: bool = false
 
@@ -49,10 +50,14 @@ func show_result(result: ExpeditionResult, loot_types: Array[LootData]) -> void:
 		_subtitle.text = "Le capitaine attend ton rapport."
 		if result.total_items() == 0 and result.recruits.is_empty() and result.items.is_empty():
 			_add_line("Tu reviens les mains vides.", Color(0.7, 0.7, 0.7))
+		# Le butin sur une seule ligne : la place est comptée sur un écran de téléphone.
+		var loot_parts: PackedStringArray = []
 		for loot: LootData in loot_types:
 			var amount: int = result.get_amount(loot.id)
 			if amount > 0:
-				_add_line("%s : %d" % [loot.display_name, amount], loot.color)
+				loot_parts.append("%s %d" % [loot.display_name, amount])
+		if not loot_parts.is_empty():
+			_add_line(" · ".join(loot_parts), Color(0.9, 0.9, 0.92))
 		for member: CrewMember in result.recruits:
 			_add_line("Recrue : " + member.describe(), Color(1.0, 0.82, 0.35))
 		for item: ItemData in result.items:
@@ -70,7 +75,9 @@ func show_result(result: ExpeditionResult, loot_types: Array[LootData]) -> void:
 			GameState.storage_total(), GameState.storage_capacity(), GameState.crew.size(), GameState.beds()]
 		_storage.visible = true
 		_button.text = "Continuer le voyage"
+		_fill_career(result)
 	else:
+		_clear_career()
 		_title.text = "Tu es tombé" if result.fell else "Le train est parti sans toi"
 		_subtitle.text = ("Laissé pour mort dans la zone..." if result.fell else "Seul dans la zone infectée...") \
 			+ " Tout ce qui s'est passé depuis la dernière gare est perdu."
@@ -83,7 +90,80 @@ func show_result(result: ExpeditionResult, loot_types: Array[LootData]) -> void:
 		_button.text = "Reprendre"
 
 	_root.visible = true
-	_button.grab_focus()
+	if not _button.disabled:
+		_button.grab_focus()
+
+
+# --- Rapport au capitaine -----------------------------------------------------------
+
+## L'ordre du capitaine, le mérite gagné, et le choix d'un talent en cas de promotion.
+func _fill_career(result: ExpeditionResult) -> void:
+	_clear_career()
+	var order: CaptainOrders.Order = GameState.current_order
+	if order:
+		if result.order_completed:
+			_career_line("Ordre du capitaine : %s — réussi ! +%d mérite" % [order.text(), order.data.merit], RISK_LOW)
+		else:
+			_career_line("Ordre du capitaine : %s — raté" % order.text(), RISK_HIGH)
+	var kills: int = 0
+	for amount: int in result.kills.values():
+		kills += amount
+	if kills > 0:
+		_career_line("Ennemis éliminés : %d (+%d mérite)" % [kills, result.kill_merit()], Color(0.85, 0.85, 0.88))
+	_fill_promotion()
+
+
+func _fill_promotion() -> void:
+	for child: Node in _career.get_children():
+		if child.has_meta(&"promotion"):
+			_career.remove_child(child)
+			child.queue_free()
+	var next: GradeData = Career.next_grade(GameState.grade_index())
+	var standing: String = "%s · mérite %d" % [GameState.grade().display_name, GameState.merit]
+	if next:
+		standing += "/%d (prochain grade : %s)" % [next.merit_needed, next.display_name]
+	_career_line(standing, Color(1.0, 0.82, 0.35)).set_meta(&"promotion", true)
+	_button.disabled = not GameState.pending_promotions.is_empty()
+	if GameState.pending_promotions.is_empty():
+		return
+	# Promotion : on choisit un talent avant de repartir.
+	var promotion: GradeData = GameState.pending_promotions[0]
+	_career_line("Promu %s ! Choisis un talent :" % promotion.display_name, RISK_LOW).set_meta(&"promotion", true)
+	var row := HBoxContainer.new()
+	row.set_meta(&"promotion", true)
+	row.add_theme_constant_override(&"separation", 4)
+	var first: Button = null
+	for perk: PerkData in promotion.perks:
+		var button := Button.new()
+		button.text = "%s (%s)" % [perk.display_name, perk.describe_effects()]
+		button.tooltip_text = perk.description
+		button.custom_minimum_size = Vector2(0.0, 20.0)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.pressed.connect(func() -> void:
+			GameState.choose_perk(perk)
+			_fill_promotion.call_deferred()
+			_button.grab_focus.call_deferred())
+		row.add_child(button)
+		if first == null:
+			first = button
+	_career.add_child(row)
+	first.grab_focus.call_deferred()
+
+
+func _career_line(text: String, color: Color) -> Label:
+	var label := Label.new()
+	label.text = text
+	label.add_theme_color_override(&"font_color", color)
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_career.add_child(label)
+	return label
+
+
+func _clear_career() -> void:
+	_button.disabled = false
+	for child: Node in _career.get_children():
+		_career.remove_child(child)
+		child.queue_free()
 
 
 func _add_line(text: String, color: Color) -> void:

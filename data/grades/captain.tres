@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="GradeData" format=3]
+
+[ext_resource type="Script" path="res://core/perk_data.gd" id="1_perk"]
+[ext_resource type="Script" path="res://core/grade_data.gd" id="2_grade"]
+
+[sub_resource type="Resource" id="Resource_p0"]
+script = ExtResource("1_perk")
+id = &"commander"
+display_name = "Meneur"
+description = "Tes coups et ta présence galvanisent l'équipage."
+damage = 1
+max_health = 2
+
+[sub_resource type="Resource" id="Resource_p1"]
+script = ExtResource("1_perk")
+id = &"quartermaster"
+display_name = "Intendant"
+description = "Rien ne se perd dans ton sac."
+capacity = 6
+harvest_speed = 0.2
+
+[resource]
+script = ExtResource("2_grade")
+id = &"captain"
+display_name = "Capitaine"
+description = "Le train est à toi."
+merit_needed = 320
+perks = Array[ExtResource("1_perk")]([SubResource("Resource_p0"), SubResource("Resource_p1")])

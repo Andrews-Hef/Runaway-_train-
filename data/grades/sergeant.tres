@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="GradeData" format=3]
+
+[ext_resource type="Script" path="res://core/perk_data.gd" id="1_perk"]
+[ext_resource type="Script" path="res://core/grade_data.gd" id="2_grade"]
+
+[sub_resource type="Resource" id="Resource_p0"]
+script = ExtResource("1_perk")
+id = &"scavenger"
+display_name = "Récupérateur"
+description = "Tu fouilles et récoltes plus vite."
+harvest_speed = 0.3
+
+[sub_resource type="Resource" id="Resource_p1"]
+script = ExtResource("1_perk")
+id = &"filtered"
+display_name = "Poumons de fer"
+description = "Les spores te font moins d'effet."
+protection = 0.1
+
+[resource]
+script = ExtResource("2_grade")
+id = &"sergeant"
+display_name = "Sergent"
+description = "Tu as ton mot à dire sur l'équipage."
+merit_needed = 130
+perks = Array[ExtResource("1_perk")]([SubResource("Resource_p0"), SubResource("Resource_p1")])

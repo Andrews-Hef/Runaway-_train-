@@ -10,6 +10,7 @@ id = &"raider"
 display_name = "Pilleur"
 faction = 1
 min_stop = 2
+merit = 3
 max_health = 4
 wander_speed = 22.0
 chase_speed = 58.0

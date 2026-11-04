@@ -87,6 +87,13 @@ theme_override_colors/font_color = Color(0.78, 0.78, 0.82, 1)
 text = "Stock : 0 · Équipage : 0"
 horizontal_alignment = 1
 
+[node name="Order" type="Label" parent="Ui/Root/Top/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.85, 0.45, 1)
+text = "Recrue · Ordre : Ramène 4 ferrailles"
+horizontal_alignment = 1
+
 [node name="Prompt" type="Label" parent="Ui/Root"]
 unique_name_in_owner = true
 visible = false

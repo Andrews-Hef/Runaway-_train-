@@ -50,6 +50,8 @@ var zone: ZoneProfile
 var _encounter_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 ## Hasard du combat (vols), séparé de celui des rencontres.
 var _combat_rng: RandomNumberGenerator = RandomNumberGenerator.new()
+## Armure du joueur pour cet arrêt (équipement + talents).
+var _armor: int = 0
 ## Rencontre en cours (null si aucune fenêtre ouverte).
 var _active_spot: EncounterSpot
 
@@ -145,14 +147,19 @@ func _setup_camera() -> void:
 func _wire_systems() -> void:
 	var loadout: Loadout = GameState.loadout
 	_player.exposure.ground = _ground
-	_player.exposure.protection = loadout.protection()
+	# Équipement + talents de la carrière.
+	_player.exposure.protection = minf(loadout.protection() + GameState.perk_bonus(&"protection"), Loadout.MAX_PROTECTION)
+	var harvest_bonus: float = 1.0 + GameState.perk_bonus(&"harvest_speed")
 	_player.interactor.speed_for = func(target: Interactable) -> float:
-		return loadout.harvest_speed_for((target as Harvestable).harvest_tag) if target is Harvestable else 1.0
+		return loadout.harvest_speed_for((target as Harvestable).harvest_tag) * harvest_bonus if target is Harvestable else 1.0
 	_player.interactor.block_reason_for = func(target: Interactable) -> String:
 		return "Sac plein !" if target is Harvestable and _session.is_bag_full() else ""
-	_session.capacity = loadout.capacity()
+	_session.capacity = GameState.bag_capacity()
 	_session.free_beds = GameState.free_beds()
-	_player.attack_damage = maxi(loadout.damage(), 1)
+	_player.attack_damage = maxi(loadout.damage(), 1) + int(GameState.perk_bonus(&"damage"))
+	_player.mash_power = 1.0 + GameState.perk_bonus(&"mash_power")
+	_player.health.reset(GameState.max_health())
+	_armor = loadout.armor() + int(GameState.perk_bonus(&"armor"))
 	_player.health.died.connect(_session.fall)
 	_player.freed.connect(func(by: Node2D) -> void:
 		if by is Enemy:
@@ -162,6 +169,7 @@ func _wire_systems() -> void:
 	_session.whistle_blown.connect(_train.whistle)
 	_session.ended.connect(_on_session_ended)
 	_hud.call(&"bind", _session, _player, GameState.LOOT_TYPES)
+	_hud.call(&"show_order", GameState.current_order)
 	_hud.call(&"announce_zone", GameState.stop_number, zone.display_name)
 	_dialog.connect(&"choice_selected", _on_choice_selected)
 	_dialog.connect(&"closed", _on_dialog_closed)
@@ -197,7 +205,8 @@ func _on_enemy_grab(enemy: Enemy) -> void:
 
 
 func _apply_hit(enemy_data: EnemyData, from: Vector2, enemy: Enemy) -> void:
-	if _player.health.take_damage(enemy_data.damage, from) == 0:
+	var damage: int = Loadout.damage_after_armor(enemy_data.damage, _armor)
+	if _player.health.take_damage(damage, from) == 0:
 		return # invincible juste après un coup
 	_player.knock_back(from, enemy_data.hit_knockback)
 	_player.exposure.add(enemy_data.exposure_on_hit)
@@ -215,6 +224,7 @@ func _apply_hit(enemy_data: EnemyData, from: Vector2, enemy: Enemy) -> void:
 func _on_enemy_died(enemy: Enemy) -> void:
 	if _player.pinned_by == enemy:
 		_player.release()
+	_session.record_kill(enemy.data)
 	var dropped: Dictionary[StringName, int] = enemy.carried.duplicate()
 	for id: StringName in enemy.data.drop:
 		dropped[id] = dropped.get(id, 0) + enemy.data.drop[id]

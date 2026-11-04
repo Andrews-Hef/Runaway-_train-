@@ -11,6 +11,7 @@ display_name = "Tireur"
 faction = 1
 archetype = 2
 min_stop = 3
+merit = 4
 max_health = 2
 wander_speed = 16.0
 chase_speed = 50.0

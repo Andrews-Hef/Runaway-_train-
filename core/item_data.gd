@@ -18,6 +18,8 @@ const SLOT_NAMES: Array[String] = ["Tenue", "Masque", "Sac", "Outil", "Arme"]
 @export_group("Effets")
 ## Réduit l'exposition reçue (0 à 1). Tenue et masque s'additionnent.
 @export_range(0.0, 1.0) var protection: float = 0.0
+## Armure : dégâts en moins à chaque coup reçu (il en reste toujours au moins 1).
+@export var armor: int = 0
 ## Nombre de ressources qu'on peut porter pendant une sortie (sacs).
 @export var capacity: int = 0
 ## Types d'objets récoltés plus vite avec cet outil : &"scrap", &"wood", &"plant", &"cache".
@@ -45,6 +47,8 @@ func is_craftable() -> bool:
 ## Résumé des effets, ex. « Protection 15 % » ou « Sac 20 ».
 func describe_effects() -> String:
 	var parts: PackedStringArray = []
+	if armor > 0:
+		parts.append("Armure %d" % armor)
 	if protection > 0.0:
 		parts.append("Protection %d %%" % roundi(protection * 100.0))
 	if capacity > 0:

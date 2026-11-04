@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://core/encounter_choice.gd" id="1_q485j"]
 [ext_resource type="Resource" path="res://data/items/tool_crowbar.tres" id="2_r5133"]
 [ext_resource type="Script" path="res://core/encounter_data.gd" id="2_s66ln"]
+[ext_resource type="Resource" path="res://data/items/outfit_kevlar.tres" id="3_kevlar"]
 
 [sub_resource type="Resource" id="Resource_r5133"]
 script = ExtResource("1_q485j")
@@ -46,6 +47,16 @@ cost = Dictionary[StringName, int]({
 reward_item = ExtResource("2_r5133")
 outcome_text = "« Avec ça, aucune épave ne te résistera. »"
 
+[sub_resource type="Resource" id="Resource_kevlar"]
+script = ExtResource("1_q485j")
+label = "3 pièces mécaniques et 4 tissus contre un gilet en kevlar"
+cost = Dictionary[StringName, int]({
+&"parts": 3,
+&"cloth": 4
+})
+reward_item = ExtResource("3_kevlar")
+outcome_text = "« Pris sur un flic, il y a longtemps. Il m'a sauvé deux fois. »"
+
 [sub_resource type="Resource" id="Resource_bjmyo"]
 script = ExtResource("1_q485j")
 label = "Partir"
@@ -57,5 +68,5 @@ script = ExtResource("2_s66ln")
 id = &"merchant_scrapper"
 title = "Un ferrailleur"
 text = "Un ferrailleur trie des pièces sur sa charrette. « Du bois et des plantes, c'est ce qui manque le plus par ici. »"
-choices = Array[ExtResource("1_q485j")]([SubResource("Resource_r5133"), SubResource("Resource_ky12q"), SubResource("Resource_a1t5l"), SubResource("Resource_aroi3"), SubResource("Resource_bjmyo")])
+choices = Array[ExtResource("1_q485j")]([SubResource("Resource_r5133"), SubResource("Resource_ky12q"), SubResource("Resource_a1t5l"), SubResource("Resource_aroi3"), SubResource("Resource_kevlar"), SubResource("Resource_bjmyo")])
 repeatable = true

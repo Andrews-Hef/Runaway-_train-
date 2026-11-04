@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://core/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"outfit_kevlar"
+display_name = "Gilet en kevlar"
+description = "Un gilet pare-balles d'avant. Il arrête les coups, pas les spores."
+armor = 2

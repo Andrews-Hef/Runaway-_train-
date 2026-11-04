@@ -24,6 +24,8 @@ enum Faction { INFECTED, RAIDER }
 @export var sprite_offset: Vector2 = Vector2(-18, -35)
 ## Premier arrêt où il peut apparaître (les plus dangereux arrivent plus tard).
 @export var min_stop: int = 1
+## Mérite gagné quand on l'élimine.
+@export var merit: int = 2
 
 @export_group("Vie et déplacement")
 @export var max_health: int = 3
@@ -69,3 +71,8 @@ enum Faction { INFECTED, RAIDER }
 @export_group("Butin")
 ## Ressources lâchées à sa mort (en plus de ce qu'il a volé).
 @export var drop: Dictionary[StringName, int] = {}
+
+
+## &"infected" ou &"raider" (pour les ordres « Élimine N pilleurs »).
+func faction_name() -> StringName:
+	return &"infected" if faction == Faction.INFECTED else &"raider"

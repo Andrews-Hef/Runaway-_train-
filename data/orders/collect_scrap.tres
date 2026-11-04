@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="OrderData" format=3]
+
+[ext_resource type="Script" path="res://core/order_data.gd" id="1_order"]
+
+[resource]
+script = ExtResource("1_order")
+id = &"collect_scrap"
+title = "Ramène {n} ferrailles"
+kind = 0
+target = &"scrap"
+amount = Vector2i(4, 8)
+merit = 15
+min_stop = 1

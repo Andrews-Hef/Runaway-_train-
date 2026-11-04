@@ -137,6 +137,23 @@ theme_override_font_sizes/font_size = 16
 text = "Le train siffle ! Remonte à bord !"
 horizontal_alignment = 1
 
+[node name="Order" type="Label" parent="Root"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -120.0
+offset_top = 4.0
+offset_right = 120.0
+offset_bottom = 16.0
+grow_horizontal = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_panel")
+theme_override_colors/font_color = Color(1, 0.82, 0.35, 1)
+text = "Ordre : Ramène 4 ferrailles · 0/4"
+horizontal_alignment = 1
+
 [node name="Toast" type="Label" parent="Root"]
 unique_name_in_owner = true
 visible = false

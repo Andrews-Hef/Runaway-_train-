@@ -20,6 +20,13 @@ var recruits: Array[CrewMember] = []
 var items: Array[ItemData] = []
 ## Ressources laissées sur le quai au retour, faute de place dans le stock du train.
 var left_behind: Dictionary[StringName, int] = {}
+## Ennemis éliminés : id d'EnemyData -> nombre.
+var kills: Dictionary[StringName, int] = {}
+## Rempli au retour (GameState.record_expedition) : l'ordre du capitaine, le mérite gagné,
+## et les grades obtenus.
+var order_completed: bool = false
+var merit_gained: int = 0
+var promotions: Array[GradeData] = []
 
 
 func add_loot(id: StringName, amount: int) -> void:
@@ -40,6 +47,30 @@ func remove_loot(id: StringName, amount: int) -> bool:
 	else:
 		loot[id] = current - amount
 	return true
+
+
+func record_kill(enemy: EnemyData) -> void:
+	kills[enemy.id] = kills.get(enemy.id, 0) + 1
+
+
+## Ennemis éliminés d'une faction (&"infected" ou &"raider").
+func kills_of_faction(faction: StringName) -> int:
+	var total: int = 0
+	for id: StringName in kills:
+		var enemy: EnemyData = EnemyCatalog.get_enemy(id)
+		if enemy and enemy.faction_name() == faction:
+			total += kills[id]
+	return total
+
+
+## Mérite des ennemis éliminés.
+func kill_merit() -> int:
+	var total: int = 0
+	for id: StringName in kills:
+		var enemy: EnemyData = EnemyCatalog.get_enemy(id)
+		if enemy:
+			total += enemy.merit * kills[id]
+	return total
 
 
 func get_amount(id: StringName) -> int:

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="OrderData" format=3]
+
+[ext_resource type="Script" path="res://core/order_data.gd" id="1_order"]
+
+[resource]
+script = ExtResource("1_order")
+id = &"eliminate_raiders"
+title = "Élimine {n} pilleurs"
+kind = 2
+target = &"raider"
+amount = Vector2i(1, 2)
+merit = 25
+min_stop = 3

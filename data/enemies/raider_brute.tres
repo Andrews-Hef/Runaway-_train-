@@ -12,6 +12,7 @@ faction = 1
 archetype = 1
 sprite_offset = Vector2(-26, -47)
 min_stop = 4
+merit = 6
 max_health = 9
 wander_speed = 12.0
 chase_speed = 32.0

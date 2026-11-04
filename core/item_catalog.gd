@@ -5,6 +5,8 @@ const ALL: Array[ItemData] = [
 	preload("res://data/items/outfit_worn.tres"),
 	preload("res://data/items/outfit_padded.tres"),
 	preload("res://data/items/outfit_hazmat.tres"),
+	preload("res://data/items/outfit_plate.tres"),
+	preload("res://data/items/outfit_kevlar.tres"),
 	preload("res://data/items/mask_worn.tres"),
 	preload("res://data/items/mask_filter.tres"),
 	preload("res://data/items/bag_small.tres"),

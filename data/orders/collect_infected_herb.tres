@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="OrderData" format=3]
+
+[ext_resource type="Script" path="res://core/order_data.gd" id="1_order"]
+
+[resource]
+script = ExtResource("1_order")
+id = &"collect_infected_herb"
+title = "Ramène {n} plantes infectées pour le dispensaire"
+kind = 0
+target = &"infected_herb"
+amount = Vector2i(2, 4)
+merit = 20
+min_stop = 2

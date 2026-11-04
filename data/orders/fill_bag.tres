@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="OrderData" format=3]
+
+[ext_resource type="Script" path="res://core/order_data.gd" id="1_order"]
+
+[resource]
+script = ExtResource("1_order")
+id = &"fill_bag"
+title = "Reviens avec au moins {n} ressources"
+kind = 1
+target = &""
+amount = Vector2i(8, 12)
+merit = 15
+min_stop = 2

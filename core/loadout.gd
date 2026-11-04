@@ -32,6 +32,19 @@ func protection() -> float:
 	return minf(total, MAX_PROTECTION)
 
 
+## Dégâts en moins à chaque coup reçu (tenue, masque).
+func armor() -> int:
+	var total: int = 0
+	for item: ItemData in equipped.values():
+		total += item.armor
+	return total
+
+
+## Dégâts vraiment reçus après l'armure : il en reste toujours au moins 1.
+static func damage_after_armor(damage: int, armor_value: int) -> int:
+	return maxi(damage - armor_value, 1) if damage > 0 else 0
+
+
 func capacity() -> int:
 	var bag: ItemData = get_item(ItemData.Slot.BAG)
 	return bag.capacity if bag and bag.capacity > 0 else BASE_CAPACITY
@@ -52,4 +65,4 @@ func damage() -> int:
 
 ## Résumé d'une ligne pour l'interface.
 func describe() -> String:
-	return "Protection %d %% · Sac %d · Dégâts %d" % [roundi(protection() * 100.0), capacity(), damage()]
+	return "Armure %d · Protection %d %% · Sac %d · Dégâts %d" % [armor(), roundi(protection() * 100.0), capacity(), damage()]

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="OrderData" format=3]
+
+[ext_resource type="Script" path="res://core/order_data.gd" id="1_order"]
+
+[resource]
+script = ExtResource("1_order")
+id = &"low_exposure"
+title = "Reviens avec moins de {n} % d'exposition"
+kind = 3
+target = &""
+amount = Vector2i(20, 30)
+merit = 15
+min_stop = 2

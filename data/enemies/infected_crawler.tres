@@ -11,6 +11,7 @@ display_name = "Rampant"
 archetype = 3
 sprite_offset = Vector2(-20, -24)
 min_stop = 2
+merit = 3
 max_health = 2
 wander_speed = 10.0
 chase_speed = 50.0

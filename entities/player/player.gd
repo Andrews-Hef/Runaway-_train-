@@ -37,6 +37,8 @@ const MASH_DECAY: float = 1.0
 
 ## Dégâts d'un coup (ceux de l'arme portée, réglés par la zone).
 var attack_damage: int = 1
+## Force de chaque appui pour se dégager d'un rampant (talent « Insaisissable »).
+var mash_power: float = 1.0
 
 ## Dernière direction regardée.
 var facing: Vector2 = Vector2.DOWN
@@ -128,7 +130,7 @@ func is_pinned() -> bool:
 func mash() -> bool:
 	if not is_pinned():
 		return true
-	_mash += 1.0
+	_mash += mash_power
 	mash_changed.emit(_mash, _mash_needed)
 	if _mash >= _mash_needed:
 		release()

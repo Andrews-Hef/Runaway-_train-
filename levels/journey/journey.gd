@@ -101,6 +101,8 @@ func _fill_texts() -> void:
 		_subtitle.text = "Le train file vers l'arrêt suivant."
 	_next_stop.text = "Arrêt n°%d : %s" % [GameState.stop_number, GameState.stop_name()]
 	_description.text = GameState.stop_description()
+	if GameState.current_order:
+		_description.text += "\nOrdre du capitaine : %s." % GameState.current_order.text()
 	_storage.text = _storage_summary() + "\n" + _crew_summary()
 
 

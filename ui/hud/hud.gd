@@ -10,6 +10,7 @@ const WHISTLE_TIME_COLOR: Color = Color(1.0, 0.45, 0.35)
 @onready var _health_label: Label = %HealthLabel
 @onready var _health_bar: ProgressBar = %HealthBar
 @onready var _toast: Label = %Toast
+@onready var _order: Label = %Order
 @onready var _mash: Control = %Mash
 @onready var _mash_label: Label = %MashLabel
 @onready var _mash_bar: ProgressBar = %MashBar
@@ -29,6 +30,8 @@ var _session: StopSession
 var _bag_label: Label
 var _banner_tween: Tween
 var _toast_tween: Tween
+var _captain_order: CaptainOrders.Order
+var _exposure_value: float = 0.0
 
 
 func bind(session: StopSession, player: Player, loot_types: Array[LootData]) -> void:
@@ -65,6 +68,28 @@ func announce_zone(stop_number: int, zone_name: String) -> void:
 	tween.tween_interval(2.5)
 	tween.tween_property(_zone_title, "modulate:a", 0.0, 0.8)
 	tween.tween_callback(_zone_title.hide)
+
+
+## L'ordre du capitaine pour cet arrêt, suivi en direct (null : pas d'ordre).
+func show_order(order: CaptainOrders.Order) -> void:
+	_captain_order = order
+	_order.visible = order != null
+	_refresh_order()
+
+
+func _refresh_order() -> void:
+	if _captain_order == null or _session == null:
+		return
+	var done: bool
+	var progress: String
+	if _captain_order.data.kind == OrderData.Kind.LOW_EXPOSURE:
+		done = _exposure_value * 100.0 < _captain_order.amount
+		progress = "%d %%" % roundi(_exposure_value * 100.0)
+	else:
+		done = _captain_order.is_completed(_session.result)
+		progress = _captain_order.progress_text(_session.result)
+	_order.text = "Ordre : %s · %s%s" % [_captain_order.text(), progress, " (fait)" if done else ""]
+	_order.add_theme_color_override(&"font_color", Color(0.55, 0.85, 0.45) if done else Color(1.0, 0.82, 0.35))
 
 
 ## Message court au-dessus du jeu (vol, butin récupéré...). `bad` : en rouge.
@@ -124,6 +149,7 @@ func _on_loot_changed(result: ExpeditionResult) -> void:
 		_loot_labels[loot.id].text = "%s %d" % [loot.display_name, amount]
 		# Les matériaux rares n'apparaissent qu'une fois trouvés, pour garder le HUD lisible.
 		_loot_labels[loot.id].get_parent().visible = amount > 0 or not loot.id in [&"cloth", &"parts"]
+	_refresh_order()
 	if _session and _session.capacity >= 0:
 		_bag_label.text = "Sac %d/%d" % [result.total_items(), _session.capacity]
 		_bag_label.add_theme_color_override(&"font_color", Color(1.0, 0.45, 0.35) if _session.is_bag_full() else Color(0.85, 0.85, 0.88))
@@ -155,6 +181,8 @@ func _on_pinned_changed(pinned: bool) -> void:
 
 
 func _on_exposure_changed(value: float) -> void:
+	_exposure_value = value
+	_refresh_order()
 	_exposure_bar.value = value
 	_exposure_label.text = "Exposition %d %%" % roundi(value * 100.0)
 

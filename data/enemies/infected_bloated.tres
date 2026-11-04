@@ -11,6 +11,7 @@ display_name = "Boursouflé"
 archetype = 1
 sprite_offset = Vector2(-26, -47)
 min_stop = 4
+merit = 6
 max_health = 8
 wander_speed = 8.0
 chase_speed = 26.0

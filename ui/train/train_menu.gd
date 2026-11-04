@@ -6,7 +6,7 @@ extends CanvasLayer
 
 signal closed
 
-enum Tab { STOCK, WORKSHOP, EQUIPMENT, CREW, TRAIN }
+enum Tab { STOCK, WORKSHOP, EQUIPMENT, CREW, TRAIN, GRADE }
 
 const GOOD: Color = MenuKit.GOOD
 const BAD: Color = MenuKit.BAD
@@ -20,13 +20,14 @@ const GOLD: Color = MenuKit.GOLD
 @onready var _equipment_list: VBoxContainer = %EquipmentList
 @onready var _crew_list: VBoxContainer = %CrewList
 @onready var _train_list: VBoxContainer = %TrainList
+@onready var _grade_list: VBoxContainer = %GradeList
 @onready var _close: Button = %Close
 
 
 func _ready() -> void:
 	_root.visible = false
 	_close.pressed.connect(close)
-	for signal_name: StringName in [&"storage_changed", &"equipment_changed", &"crew_changed", &"train_changed"]:
+	for signal_name: StringName in [&"storage_changed", &"equipment_changed", &"crew_changed", &"train_changed", &"career_changed"]:
 		# Différé : un bouton ne doit pas être détruit pendant son propre clic.
 		GameState.connect(signal_name, _refresh, CONNECT_DEFERRED)
 	_tabs.set_tab_title(Tab.STOCK, "Stock")
@@ -34,6 +35,7 @@ func _ready() -> void:
 	_tabs.set_tab_title(Tab.EQUIPMENT, "Équipement")
 	_tabs.set_tab_title(Tab.CREW, "Équipage")
 	_tabs.set_tab_title(Tab.TRAIN, "Train")
+	_tabs.set_tab_title(Tab.GRADE, "Grade")
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -66,6 +68,7 @@ func _refresh() -> void:
 	_fill_equipment()
 	_fill_crew()
 	_fill_train()
+	_fill_grade()
 
 
 # --- Stock ------------------------------------------------------------------------
@@ -165,6 +168,33 @@ func _fill_crew() -> void:
 		return
 	for member: CrewMember in GameState.crew:
 		_crew_list.add_child(MenuKit.label("%s — %s" % [member.display_name, member.role_label]))
+
+
+# --- Grade ------------------------------------------------------------------------
+
+func _fill_grade() -> void:
+	MenuKit.clear(_grade_list)
+	var grade: GradeData = GameState.grade()
+	var next: GradeData = Career.next_grade(GameState.grade_index())
+	_grade_list.add_child(MenuKit.label("%s — %s" % [grade.display_name, grade.description], GOLD))
+	if next:
+		_grade_list.add_child(MenuKit.label("Mérite : %d/%d avant %s" % [GameState.merit, next.merit_needed, next.display_name], MUTED))
+	else:
+		_grade_list.add_child(MenuKit.label("Mérite : %d (grade le plus haut)" % GameState.merit, MUTED))
+	var order: CaptainOrders.Order = GameState.current_order
+	_grade_list.add_child(MenuKit.label("Ordre pour l'arrêt n°%d : %s (+%d mérite)" % [GameState.stop_number, order.text(), order.data.merit] if order \
+		else "Pas d'ordre : le prochain arrêt est une gare refuge.", Color.WHITE))
+	# Promotion en attente : on peut choisir son talent ici aussi.
+	if not GameState.pending_promotions.is_empty():
+		var promotion: GradeData = GameState.pending_promotions[0]
+		_grade_list.add_child(MenuKit.label("Promu %s : choisis un talent." % promotion.display_name, GOOD))
+		for perk: PerkData in promotion.perks:
+			_grade_list.add_child(MenuKit.row(perk.display_name, "%s — %s" % [perk.describe_effects(), perk.description], GOOD,
+				"Choisir", false, func() -> void: GameState.choose_perk(perk)))
+	if GameState.perks.is_empty():
+		_grade_list.add_child(MenuKit.label("Pas encore de talent : remplis les ordres du capitaine et élimine des ennemis pour monter en grade.", MUTED))
+	for perk: PerkData in GameState.perks:
+		_grade_list.add_child(MenuKit.label("%s : %s" % [perk.display_name, perk.describe_effects()], Color.WHITE))
 
 
 # --- Train ------------------------------------------------------------------------
