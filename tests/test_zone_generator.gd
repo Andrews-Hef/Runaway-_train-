@@ -100,3 +100,64 @@ func test_les_points_reserves_restent_degages() -> void:
 			var layout := ZoneGenerator.generate(zone, zone_seed, [spawn])
 			for s: ZoneGenerator.Spawn in layout.spawns:
 				assert_true(s.position.distance_to(spawn) >= ZoneGenerator.RESERVED_RADIUS, "%s trop près du joueur" % s.kind)
+
+
+func _poi_profile(chance: float) -> ZoneProfile:
+	var zone: ZoneProfile = ZONES[0].duplicate()
+	zone.village_chance = chance
+	zone.refuge_chance = chance
+	zone.merchant_chance = chance
+	zone.lone_events = Vector2i(1, 1) if chance > 0.0 else Vector2i.ZERO
+	return zone
+
+
+func test_points_d_interet_presents_ou_absents_selon_le_profil() -> void:
+	var none := ZoneGenerator.generate(_poi_profile(0.0), 5)
+	assert_true(none.pois.is_empty(), "aucun point d'intérêt à 0 %")
+	for zone_seed: int in SEEDS:
+		var all := ZoneGenerator.generate(_poi_profile(1.0), zone_seed)
+		for kind: StringName in [&"village", &"refuge", &"merchant", &"lone_event"]:
+			assert_true(all.has_poi(kind), "%s manquant (graine %d)" % [kind, zone_seed])
+
+
+func test_un_village_a_ses_maisons_et_ses_caches() -> void:
+	var layout := ZoneGenerator.generate(_poi_profile(1.0), 42)
+	assert_true(layout.count(&"house") == ZoneGenerator.VILLAGE_HOUSES.size(), "maisons")
+	assert_true(layout.count(&"cache") == ZoneGenerator.VILLAGE_CACHES.size(), "caches")
+	assert_true(layout.count(&"refugee") == 1 and layout.count(&"shelter") == 1, "refuge")
+	assert_true(layout.count(&"merchant") == 1 and layout.count(&"cart") == 1, "marchand")
+
+
+func test_les_pnj_ont_une_rencontre_valide() -> void:
+	for zone_seed: int in SEEDS:
+		var layout := ZoneGenerator.generate(_poi_profile(1.0), zone_seed)
+		for spawn: ZoneGenerator.Spawn in layout.spawns:
+			if spawn.kind in [&"refugee", &"merchant", &"backpack", &"locker"]:
+				assert_true(EncounterLibrary.get_encounter(spawn.data) != null, "%s sans rencontre (%s)" % [spawn.kind, spawn.data])
+
+
+func test_les_points_d_interet_ne_se_chevauchent_pas_et_restent_sains() -> void:
+	for zone: ZoneProfile in ZONES:
+		for zone_seed: int in SEEDS:
+			var profile: ZoneProfile = zone.duplicate()
+			profile.village_chance = 1.0
+			profile.refuge_chance = 1.0
+			profile.merchant_chance = 1.0
+			var layout := ZoneGenerator.generate(profile, zone_seed)
+			var size := Rect2(Vector2.ZERO, Vector2(layout.size_in_pixels()))
+			for i: int in layout.pois.size():
+				assert_true(size.encloses(layout.pois[i].rect), "%s hors de la carte" % layout.pois[i].kind)
+				for j: int in range(i + 1, layout.pois.size()):
+					assert_false(layout.pois[i].rect.intersects(layout.pois[j].rect), "%s et %s se chevauchent" % [layout.pois[i].kind, layout.pois[j].kind])
+			for spawn: ZoneGenerator.Spawn in layout.spawns:
+				if spawn.kind in [&"house", &"cache", &"shelter", &"refugee", &"cart", &"merchant"]:
+					assert_false(layout.is_infected_at(spawn.position), "%s/%s sur le violet" % [zone.id, spawn.kind])
+
+
+func test_les_objets_ordinaires_ne_debordent_pas_sur_les_points_d_interet() -> void:
+	var poi_kinds: Array[StringName] = [&"house", &"cache", &"shelter", &"refugee", &"cart", &"merchant", &"backpack", &"locker"]
+	for zone_seed: int in SEEDS:
+		var layout := ZoneGenerator.generate(_poi_profile(1.0), zone_seed)
+		for spawn: ZoneGenerator.Spawn in layout.spawns:
+			if not spawn.kind in poi_kinds:
+				assert_false(layout.is_in_poi(spawn.position), "%s dans un point d'intérêt" % spawn.kind)

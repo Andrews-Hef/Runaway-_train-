@@ -77,3 +77,12 @@ func test_une_plante_infectee_expose_le_joueur() -> void:
 	var loot: LootData = _harvests[0][0]
 	assert_true(loot.infected, "ressource infectée")
 	assert_true(_harvests[0][2] > 0.0, "exposition à la récolte")
+
+
+func test_une_caisse_donne_une_ressource_de_son_pool() -> void:
+	var cache := _spawn(preload("res://props/cache/cache.tscn"), Vector2.ZERO)
+	_hold(cache.hold_time + 0.1)
+	assert_true(_harvests.size() == 1, "une récolte")
+	var loot: LootData = _harvests[0][0]
+	assert_true(loot in cache.loot_pool, "ressource tirée dans le pool : %s" % loot.id)
+	assert_false(cache.remove_when_depleted, "la caisse reste en place")
