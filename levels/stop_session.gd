@@ -26,6 +26,8 @@ var result: ExpeditionResult = ExpeditionResult.new()
 var exposure_source: ExposureComponent
 ## Nombre de ressources que le joueur peut porter (son sac). < 0 = illimité.
 var capacity: int = -1
+## Couchettes libres dans le train au début de l'arrêt (-1 = illimité) : limite les recrues.
+var free_beds: int = -1
 
 
 func _ready() -> void:
@@ -83,7 +85,7 @@ func is_bag_full() -> bool:
 ## Applique un choix de rencontre (échange, recrutement...) au butin de la sortie.
 ## Renvoie null si la sortie est finie ou si le joueur ne peut pas payer.
 func resolve_choice(choice: EncounterChoice, rng: RandomNumberGenerator, taken_names: Array[String] = []) -> EncounterResolver.Outcome:
-	if state == State.ENDED or not EncounterResolver.can_afford(choice, result, capacity):
+	if state == State.ENDED or not EncounterResolver.can_afford(choice, result, capacity, free_beds):
 		return null
 	var names: Array[String] = taken_names.duplicate()
 	for member: CrewMember in result.recruits:

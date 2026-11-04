@@ -1,0 +1,273 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "interior/plan-table",
+  "type": "prop",
+  "description": "Table du capitaine : plans du train, rouleau de papier, lampe, carte de la ligne au mur.",
+  "frame": {
+    "width": 40,
+    "height": 44
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "top",
+        "material": "floor-wood",
+        "size": [
+          1.6,
+          0.1,
+          0.9
+        ],
+        "position": [
+          0,
+          0.85,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "leg-a",
+        "material": "wood",
+        "size": [
+          0.1,
+          0.8,
+          0.1
+        ],
+        "position": [
+          -0.7,
+          0.4,
+          0.35
+        ]
+      },
+      {
+        "type": "box",
+        "id": "leg-b",
+        "material": "wood",
+        "size": [
+          0.1,
+          0.8,
+          0.1
+        ],
+        "position": [
+          0.7,
+          0.4,
+          0.35
+        ]
+      },
+      {
+        "type": "box",
+        "id": "leg-c",
+        "material": "wood",
+        "size": [
+          0.1,
+          0.8,
+          0.1
+        ],
+        "position": [
+          -0.7,
+          0.4,
+          -0.35
+        ]
+      },
+      {
+        "type": "box",
+        "id": "leg-d",
+        "material": "wood",
+        "size": [
+          0.1,
+          0.8,
+          0.1
+        ],
+        "position": [
+          0.7,
+          0.4,
+          -0.35
+        ]
+      },
+      {
+        "type": "box",
+        "id": "blueprint",
+        "material": "blueprint",
+        "size": [
+          1.1,
+          0.02,
+          0.65
+        ],
+        "position": [
+          -0.1,
+          0.91,
+          0.02
+        ],
+        "rotation": [
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "bp-line-a",
+        "material": "blueprint-ink",
+        "size": [
+          0.9,
+          0.021,
+          0.04
+        ],
+        "position": [
+          -0.1,
+          0.915,
+          -0.12
+        ]
+      },
+      {
+        "type": "box",
+        "id": "bp-line-b",
+        "material": "blueprint-ink",
+        "size": [
+          0.9,
+          0.021,
+          0.04
+        ],
+        "position": [
+          -0.1,
+          0.915,
+          0.12
+        ]
+      },
+      {
+        "type": "box",
+        "id": "bp-wagon-a",
+        "material": "blueprint-ink",
+        "size": [
+          0.04,
+          0.021,
+          0.3
+        ],
+        "position": [
+          -0.45,
+          0.915,
+          0.0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "bp-wagon-b",
+        "material": "blueprint-ink",
+        "size": [
+          0.04,
+          0.021,
+          0.3
+        ],
+        "position": [
+          0.0,
+          0.915,
+          0.0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "roll",
+        "material": "paper",
+        "radius": 0.06,
+        "height": 0.7,
+        "position": [
+          0.55,
+          0.96,
+          -0.1
+        ],
+        "rotation": [
+          90,
+          0,
+          20
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "lamp",
+        "material": "lamp",
+        "radius": 0.07,
+        "height": 0.14,
+        "position": [
+          0.6,
+          0.97,
+          0.25
+        ]
+      },
+      {
+        "type": "box",
+        "id": "map-board",
+        "material": "panel-wood",
+        "size": [
+          1.4,
+          0.8,
+          0.05
+        ],
+        "position": [
+          0,
+          1.6,
+          -0.5
+        ]
+      },
+      {
+        "type": "box",
+        "id": "map",
+        "material": "paper",
+        "size": [
+          1.2,
+          0.6,
+          0.02
+        ],
+        "position": [
+          0,
+          1.6,
+          -0.47
+        ]
+      },
+      {
+        "type": "box",
+        "id": "map-route",
+        "material": "train-red",
+        "size": [
+          1.0,
+          0.04,
+          0.021
+        ],
+        "position": [
+          0,
+          1.62,
+          -0.455
+        ],
+        "rotation": [
+          0,
+          0,
+          -8
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  },
+  "materials": {
+    "blueprint": {
+      "color": "#3a5f8f",
+      "bands": 2
+    },
+    "blueprint-ink": {
+      "color": "#c9dcf0",
+      "bands": 2
+    },
+    "paper": {
+      "color": "#d8ccaa",
+      "bands": 2,
+      "hueShift": 15
+    }
+  }
+}

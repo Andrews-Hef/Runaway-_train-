@@ -7,8 +7,10 @@ extends Node2D
 ## La voie et le sol défilent sous le train : on les voit entre les wagons et
 ## sur les bords de l'écran.
 ##
-## Les wagons sont construits en code à partir de WAGONS : ajouter un wagon,
-## c'est ajouter une entrée.
+## Les voitures sont construites en code à partir de GameState.train (la
+## composition) et de LAYOUTS (les meubles de chaque type de voiture). La cabine
+## est en x = 0 ; les voitures construites s'attellent en queue, vers la gauche,
+## donc celles qui existent déjà ne bougent pas.
 
 const STOP_SCENE: String = "res://levels/stop_zone/stop_zone.tscn"
 const TrainMenu = preload("res://ui/train/train_menu.gd")
@@ -52,25 +54,29 @@ const FURNITURE: Dictionary[StringName, Array] = {
 	&"locker": [preload("res://assets/sprites/interior/locker.png"), Vector2(16, 43), Vector2(14, 6)],
 	&"chest": [preload("res://assets/sprites/interior/chest.png"), Vector2(32, 39), Vector2(52, 8)],
 	&"engine": [preload("res://assets/sprites/interior/engine_panel.png"), Vector2(26, 54), Vector2(40, 12)],
+	&"plan_table": [preload("res://assets/sprites/interior/plan_table.png"), Vector2(20, 38), Vector2(28, 6)],
 }
 ## Les meubles sont contre le mur du fond.
 const FURNITURE_Y: float = -12.0
 
-## Plan du train, de la queue à la tête : nom, meubles [type, x, poste, texte].
-## Poste : onglet du menu à ouvrir, ou &"lever" pour descendre à l'arrêt.
-const WAGONS: Array[Dictionary] = [
-	{"title": "Dortoir", "furniture": [[&"bunk", -34.0, &"crew", "Voir l'équipage"], [&"bunk", 14.0, &"", ""]]},
-	{"title": "Atelier", "furniture": [[&"workbench", -28.0, &"workshop", "Fabriquer"], [&"locker", 30.0, &"equipment", "S'équiper"]]},
-	{"title": "Stock", "furniture": [[&"chest", 0.0, &"stock", "Ouvrir le stock"]]},
-	{"title": "Cabine", "furniture": [[&"engine", 24.0, &"lever", "Descendre au prochain arrêt"]]},
-]
-## Wagon où l'on apparaît (le stock : on range son butin en rentrant).
-const START_WAGON: int = 2
+## Meubles de chaque type de voiture (id de WagonData) : [type, x, poste, texte].
+## Poste : onglet du menu à ouvrir, &"lever" pour descendre à l'arrêt, &"" pour rien.
+const LAYOUTS: Dictionary[StringName, Array] = {
+	&"dormitory": [[&"bunk", -34.0, &"crew", "Voir l'équipage"], [&"bunk", 14.0, &"", ""]],
+	&"workshop": [[&"workbench", -28.0, &"workshop", "Fabriquer"], [&"locker", 30.0, &"equipment", "S'équiper"]],
+	&"stock": [[&"chest", 0.0, &"stock", "Ouvrir le stock"]],
+	&"cabin": [[&"plan_table", -30.0, &"train", "Plans du train"], [&"engine", 24.0, &"lever", "Descendre au prochain arrêt"]],
+}
+## Places des équipiers dans un dortoir (une par couchette).
+const CREW_SPOTS: Array[Vector2] = [Vector2(-10, 6), Vector2(36, 2), Vector2(-48, 10), Vector2(52, 12)]
+## Voiture où l'on apparaît (le stock : on range son butin en rentrant).
+const START_WAGON_ID: StringName = &"stock"
 const STATION_TABS: Dictionary[StringName, int] = {
 	&"stock": TrainMenu.Tab.STOCK,
 	&"workshop": TrainMenu.Tab.WORKSHOP,
 	&"equipment": TrainMenu.Tab.EQUIPMENT,
 	&"crew": TrainMenu.Tab.CREW,
+	&"train": TrainMenu.Tab.TRAIN,
 }
 
 @onready var _ground: Parallax2D = $Ground
@@ -93,16 +99,16 @@ var _leaving: bool = false
 
 func _ready() -> void:
 	_build_ground()
-	_build_wagons()
-	_build_walls()
-	_player.position = Vector2(START_WAGON * WAGON_SPACING - 40.0, 2.0)
+	_build_train()
+	_player.position = Vector2(_wagon_x(_start_wagon()) - 40.0, 2.0)
 	_camera.zoom = Vector2(ZOOM, ZOOM)
 	_camera.position = Vector2(_player.position.x, CAMERA_Y)
 	_camera.reset_smoothing()
 	_player.interactor.target_changed.connect(_on_target_changed)
 	_menu.connect(&"closed", _on_menu_closed)
-	for signal_name: StringName in [&"storage_changed", &"crew_changed", &"equipment_changed"]:
+	for signal_name: StringName in [&"storage_changed", &"crew_changed", &"equipment_changed", &"train_changed"]:
 		GameState.connect(signal_name, _refresh_texts)
+	GameState.train_changed.connect(_build_train)
 	InputMode.changed.connect(func(_device: int) -> void: _refresh_prompt())
 	_refresh_texts()
 	_fade.color.a = 1.0
@@ -112,14 +118,37 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	var half_view: float = get_viewport_rect().size.x / (2.0 * ZOOM)
 	# La caméra s'arrête un peu après les bouts du train : on y voit la voie.
-	var first: float = -WAGON_LENGTH / 2.0 - 32.0 + half_view
-	var last: float = (WAGONS.size() - 1) * WAGON_SPACING + WAGON_LENGTH / 2.0 + 32.0 - half_view
+	var first: float = train_start() - 32.0 + half_view
+	var last: float = train_end() + 32.0 - half_view
 	var target_x: float = clampf(_player.position.x, first, maxf(first, last))
 	_camera.position.x = lerpf(_camera.position.x, target_x, 0.15)
 
 
 func train_length() -> float:
-	return (WAGONS.size() - 1) * WAGON_SPACING + WAGON_LENGTH
+	return GameState.train.size() * WAGON_SPACING - GAP
+
+
+## Bout arrière du train (queue), en x.
+func train_start() -> float:
+	return train_end() - train_length()
+
+
+## Bout avant du train (cabine), en x.
+func train_end() -> float:
+	return WAGON_LENGTH / 2.0
+
+
+## Centre de la voiture n° index (0 = queue). La cabine, en tête, est en x = 0.
+func _wagon_x(index: int) -> float:
+	return (index - (GameState.train.size() - 1)) * WAGON_SPACING
+
+
+## La voiture de départ : le stock le plus proche de la tête.
+func _start_wagon() -> int:
+	for i: int in range(GameState.train.size() - 1, -1, -1):
+		if GameState.train[i].id == START_WAGON_ID:
+			return i
+	return GameState.train.size() - 1
 
 
 # --- Construction -------------------------------------------------------------------
@@ -152,23 +181,39 @@ static func _grass(rng: RandomNumberGenerator) -> int:
 	return ZoneGenerator.Tile.GRASS_B if roll < 0.45 else ZoneGenerator.Tile.GRASS_A
 
 
-func _build_wagons() -> void:
-	for i: int in WAGONS.size():
-		var plan: Dictionary = WAGONS[i]
-		var x: float = i * WAGON_SPACING
+## (Re)construit les voitures, leurs meubles, l'équipage et les murs. Appelé au
+## départ et à chaque changement de composition (voiture construite).
+func _build_train() -> void:
+	for container: Node in [_floors, _walls]:
+		for child: Node in container.get_children():
+			container.remove_child(child)
+			child.queue_free()
+	for child: Node in _world.get_children():
+		if child != _player:
+			_world.remove_child(child)
+			child.queue_free()
+	for i: int in GameState.train.size():
+		var wagon: WagonData = GameState.train[i]
+		var x: float = _wagon_x(i)
 		var shell := Sprite2D.new()
 		shell.texture = SHELL_TEXTURE
 		shell.centered = false
 		shell.offset = -SHELL_PIVOT
 		shell.position = Vector2(x, 0.0)
 		_floors.add_child(shell)
-		_floors.add_child(_sign(plan["title"], x))
-		for entry: Array in plan["furniture"]:
+		_floors.add_child(_sign(wagon.display_name, x))
+		for entry: Array in LAYOUTS.get(wagon.id, []):
 			_add_furniture(x, entry)
-		if plan["title"] == "Dortoir":
-			_add_crew(x)
-		if i < WAGONS.size() - 1:
+		if i < GameState.train.size() - 1:
 			_floors.add_child(_gangway(x + WAGON_LENGTH / 2.0))
+	# L'équipage remplit les dortoirs en partant de la tête : un dortoir construit
+	# en queue reste vide jusqu'aux prochaines recrues.
+	var crew_index: int = 0
+	for i: int in range(GameState.train.size() - 1, -1, -1):
+		var beds: int = GameState.train[i].beds
+		if beds > 0:
+			crew_index = _add_crew(_wagon_x(i), crew_index, mini(beds, CREW_SPOTS.size()))
+	_build_walls()
 
 
 func _add_furniture(wagon_x: float, entry: Array) -> void:
@@ -199,19 +244,20 @@ func _add_furniture(wagon_x: float, entry: Array) -> void:
 	spot.position = position_ + Vector2(0.0, 8.0)
 	spot.add_child(_box_collision(Rect2(-footprint.x / 2.0 - 4.0, -6.0, footprint.x + 8.0, 14.0)))
 	spot.interacted.connect(func(_actor: Node2D) -> void: _use_station(station))
-	_world.add_child(spot)
+	_world.add_child(spot, true) # noms lisibles : Station_stock, Station_stock2...
 
 
-func _add_crew(wagon_x: float) -> void:
-	var spots: Array[Vector2] = [Vector2(-10, 6), Vector2(36, 2), Vector2(-48, 10), Vector2(52, 12), Vector2(10, 14), Vector2(-28, 14)]
-	for i: int in mini(GameState.crew.size(), spots.size()):
+## Place les équipiers n° first à first + places - 1 dans ce dortoir. Renvoie le suivant.
+func _add_crew(wagon_x: float, first: int, places: int) -> int:
+	var last: int = mini(first + places, GameState.crew.size())
+	for i: int in range(first, last):
 		var member: CrewMember = GameState.crew[i]
 		var sprite := AnimatedSprite2D.new()
 		sprite.name = "Crew_" + member.display_name
 		sprite.sprite_frames = CREW_FRAMES
 		sprite.centered = false
 		sprite.offset = Vector2(-18, -36)
-		sprite.position = Vector2(wagon_x, 0.0) + spots[i]
+		sprite.position = Vector2(wagon_x, 0.0) + CREW_SPOTS[i - first]
 		sprite.play(&"idle_s")
 		sprite.frame = i * 3 % 10 # pas tous la même respiration
 		_world.add_child(sprite)
@@ -225,6 +271,7 @@ func _add_crew(wagon_x: float) -> void:
 		label.add_theme_color_override(&"font_outline_color", Color(0.08, 0.06, 0.06))
 		label.add_theme_constant_override(&"outline_size", 3)
 		sprite.add_child(label)
+	return last
 
 
 ## Passerelle entre deux wagons : des planches à claire-voie (on voit la voie
@@ -250,17 +297,17 @@ func _gangway(gap_start: float) -> Node2D:
 
 ## Murs invisibles : on reste sur le plancher et on passe d'un wagon à l'autre par les portes.
 func _build_walls() -> void:
-	var start: float = -WAGON_LENGTH / 2.0 + END_WALL
-	var end: float = -WAGON_LENGTH / 2.0 + train_length() - END_WALL
+	var start: float = train_start() + END_WALL
+	var end: float = train_end() - END_WALL
 	var thickness: float = 8.0
 	_walls.add_child(_box_collision(Rect2(start - thickness, -FLOOR_HALF_DEPTH - thickness, end - start + thickness * 2.0, thickness)))
 	_walls.add_child(_box_collision(Rect2(start - thickness, FLOOR_HALF_DEPTH, end - start + thickness * 2.0, thickness)))
 	_walls.add_child(_box_collision(Rect2(start - thickness, -FLOOR_HALF_DEPTH, thickness, FLOOR_HALF_DEPTH * 2.0)))
 	_walls.add_child(_box_collision(Rect2(end, -FLOOR_HALF_DEPTH, thickness, FLOOR_HALF_DEPTH * 2.0)))
-	for i: int in WAGONS.size() - 1:
-		# Entre le plancher d'un wagon et celui du suivant : parois + passerelle.
-		var a: float = i * WAGON_SPACING + WAGON_LENGTH / 2.0 - END_WALL
-		var b: float = (i + 1) * WAGON_SPACING - WAGON_LENGTH / 2.0 + END_WALL
+	for i: int in GameState.train.size() - 1:
+		# Entre le plancher d'une voiture et celui de la suivante : parois + passerelle.
+		var a: float = _wagon_x(i) + WAGON_LENGTH / 2.0 - END_WALL
+		var b: float = _wagon_x(i + 1) - WAGON_LENGTH / 2.0 + END_WALL
 		for side: float in [-1.0, 1.0]:
 			var polygon := CollisionPolygon2D.new()
 			polygon.polygon = PackedVector2Array([
@@ -326,7 +373,9 @@ func _leave_for_stop() -> void:
 
 func _refresh_texts() -> void:
 	_destination.text = "En route vers l'arrêt n°%d : %s" % [GameState.stop_number, GameState.current_zone.display_name]
-	_summary.text = "Stock : %d ressource(s) · Équipage : %d · %s" % [GameState.storage_total(), GameState.crew.size(), GameState.loadout.describe()]
+	_summary.text = "Stock : %d/%d · Équipage : %d/%d · Voitures : %d/%d" % [
+		GameState.storage_total(), GameState.storage_capacity(), GameState.crew.size(), GameState.beds(),
+		GameState.train.size(), GameState.max_cars()]
 
 
 func _on_target_changed(target: Interactable) -> void:

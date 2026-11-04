@@ -73,6 +73,7 @@ func _apply_layout() -> void:
 			var cell := Vector2i(x, y)
 			_ground.set_cell(cell, GROUND_SOURCE_ID, Vector2i(layout.tile_at(cell), 0))
 
+	_train.set_wagon_count(GameState.train.size() - 1)
 	_train.position = layout.train_position
 	_player.position = layout.train_position + _train.door.position + Vector2(0.0, 40.0)
 
@@ -129,6 +130,7 @@ func _wire_systems() -> void:
 	_player.interactor.block_reason_for = func(target: Interactable) -> String:
 		return "Sac plein !" if target is Harvestable and _session.is_bag_full() else ""
 	_session.capacity = loadout.capacity()
+	_session.free_beds = GameState.free_beds()
 	_session.exposure_source = _player.exposure
 	_train.boarding_requested.connect(_session.board)
 	_session.whistle_blown.connect(_train.whistle)
@@ -155,7 +157,7 @@ func _open_encounter(spot: EncounterSpot) -> void:
 		return
 	_active_spot = spot
 	_player.set_controls_enabled(false)
-	_dialog.call(&"open", spot.encounter, _session.result, _session.capacity)
+	_dialog.call(&"open", spot.encounter, _session.result, _session.capacity, _session.free_beds)
 
 
 func _on_choice_selected(choice: EncounterChoice) -> void:

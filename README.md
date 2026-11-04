@@ -9,10 +9,18 @@ Le design (vision, systèmes, MVP, décisions) est tenu dans le vault Obsidian, 
 Un **voyage** d'arrêt en arrêt :
 
 - **Trajet** : le train roule, le décor défile. On voit le stock du train et le prochain arrêt.
-- **Dans le train** (vue de dessus, toit retiré) : tu marches de wagon en wagon par les passerelles. **Coffre** du stock, **établi** de l'atelier (fabriquer de l'équipement), **casier** (s'équiper), **couchettes** du dortoir (l'équipage), et le **levier** de la cabine pour descendre au prochain arrêt. La voie défile sous le train : on la voit entre les wagons, aux deux bouts et au bas de l'écran.
+- **Dans le train** (vue de dessus, toit retiré) : tu marches de wagon en wagon par les passerelles. **Coffre** du stock, **établi** de l'atelier (fabriquer de l'équipement), **casier** (s'équiper), **couchettes** du dortoir (l'équipage), **table du capitaine** (construire des voitures, renforcer la locomotive) et le **levier** de la cabine pour descendre au prochain arrêt. La voie défile sous le train : on la voit entre les wagons, aux deux bouts et au bas de l'écran.
 - **Arrêt** : chaque zone est **générée au hasard** à partir d'un type de zone (plaine, forêt morte, casse automobile, terres contaminées). Le premier arrêt est toujours une plaine.
 - **Points d'intérêt** dans les zones : **village abandonné** (maisons en ruine, caisses à fouiller), **refuge** avec un survivant à **recruter**, **marchand ambulant** pour **échanger**, et petites rencontres (sac abandonné, armoire à forcer).
 - **Retour à bord** : le butin et les recrues rejoignent le train et on repart vers l'arrêt suivant. **Train raté** : la partie est finie, recrues comprises.
+
+**Le train** : la locomotive tire un nombre limité de voitures, cabine comprise. On part avec 4 voitures (dortoir, atelier, stock, cabine) et une locomotive qui en tire 5 ; chaque renfort en ajoute une, **jusqu'à 8**. Les voitures se construisent avec le stock et s'attellent en queue.
+
+| Voiture | Effet | Coût |
+|---|---|---|
+| Dortoir | +4 couchettes : sans couchette libre, on ne peut plus recruter | 8 bois, 4 tissu, 4 ferraille |
+| Stock | +60 places : ce qui ne rentre pas reste sur le quai au retour | 10 bois, 6 ferraille |
+| Cabine, atelier | Uniques, présentes dès le départ | — |
 
 **Équipement** : tenue, masque, sac, outil, arme. Il se fabrique à l'atelier avec les matériaux du stock, ou se trouve et s'achète en sortie.
 
@@ -78,7 +86,7 @@ Le forçage est ignoré dans un build release.
 | `InfectionGround` | `levels/infection_ground.gd` | Sol qui connaît son niveau d'infection |
 | `Interactable` / `Harvestable` | `entities/interaction/` | Objets à « maintenir Agir », objets récoltables |
 | `Interactor` | `entities/interaction/interactor.gd` | Cible l'objet le plus proche, gère l'appui maintenu |
-| `Train` | `entities/train/` | Sifflet, départ, porte du wagon |
+| `Train` | `entities/train/` | Train vu de dehors : sifflet, départ, porte, nombre de wagons |
 | `InputMode` (autoload) | `core/input_mode.gd` | Dernier périphérique utilisé (clavier, manette, tactile) |
 | `GameState` (autoload) | `core/game_state.gd` | Partie en cours : numéro d'arrêt, prochaine zone et graine, stock du train |
 | `ZoneProfile` | `core/zone_profile.gd` | Type de zone : fourchettes d'objets, d'infection, de durée (`data/zones/*.tres`) |
@@ -90,12 +98,16 @@ Le forçage est ignoré dans un build release.
 | `ItemData` / `ItemCatalog` | `core/` | Un équipement (`data/items/*.tres`) et le catalogue complet |
 | `Loadout` | `core/loadout.gd` | Ce que le joueur porte et les effets cumulés (protection, sac, récolte, dégâts) |
 | `Crafting` | `core/crafting.gd` | Fabrication avec les matériaux du stock (pur, testable) |
+| `WagonData` / `LocomotiveLevel` | `core/` | Un type de voiture (`data/wagons/*.tres`) et un niveau de locomotive (`data/locomotive/*.tres`) |
+| `TrainRules` | `core/train_rules.gd` | Règles du train : traction, construction, couchettes, places (pur, testable) |
 
 **Ajouter une rencontre** : créer un `EncounterData` dans `data/encounters/` (titre, texte, choix réglés dans l'inspecteur), puis l'ajouter à `BY_ID` et à un pool dans `core/encounter_library.gd`. Chaque rencontre doit proposer un choix « Partir » (vérifié par les tests).
 
 **Ajouter un équipement** : créer un `ItemData` dans `data/items/` (emplacement, effets, recette), puis l'ajouter à `ALL` dans `core/item_catalog.gd`. Il apparaît tout seul à l'atelier.
 
-**Ajouter un wagon** : ajouter une entrée à `WAGONS` dans `levels/train_interior/train_interior.gd` (nom et meubles).
+**Ajouter un type de voiture** : créer un `WagonData` dans `data/wagons/` (effets, coût), l'ajouter à `BUILDABLE_WAGONS` dans `core/game_state.gd`, puis placer ses meubles dans `LAYOUTS` (`levels/train_interior/train_interior.gd`), sous le même id.
+
+**Régler la traction** : `max_cars` et le coût de chaque niveau dans `data/locomotive/level_*.tres`.
 
 **Ajouter un type de zone** : dupliquer un fichier de `data/zones/`, régler ses fourchettes dans l'inspecteur, puis l'ajouter à `ZONES` dans `core/game_state.gd`. Aucun autre code à toucher.
 
@@ -103,7 +115,7 @@ Le forçage est ignoré dans un build release.
 art/         définitions des sprites td2d (JSON), voir art/README.md
 assets/      sprites, tuiles, police
 core/        données et services partagés (LootData, ExpeditionResult, InputMode…)
-data/        ressources de jeu (.tres) : matériaux, équipements, types de zones, rencontres
+data/        ressources de jeu (.tres) : matériaux, équipements, types de zones, rencontres, voitures, locomotive
 entities/    joueur, train, PNJ, interactions
 props/       objets du décor : épave, arbre mort, plantes, rocher, maison, abri, charrette, caisse…
 levels/      trajet, intérieur du train, zone d'arrêt, générateur de zones, règles d'un arrêt

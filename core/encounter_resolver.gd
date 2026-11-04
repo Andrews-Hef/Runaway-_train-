@@ -22,17 +22,25 @@ class Outcome:
 
 ## Clé spéciale de missing() : le sac est trop plein pour ce que le choix rapporte.
 const NO_SPACE: StringName = &"_space"
+## Clé spéciale de missing() : plus de couchette libre dans le train pour une recrue.
+const NO_BED: StringName = &"_bed"
 
 
 ## Le joueur porte-t-il de quoi payer ce choix (et la place pour ce qu'il rapporte) ?
-## capacity < 0 : pas de limite de sac.
-static func can_afford(choice: EncounterChoice, result: ExpeditionResult, capacity: int = -1) -> bool:
-	return missing(choice, result, capacity).is_empty()
+## capacity < 0 : pas de limite de sac. free_beds < 0 : pas de limite de couchettes.
+static func can_afford(choice: EncounterChoice, result: ExpeditionResult, capacity: int = -1,
+		free_beds: int = -1) -> bool:
+	return missing(choice, result, capacity, free_beds).is_empty()
 
 
-## Ce qui manque : id -> quantité manquante, ou NO_SPACE -> place manquante dans le sac.
-static func missing(choice: EncounterChoice, result: ExpeditionResult, capacity: int = -1) -> Dictionary[StringName, int]:
+## Ce qui manque : id -> quantité manquante, NO_SPACE -> place manquante dans le sac,
+## NO_BED -> couchettes manquantes. `free_beds` : couchettes libres au début de la sortie
+## (les recrues de la sortie en cours en prennent).
+static func missing(choice: EncounterChoice, result: ExpeditionResult, capacity: int = -1,
+		free_beds: int = -1) -> Dictionary[StringName, int]:
 	var lacking: Dictionary[StringName, int] = {}
+	if free_beds >= 0 and choice.recruits() and result.recruits.size() >= free_beds:
+		lacking[NO_BED] = 1
 	for id: StringName in choice.cost:
 		var short: int = choice.cost[id] - result.get_amount(id)
 		if short > 0:

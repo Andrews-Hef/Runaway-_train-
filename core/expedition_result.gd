@@ -16,6 +16,8 @@ var boarded: bool = false
 var recruits: Array[CrewMember] = []
 ## Équipements trouvés ou achetés pendant la sortie (rangés dans le train au retour).
 var items: Array[ItemData] = []
+## Ressources laissées sur le quai au retour, faute de place dans le stock du train.
+var left_behind: Dictionary[StringName, int] = {}
 
 
 func add_loot(id: StringName, amount: int) -> void:

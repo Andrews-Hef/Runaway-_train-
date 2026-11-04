@@ -4,6 +4,10 @@ extends Node2D
 ##
 ## Il ne décide de rien : la zone (ou le trajet) lui dit quand siffler et partir.
 ## La porte du wagon est un Interactable (« Monter à bord »).
+##
+## Le nombre de wagons suit la composition du train (set_wagon_count) : les wagons
+## en plus s'attellent en queue, vers la gauche. La porte et la locomotive ne
+## bougent pas, donc la zone d'arrêt garde le même plan.
 
 signal boarding_requested
 
@@ -13,21 +17,63 @@ signal boarding_requested
 ## Démarrer directement en marche (scène de trajet).
 @export var start_running: bool = false
 
+## Wagons dessinés dans la scène (WagonRear, WagonFront).
+const BASE_WAGONS: int = 2
+## Écart entre deux wagons, en pixels.
+const WAGON_PITCH: float = 104.0
+const WAGON_FRAMES: SpriteFrames = preload("res://assets/sprites/wagon/wagon.tres")
+
 @onready var door: Interactable = $Door
 @onready var _body: StaticBody2D = $Body
 @onready var _cars: Node2D = $Cars
 @onready var _smoke: CPUParticles2D = $Cars/Locomotive/Smoke
+@onready var _body_shape: CollisionShape2D = $Body/CollisionShape2D
 
 var running: bool = false
 var _shake_tween: Tween
+var _extra_wagons: int = 0
+var _base_body_size: Vector2
+var _base_body_x: float
 
 
 func _ready() -> void:
+	_base_body_size = (_body_shape.shape as RectangleShape2D).size
+	_base_body_x = _body_shape.position.x
 	door.interacted.connect(func(_actor: Node2D) -> void: boarding_requested.emit())
 	if start_running:
 		set_running(true)
 	else:
 		set_running(false)
+
+
+## Nombre de wagons derrière la locomotive (2 sont toujours dessinés).
+func set_wagon_count(count: int) -> void:
+	for child: Node in _cars.get_children():
+		if child.name.begins_with("WagonExtra"):
+			_cars.remove_child(child)
+			child.queue_free()
+	_extra_wagons = maxi(count - BASE_WAGONS, 0)
+	var rear: AnimatedSprite2D = $Cars/WagonRear
+	for i: int in _extra_wagons:
+		var wagon := AnimatedSprite2D.new()
+		wagon.name = "WagonExtra%d" % i
+		wagon.sprite_frames = WAGON_FRAMES
+		wagon.centered = false
+		wagon.offset = rear.offset
+		wagon.position = rear.position - Vector2(WAGON_PITCH * (i + 1), 0.0)
+		_cars.add_child(wagon)
+		_cars.move_child(wagon, 0)
+	# Le corps physique couvre tout le train.
+	var shape := RectangleShape2D.new()
+	shape.size = _base_body_size + Vector2(WAGON_PITCH * _extra_wagons, 0.0)
+	_body_shape.shape = shape
+	_body_shape.position.x = _base_body_x - WAGON_PITCH * _extra_wagons / 2.0
+	set_running(running)
+
+
+## Longueur du train en pixels, de la queue au bout de la locomotive.
+func length() -> float:
+	return _base_body_size.x + WAGON_PITCH * _extra_wagons
 
 
 ## En marche : roues qui tournent et grosse fumée. À l'arrêt : un filet de fumée.
@@ -59,6 +105,7 @@ func depart() -> Tween:
 	_body.process_mode = Node.PROCESS_MODE_DISABLED
 	set_running(true)
 	var tween := create_tween()
-	tween.tween_property(self, "position:x", position.x + departure_distance, departure_duration) \
+	var distance: float = departure_distance + WAGON_PITCH * _extra_wagons
+	tween.tween_property(self, "position:x", position.x + distance, departure_duration) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	return tween

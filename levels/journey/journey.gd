@@ -32,11 +32,14 @@ const SCENERY_PIVOTS: Array[Vector2] = [Vector2(20, 51), Vector2(20, 51), Vector
 @onready var _storage: Label = %Storage
 @onready var _hint: Label = %Hint
 @onready var _fade: ColorRect = %Fade
+@onready var _train: Train = $Train
 
 var _leaving: bool = false
 
 
 func _ready() -> void:
+	# Le train vu de dehors a autant de wagons que le vrai (ils s'attellent vers la gauche).
+	_train.set_wagon_count(GameState.train.size() - 1)
 	_paint_scenery()
 	_fill_texts()
 	InputMode.changed.connect(func(_device: int) -> void: _refresh_hint())

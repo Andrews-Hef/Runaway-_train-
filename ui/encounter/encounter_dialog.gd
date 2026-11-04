@@ -18,6 +18,7 @@ signal closed
 var _encounter: EncounterData
 var _carrying: ExpeditionResult
 var _capacity: int = -1
+var _free_beds: int = -1
 var _return_to_choices: bool = false
 
 
@@ -31,11 +32,13 @@ func is_open() -> bool:
 
 
 ## Affiche une rencontre. `carrying` : ce que le joueur porte, pour griser ce qu'il ne peut
-## pas payer ; `capacity` : taille du sac (-1 = illimité).
-func open(encounter: EncounterData, carrying: ExpeditionResult, capacity: int = -1) -> void:
+## pas payer ; `capacity` : taille du sac (-1 = illimité) ; `free_beds` : couchettes libres
+## dans le train (-1 = illimité).
+func open(encounter: EncounterData, carrying: ExpeditionResult, capacity: int = -1, free_beds: int = -1) -> void:
 	_encounter = encounter
 	_carrying = carrying
 	_capacity = capacity
+	_free_beds = free_beds
 	_title.text = encounter.title
 	_text.text = encounter.text
 	_outcome.visible = false
@@ -76,7 +79,7 @@ func _build_choices() -> void:
 		var button := Button.new()
 		button.custom_minimum_size = Vector2(0.0, 18.0)
 		button.text = choice.label
-		var lacking := EncounterResolver.missing(choice, _carrying, _capacity)
+		var lacking := EncounterResolver.missing(choice, _carrying, _capacity, _free_beds)
 		if not lacking.is_empty():
 			button.disabled = true
 			button.text += "  (il te manque %s)" % _describe(lacking)
@@ -90,12 +93,14 @@ func _build_choices() -> void:
 
 func _on_continue_pressed() -> void:
 	if _return_to_choices:
-		open(_encounter, _carrying, _capacity)
+		open(_encounter, _carrying, _capacity, _free_beds)
 	else:
 		close()
 
 
 static func _describe(amounts: Dictionary[StringName, int]) -> String:
+	if amounts.has(EncounterResolver.NO_BED):
+		return "une couchette libre dans le train"
 	if amounts.has(EncounterResolver.NO_SPACE):
 		return "de la place dans ton sac"
 	var parts: PackedStringArray = []

@@ -31,7 +31,7 @@ func test_tous_les_postes_du_train_existent() -> void:
 	var names: Array[String] = []
 	for station: Node in _find("Station_"):
 		names.append(station.name)
-	for expected: String in ["Station_stock", "Station_workshop", "Station_equipment", "Station_crew", "Station_lever"]:
+	for expected: String in ["Station_stock", "Station_workshop", "Station_equipment", "Station_crew", "Station_train", "Station_lever"]:
 		assert_true(expected in names, "%s manquant" % expected)
 
 
@@ -56,6 +56,33 @@ func test_le_joueur_est_celui_de_dehors() -> void:
 
 func test_le_joueur_apparait_dans_le_train() -> void:
 	var player: Node2D = _interior.get_node("Train/World/Player")
-	var length: float = _interior.call(&"train_length")
-	assert_true(player.position.x > -64.0 and player.position.x < length - 64.0, "dans la longueur du train")
+	var start: float = _interior.call(&"train_start")
+	var end: float = _interior.call(&"train_end")
+	assert_true(player.position.x > start and player.position.x < end, "dans la longueur du train")
 	assert_true(absf(player.position.y) < 18.0, "sur le plancher")
+
+
+func test_une_voiture_construite_apparait_en_queue() -> void:
+	var lever: Node2D = _find("Station_lever")[0]
+	var lever_x: float = lever.position.x
+	for loot: LootData in GameState.LOOT_TYPES:
+		GameState.storage[loot.id] = 50
+	assert_true(GameState.build_wagon(preload("res://data/wagons/stock.tres")), "wagon de stock construit")
+	assert_true(_find("Station_stock").size() == 2, "deux coffres de stock")
+	assert_almost((_find("Station_lever")[0] as Node2D).position.x, lever_x, "la cabine n'a pas bougé")
+	var shells: int = 0
+	for child: Node in _interior.get_node("Train/Floors").get_children():
+		if child is Sprite2D:
+			shells += 1
+	assert_true(shells == 5, "5 voitures dessinées, obtenu %d" % shells)
+
+
+func test_l_equipage_se_repartit_dans_les_dortoirs() -> void:
+	for loot: LootData in GameState.LOOT_TYPES:
+		GameState.storage[loot.id] = 50
+	GameState.build_wagon(preload("res://data/wagons/dormitory.tres"))
+	for i: int in 4:
+		GameState.crew.append(CrewMember.create("Extra%d" % i, &"scout", "repérage", false))
+	GameState.crew_changed.emit()
+	GameState.train_changed.emit()
+	assert_true(_find("Crew_").size() == 6, "les 6 équipiers sont visibles")

@@ -42,6 +42,7 @@ L'intérieur utilise la même caméra trois-quarts et les mêmes 16 px par mètr
 |---|---|---|---|
 | `train/interior-top` | 1 | — | Wagon sans toit, 8,5 m × 5 m : mur du fond avec fenêtres, rebord avant, portes aux deux bouts |
 | `interior/chest`, `interior/workbench`, `interior/locker`, `interior/bunk`, `interior/engine-panel` | 1 | — | Coffre, établi, casier, couchettes, chaudière et levier |
+| `interior/plan-table` | 1 | — | Table du capitaine : plans du train (construire, renforcer la locomotive) |
 
 ## Générer et mettre à jour les sprites
 

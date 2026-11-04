@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="WagonData" format=3]
+
+[ext_resource type="Script" path="res://core/wagon_data.gd" id="1_wagon"]
+
+[resource]
+script = ExtResource("1_wagon")
+id = &"stock"
+display_name = "Stock"
+description = "Un wagon de marchandises : caisses, sacs et coffre."
+storage = 60
+cost = Dictionary[StringName, int]({
+&"wood": 10,
+&"scrap": 6
+})

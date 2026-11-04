@@ -57,11 +57,17 @@ func show_result(result: ExpeditionResult, loot_types: Array[LootData]) -> void:
 			_add_line("Recrue : " + member.describe(), Color(1.0, 0.82, 0.35))
 		for item: ItemData in result.items:
 			_add_line("Trouvé : " + item.display_name, Color(0.55, 0.85, 0.45))
+		var left: int = 0
+		for amount: int in result.left_behind.values():
+			left += amount
+		if left > 0:
+			_add_line("Stock du train plein : %d ressource(s) laissée(s) sur le quai" % left, RISK_HIGH)
 		var risk: float = result.infection_risk()
 		_risk.text = "Risque d'infection : %d %%" % roundi(risk * 100.0)
 		_risk.add_theme_color_override(&"font_color", _risk_color(risk))
 		_risk.visible = true
-		_storage.text = "Stock du train : %d ressource(s) · Équipage : %d" % [GameState.storage_total(), GameState.crew.size()]
+		_storage.text = "Stock du train : %d/%d · Équipage : %d/%d couchettes" % [
+			GameState.storage_total(), GameState.storage_capacity(), GameState.crew.size(), GameState.beds()]
 		_storage.visible = true
 		_button.text = "Continuer le voyage"
 	else:
