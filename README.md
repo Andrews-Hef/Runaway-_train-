@@ -10,7 +10,8 @@ Un **voyage** d'arrêt en arrêt :
 
 - **Trajet** : le train roule, le décor défile. On voit le stock du train et le prochain arrêt. Appuie sur Agir pour descendre.
 - **Arrêt** : chaque zone est **générée au hasard** à partir d'un type de zone (plaine, forêt morte, casse automobile, terres contaminées). Le premier arrêt est toujours une plaine.
-- **Retour à bord** : le butin rejoint le stock du train et on repart vers l'arrêt suivant. **Train raté** : la partie est finie.
+- **Points d'intérêt** dans les zones : **village abandonné** (maisons en ruine, caisses à fouiller), **refuge** avec un survivant à **recruter**, **marchand ambulant** pour **échanger**, et petites rencontres (sac abandonné, armoire à forcer).
+- **Retour à bord** : le butin et les recrues rejoignent le train et on repart vers l'arrêt suivant. **Train raté** : la partie est finie, recrues comprises.
 
 Pendant un arrêt :
 
@@ -72,6 +73,12 @@ Le forçage est ignoré dans un build release.
 | `GameState` (autoload) | `core/game_state.gd` | Partie en cours : numéro d'arrêt, prochaine zone et graine, stock du train |
 | `ZoneProfile` | `core/zone_profile.gd` | Type de zone : fourchettes d'objets, d'infection, de durée (`data/zones/*.tres`) |
 | `ZoneGenerator` | `levels/zone_generator.gd` | Génération pure d'un plan de zone : même profil + même graine = même zone |
+| `EncounterData` / `EncounterChoice` | `core/` | Une rencontre et ses choix (coût, gain, recrutement, exposition), en `.tres` dans `data/encounters/` |
+| `EncounterResolver` | `core/encounter_resolver.gd` | Applique un choix au butin de la sortie (pur, testable) |
+| `EncounterSpot` | `entities/interaction/encounter_spot.gd` | PNJ ou objet qui ouvre une rencontre (maintenir Agir) |
+| `CrewMember` | `core/crew_member.gd` | Une recrue : prénom, rôle, infection cachée |
+
+**Ajouter une rencontre** : créer un `EncounterData` dans `data/encounters/` (titre, texte, choix réglés dans l'inspecteur), puis l'ajouter à `BY_ID` et à un pool dans `core/encounter_library.gd`. Chaque rencontre doit proposer un choix « Partir » (vérifié par les tests).
 
 **Ajouter un type de zone** : dupliquer un fichier de `data/zones/`, régler ses fourchettes dans l'inspecteur, puis l'ajouter à `ZONES` dans `core/game_state.gd`. Aucun autre code à toucher.
 
@@ -79,11 +86,11 @@ Le forçage est ignoré dans un build release.
 art/         définitions des sprites td2d (JSON), voir art/README.md
 assets/      sprites, tuiles, police
 core/        données et services partagés (LootData, ExpeditionResult, InputMode…)
-data/        ressources de jeu (.tres) : types de butin, types de zones
-entities/    joueur, train, interactions
-props/       objets du décor : épave, arbre mort, plantes, rocher
+data/        ressources de jeu (.tres) : types de butin, types de zones, rencontres
+entities/    joueur, train, PNJ, interactions
+props/       objets du décor : épave, arbre mort, plantes, rocher, maison, abri, charrette, caisse…
 levels/      trajet, zone d'arrêt, générateur de zones, règles d'un arrêt
-ui/          HUD, écran de bilan, contrôles tactiles, thème
+ui/          HUD, fenêtre de rencontre, écran de bilan, contrôles tactiles, thème
 tests/       tests automatiques headless
 tools/       scripts hors Godot (ignorés par Godot via .gdignore)
 ```
