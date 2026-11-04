@@ -8,10 +8,20 @@ Le design (vision, systèmes, MVP, décisions) est tenu dans le vault Obsidian, 
 
 Un **voyage** d'arrêt en arrêt :
 
-- **Trajet** : le train roule, le décor défile. On voit le stock du train et le prochain arrêt. Appuie sur Agir pour descendre.
+- **Trajet** : le train roule, le décor défile. On voit le stock du train et le prochain arrêt.
+- **Dans le train** (vue en coupe) : tu marches de wagon en wagon. **Coffre** du stock, **établi** de l'atelier (fabriquer de l'équipement), **casier** (s'équiper), **couchettes** du dortoir (l'équipage), et le **levier** de la cabine pour descendre au prochain arrêt. Le paysage défile aux fenêtres.
 - **Arrêt** : chaque zone est **générée au hasard** à partir d'un type de zone (plaine, forêt morte, casse automobile, terres contaminées). Le premier arrêt est toujours une plaine.
 - **Points d'intérêt** dans les zones : **village abandonné** (maisons en ruine, caisses à fouiller), **refuge** avec un survivant à **recruter**, **marchand ambulant** pour **échanger**, et petites rencontres (sac abandonné, armoire à forcer).
 - **Retour à bord** : le butin et les recrues rejoignent le train et on repart vers l'arrêt suivant. **Train raté** : la partie est finie, recrues comprises.
+
+**Équipement** : tenue, masque, sac, outil, arme. Il se fabrique à l'atelier avec les matériaux du stock, ou se trouve et s'achète en sortie.
+
+| Emplacement | Effet |
+|---|---|
+| Tenue, masque | Protection : l'exposition monte moins vite (plafonnée à 80 %) |
+| Sac | Capacité : nombre de ressources rapportées par sortie (« Sac plein ! ») |
+| Outil | Récolte plus rapide d'un type d'objet (pied-de-biche, hachette, sécateur) |
+| Arme | Dégâts, pour le futur combat |
 
 Pendant un arrêt :
 
@@ -28,7 +38,7 @@ Pendant un arrêt :
 
 ## Lancer le jeu
 
-Ouvrir `project.godot` dans Godot puis **F5**. Le jeu démarre sur le trajet (`levels/journey/`), puis descend au premier arrêt (`levels/stop_zone/`). Pour aller directement à un arrêt, lancer la scène `stop_zone.tscn` avec **F6**.
+Ouvrir `project.godot` dans Godot puis **F5**. Le jeu démarre sur le trajet (`levels/journey/`), entre dans le train (`levels/train_interior/`), puis descend au premier arrêt (`levels/stop_zone/`) par le levier de la cabine. Pour aller directement à une scène, l'ouvrir et la lancer avec **F6**.
 
 ## Contrôles
 
@@ -77,8 +87,15 @@ Le forçage est ignoré dans un build release.
 | `EncounterResolver` | `core/encounter_resolver.gd` | Applique un choix au butin de la sortie (pur, testable) |
 | `EncounterSpot` | `entities/interaction/encounter_spot.gd` | PNJ ou objet qui ouvre une rencontre (maintenir Agir) |
 | `CrewMember` | `core/crew_member.gd` | Une recrue : prénom, rôle, infection cachée |
+| `ItemData` / `ItemCatalog` | `core/` | Un équipement (`data/items/*.tres`) et le catalogue complet |
+| `Loadout` | `core/loadout.gd` | Ce que le joueur porte et les effets cumulés (protection, sac, récolte, dégâts) |
+| `Crafting` | `core/crafting.gd` | Fabrication avec les matériaux du stock (pur, testable) |
 
 **Ajouter une rencontre** : créer un `EncounterData` dans `data/encounters/` (titre, texte, choix réglés dans l'inspecteur), puis l'ajouter à `BY_ID` et à un pool dans `core/encounter_library.gd`. Chaque rencontre doit proposer un choix « Partir » (vérifié par les tests).
+
+**Ajouter un équipement** : créer un `ItemData` dans `data/items/` (emplacement, effets, recette), puis l'ajouter à `ALL` dans `core/item_catalog.gd`. Il apparaît tout seul à l'atelier.
+
+**Ajouter un wagon** : ajouter une entrée à `WAGONS` dans `levels/train_interior/train_interior.gd` (nom et meubles).
 
 **Ajouter un type de zone** : dupliquer un fichier de `data/zones/`, régler ses fourchettes dans l'inspecteur, puis l'ajouter à `ZONES` dans `core/game_state.gd`. Aucun autre code à toucher.
 
@@ -86,11 +103,11 @@ Le forçage est ignoré dans un build release.
 art/         définitions des sprites td2d (JSON), voir art/README.md
 assets/      sprites, tuiles, police
 core/        données et services partagés (LootData, ExpeditionResult, InputMode…)
-data/        ressources de jeu (.tres) : types de butin, types de zones, rencontres
+data/        ressources de jeu (.tres) : matériaux, équipements, types de zones, rencontres
 entities/    joueur, train, PNJ, interactions
 props/       objets du décor : épave, arbre mort, plantes, rocher, maison, abri, charrette, caisse…
-levels/      trajet, zone d'arrêt, générateur de zones, règles d'un arrêt
-ui/          HUD, fenêtre de rencontre, écran de bilan, contrôles tactiles, thème
+levels/      trajet, intérieur du train, zone d'arrêt, générateur de zones, règles d'un arrêt
+ui/          HUD, menu du train, fenêtre de rencontre, écran de bilan, contrôles tactiles, thème
 tests/       tests automatiques headless
 tools/       scripts hors Godot (ignorés par Godot via .gdignore)
 ```
