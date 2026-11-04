@@ -1,0 +1,224 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/house-ruin",
+  "type": "prop",
+  "description": "Maison abandonnee en ruine : murs de platre fissures, toit a moitie effondre, poutre tombee, fenetres sombres, gravats.",
+  "frame": {
+    "width": 88,
+    "height": 80
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "floor",
+        "material": "stone",
+        "size": [
+          4.2,
+          0.15,
+          3.2
+        ],
+        "position": [
+          0,
+          0.075,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wall-back",
+        "material": "plaster",
+        "size": [
+          4.0,
+          2.4,
+          0.2
+        ],
+        "position": [
+          0,
+          1.2,
+          -1.4
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wall-left",
+        "material": "plaster",
+        "size": [
+          0.2,
+          2.4,
+          3.0
+        ],
+        "position": [
+          -1.9,
+          1.2,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wall-right",
+        "material": "plaster",
+        "size": [
+          0.2,
+          1.3,
+          3.0
+        ],
+        "position": [
+          1.9,
+          0.65,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wall-front-a",
+        "material": "plaster",
+        "size": [
+          1.5,
+          2.1,
+          0.2
+        ],
+        "position": [
+          -1.25,
+          1.05,
+          1.4
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wall-front-b",
+        "material": "plaster",
+        "size": [
+          1.1,
+          1.1,
+          0.2
+        ],
+        "position": [
+          1.45,
+          0.55,
+          1.4
+        ]
+      },
+      {
+        "type": "box",
+        "id": "window",
+        "material": "dark",
+        "size": [
+          0.55,
+          0.55,
+          0.05
+        ],
+        "position": [
+          -1.3,
+          1.45,
+          1.52
+        ]
+      },
+      {
+        "type": "box",
+        "id": "doorway",
+        "material": "dark",
+        "size": [
+          0.8,
+          1.7,
+          0.05
+        ],
+        "position": [
+          0.2,
+          0.85,
+          1.42
+        ]
+      },
+      {
+        "type": "box",
+        "id": "roof",
+        "material": "roof-tile",
+        "size": [
+          2.7,
+          0.15,
+          3.4
+        ],
+        "position": [
+          -0.75,
+          2.55,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          10
+        ]
+      },
+      {
+        "type": "box",
+        "id": "beam",
+        "material": "dead-wood",
+        "size": [
+          3.0,
+          0.16,
+          0.16
+        ],
+        "position": [
+          0.7,
+          1.5,
+          0.3
+        ],
+        "rotation": [
+          0,
+          25,
+          -32
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rubble-a",
+        "material": "stone",
+        "size": [
+          0.5,
+          0.3,
+          0.4
+        ],
+        "position": [
+          1.6,
+          0.25,
+          1.75
+        ],
+        "rotation": [
+          0,
+          30,
+          10
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rubble-b",
+        "material": "plaster",
+        "size": [
+          0.4,
+          0.25,
+          0.35
+        ],
+        "position": [
+          2.0,
+          0.2,
+          1.2
+        ],
+        "rotation": [
+          10,
+          -20,
+          0
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

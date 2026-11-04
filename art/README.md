@@ -28,6 +28,10 @@ Le train est **noir** (`iron-black`) avec des liserés rouges (`train-red`) et d
 | `props/herb` | 1 | — | Plante (plantes) |
 | `props/infected-herb` | 1 | — | Plante infectée |
 | `props/rock` | 1 | — | Rocher (obstacle) |
+| `props/house-ruin`, `props/cache` | 1 | — | Village abandonné : maison en ruine, caisse à fouiller |
+| `props/shelter`, `props/cart` | 1 | — | Refuge (abri de fortune), charrette du marchand |
+| `props/backpack`, `props/locker` | 1 | — | Petites rencontres : sac abandonné, armoire métallique |
+| `characters/refugee`, `characters/merchant` | 1 (s) | `idle` | PNJ : réfugié à recruter, marchand |
 | `train/locomotive`, `train/wagon` | 1 | `idle`, `run` (roues qui tournent, léger tangage) | Le train, à quai et en marche |
 
 ## Générer et mettre à jour les sprites

@@ -1,0 +1,81 @@
+[gd_resource type="SpriteFrames" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/merchant/merchant.png" id="1_merchant"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle_s_000"]
+atlas = ExtResource("1_merchant")
+region = Rect2(0, 0, 36, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle_s_001"]
+atlas = ExtResource("1_merchant")
+region = Rect2(36, 0, 36, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle_s_002"]
+atlas = ExtResource("1_merchant")
+region = Rect2(72, 0, 36, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle_s_003"]
+atlas = ExtResource("1_merchant")
+region = Rect2(108, 0, 36, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle_s_004"]
+atlas = ExtResource("1_merchant")
+region = Rect2(144, 0, 36, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle_s_005"]
+atlas = ExtResource("1_merchant")
+region = Rect2(180, 0, 36, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle_s_006"]
+atlas = ExtResource("1_merchant")
+region = Rect2(216, 0, 36, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle_s_007"]
+atlas = ExtResource("1_merchant")
+region = Rect2(252, 0, 36, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle_s_008"]
+atlas = ExtResource("1_merchant")
+region = Rect2(288, 0, 36, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle_s_009"]
+atlas = ExtResource("1_merchant")
+region = Rect2(324, 0, 36, 40)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle_s_000")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle_s_001")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle_s_002")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle_s_003")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle_s_004")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle_s_005")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle_s_006")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle_s_007")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle_s_008")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle_s_009")
+}],
+"loop": true,
+"name": &"idle_s",
+"speed": 10.0
+}]

@@ -1,0 +1,74 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/cache",
+  "type": "prop",
+  "description": "Caisse en bois a fouiller, couvercle entrouvert.",
+  "frame": {
+    "width": 28,
+    "height": 24
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "body",
+        "material": "wood",
+        "size": [
+          0.8,
+          0.55,
+          0.6
+        ],
+        "position": [
+          0,
+          0.275,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "band",
+        "material": "iron",
+        "size": [
+          0.84,
+          0.08,
+          0.64
+        ],
+        "position": [
+          0,
+          0.3,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "lid",
+        "material": "wood",
+        "size": [
+          0.82,
+          0.08,
+          0.62
+        ],
+        "position": [
+          0,
+          0.6,
+          -0.08
+        ],
+        "rotation": [
+          -18,
+          0,
+          0
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

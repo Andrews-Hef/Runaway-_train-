@@ -1,0 +1,234 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/cart",
+  "type": "prop",
+  "description": "Charrette de marchand ambulant : plateau en bois, deux grandes roues, bache rouge, caisses et lanterne allumee.",
+  "frame": {
+    "width": 80,
+    "height": 56
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "bed",
+        "material": "wood",
+        "size": [
+          2.2,
+          0.25,
+          1.2
+        ],
+        "position": [
+          0,
+          0.75,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "side-n",
+        "material": "wood",
+        "size": [
+          2.2,
+          0.4,
+          0.08
+        ],
+        "position": [
+          0,
+          1.05,
+          -0.58
+        ]
+      },
+      {
+        "type": "box",
+        "id": "side-s",
+        "material": "wood",
+        "size": [
+          2.2,
+          0.4,
+          0.08
+        ],
+        "position": [
+          0,
+          1.05,
+          0.58
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "wheel-s",
+        "material": "dark",
+        "radius": 0.45,
+        "height": 0.12,
+        "position": [
+          0.2,
+          0.45,
+          0.68
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "wheel-n",
+        "material": "dark",
+        "radius": 0.45,
+        "height": 0.12,
+        "position": [
+          0.2,
+          0.45,
+          -0.68
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "handle-a",
+        "material": "dead-wood",
+        "size": [
+          1.2,
+          0.08,
+          0.08
+        ],
+        "position": [
+          -1.6,
+          0.7,
+          0.4
+        ],
+        "rotation": [
+          0,
+          0,
+          8
+        ]
+      },
+      {
+        "type": "box",
+        "id": "handle-b",
+        "material": "dead-wood",
+        "size": [
+          1.2,
+          0.08,
+          0.08
+        ],
+        "position": [
+          -1.6,
+          0.7,
+          -0.4
+        ],
+        "rotation": [
+          0,
+          0,
+          8
+        ]
+      },
+      {
+        "type": "box",
+        "id": "canopy",
+        "material": "cloth-red",
+        "size": [
+          2.0,
+          0.06,
+          1.4
+        ],
+        "position": [
+          0.1,
+          1.75,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          6
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "pole-a",
+        "material": "dead-wood",
+        "radius": 0.04,
+        "height": 0.9,
+        "position": [
+          -0.85,
+          1.3,
+          0.55
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "pole-b",
+        "material": "dead-wood",
+        "radius": 0.04,
+        "height": 0.9,
+        "position": [
+          0.95,
+          1.3,
+          0.55
+        ]
+      },
+      {
+        "type": "box",
+        "id": "crate-a",
+        "material": "wood",
+        "size": [
+          0.6,
+          0.45,
+          0.6
+        ],
+        "position": [
+          -0.4,
+          1.1,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "crate-b",
+        "material": "olive",
+        "size": [
+          0.5,
+          0.35,
+          0.5
+        ],
+        "position": [
+          0.5,
+          1.05,
+          0.1
+        ],
+        "rotation": [
+          0,
+          20,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "lantern",
+        "material": "lamp",
+        "radius": 0.08,
+        "height": 0.18,
+        "position": [
+          0.9,
+          1.55,
+          0.55
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

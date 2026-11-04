@@ -1,0 +1,105 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/backpack",
+  "type": "prop",
+  "description": "Sac a dos abandonne au sol, pres de filaments violets de la ruche.",
+  "frame": {
+    "width": 28,
+    "height": 20
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "bag",
+        "material": "olive-dark",
+        "size": [
+          0.45,
+          0.55,
+          0.25
+        ],
+        "position": [
+          0,
+          0.15,
+          0
+        ],
+        "rotation": [
+          75,
+          0,
+          20
+        ]
+      },
+      {
+        "type": "box",
+        "id": "pocket",
+        "material": "pack-brown",
+        "size": [
+          0.3,
+          0.2,
+          0.1
+        ],
+        "position": [
+          0.05,
+          0.28,
+          0.12
+        ],
+        "rotation": [
+          75,
+          0,
+          20
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "strand-a",
+        "material": "infected-glow",
+        "radius": 0.03,
+        "height": 0.7,
+        "position": [
+          0.45,
+          0.03,
+          0.2
+        ],
+        "rotation": [
+          90,
+          40,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "strand-b",
+        "material": "infected-glow",
+        "radius": 0.03,
+        "height": 0.5,
+        "position": [
+          -0.4,
+          0.03,
+          -0.1
+        ],
+        "rotation": [
+          90,
+          -30,
+          0
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  },
+  "materials": {
+    "pack-brown": {
+      "color": "#6b4a2f",
+      "bands": 3,
+      "hueShift": 25
+    }
+  }
+}

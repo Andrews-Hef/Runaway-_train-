@@ -1,0 +1,84 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/locker",
+  "type": "prop",
+  "description": "Armoire metallique cadenassee, a moitie rouillee.",
+  "frame": {
+    "width": 28,
+    "height": 40
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "body",
+        "material": "iron",
+        "size": [
+          0.8,
+          1.8,
+          0.5
+        ],
+        "position": [
+          0,
+          0.9,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rust-patch",
+        "material": "rust",
+        "size": [
+          0.5,
+          0.6,
+          0.02
+        ],
+        "position": [
+          -0.1,
+          0.5,
+          0.26
+        ]
+      },
+      {
+        "type": "box",
+        "id": "seam",
+        "material": "dark",
+        "size": [
+          0.03,
+          1.6,
+          0.02
+        ],
+        "position": [
+          0,
+          0.95,
+          0.26
+        ]
+      },
+      {
+        "type": "box",
+        "id": "padlock",
+        "material": "brass",
+        "size": [
+          0.1,
+          0.12,
+          0.05
+        ],
+        "position": [
+          0.08,
+          1.0,
+          0.28
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

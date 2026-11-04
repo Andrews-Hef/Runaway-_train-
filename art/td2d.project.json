@@ -95,6 +95,46 @@
         "color": "#b8913a",
         "bands": 3,
         "hueShift": 25
+      },
+      "plaster": {
+        "color": "#8a7f6e",
+        "bands": 3,
+        "hueShift": 25
+      },
+      "roof-tile": {
+        "color": "#6e3b2c",
+        "bands": 3,
+        "hueShift": 25
+      },
+      "wood": {
+        "color": "#8a6a42",
+        "bands": 3,
+        "hueShift": 30
+      },
+      "tarp": {
+        "color": "#4b6070",
+        "bands": 3,
+        "hueShift": 20
+      },
+      "cloth-red": {
+        "color": "#9b3d2e",
+        "bands": 3,
+        "hueShift": 25
+      },
+      "coat": {
+        "color": "#6b5a4a",
+        "bands": 3,
+        "hueShift": 25
+      },
+      "hood-grey": {
+        "color": "#55606b",
+        "bands": 3,
+        "hueShift": 20
+      },
+      "poncho": {
+        "color": "#7c5c3a",
+        "bands": 3,
+        "hueShift": 30
       }
     }
   }
