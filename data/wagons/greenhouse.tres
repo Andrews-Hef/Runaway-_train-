@@ -1,6 +1,30 @@
 [gd_resource type="Resource" script_class="WagonData" format=3]
 
 [ext_resource type="Script" path="res://core/wagon_data.gd" id="1_wagon"]
+[ext_resource type="Script" path="res://core/wagon_upgrade.gd" id="2_upgrade"]
+
+[sub_resource type="Resource" id="Resource_up0"]
+script = ExtResource("2_upgrade")
+production = Dictionary[StringName, int]({
+&"herb": 1
+})
+cost = Dictionary[StringName, int]({
+&"wood": 6,
+&"cloth": 2,
+&"herb": 4
+})
+
+[sub_resource type="Resource" id="Resource_up1"]
+script = ExtResource("2_upgrade")
+production = Dictionary[StringName, int]({
+&"herb": 1
+})
+cost = Dictionary[StringName, int]({
+&"metal_plate": 2,
+&"chemicals": 1,
+&"wood": 4
+})
+plan = &"outfitting"
 
 [resource]
 script = ExtResource("1_wagon")
@@ -17,3 +41,4 @@ cost = Dictionary[StringName, int]({
 &"scrap": 4
 })
 plan = &"horticulture"
+upgrades = Array[ExtResource("2_upgrade")]([SubResource("Resource_up0"), SubResource("Resource_up1")])

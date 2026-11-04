@@ -29,6 +29,50 @@ extends Resource
 ## Plan à étudier avant de pouvoir la construire (vide = connue).
 @export var plan: StringName
 
+@export_group("Agrandissement")
+## Niveaux 2, 3... (vide = ne s'agrandit pas).
+@export var upgrades: Array[WagonUpgrade] = []
+
+
+func max_level() -> int:
+	return 1 + upgrades.size()
+
+
+## L'agrandissement qui mène au niveau `level` (2, 3...), ou null.
+func upgrade_to(level: int) -> WagonUpgrade:
+	return upgrades[level - 2] if level >= 2 and level - 2 < upgrades.size() else null
+
+
+func beds_at(level: int) -> int:
+	var total: int = beds
+	for i: int in range(2, level + 1):
+		total += upgrade_to(i).beds if upgrade_to(i) else 0
+	return total
+
+
+func storage_at(level: int) -> int:
+	var total: int = storage
+	for i: int in range(2, level + 1):
+		total += upgrade_to(i).storage if upgrade_to(i) else 0
+	return total
+
+
+func production_at(level: int) -> Dictionary[StringName, int]:
+	var total: Dictionary[StringName, int] = production.duplicate()
+	for i: int in range(2, level + 1):
+		var upgrade: WagonUpgrade = upgrade_to(i)
+		if upgrade:
+			for id: StringName in upgrade.production:
+				total[id] = total.get(id, 0) + upgrade.production[id]
+	return total
+
+
+func cure_bonus_at(level: int) -> float:
+	var total: float = 0.0
+	for i: int in range(2, level + 1):
+		total += upgrade_to(i).cure_bonus if upgrade_to(i) else 0.0
+	return total
+
 
 func is_buildable() -> bool:
 	return not cost.is_empty()

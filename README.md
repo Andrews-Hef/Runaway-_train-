@@ -29,6 +29,7 @@ Un **voyage** d'arrêt en arrêt :
 | Armurerie | Métallurgie | Masse de chantier (dégâts 4) |
 | Pharmacie | Chimie | Antibiotiques et sérum de sève (infirmerie) |
 | Distillerie | Chimie, Métallurgie | Voiture **Laboratoire** (2 plantes infectées → 1 produit chimique à chaque trajet) |
+| Aménagement des voitures | Métallurgie | Niveau 3 du dortoir, du stock, de l'infirmerie et de la serre |
 | Vaccin expérimental | Pharmacie | Vaccin (infirmerie) |
 
 **Extraction** : des outils ouvrent de nouvelles ressources (chalumeau sur les épaves de camion, kit de chimie qui tire des produits chimiques des plantes infectées), l'atelier transforme (ferraille → plaques), et les machines du train (serre, laboratoire) produisent pendant les trajets.
@@ -42,6 +43,16 @@ Un **voyage** d'arrêt en arrêt :
 | Dortoir | +4 couchettes : sans couchette libre, on ne peut plus recruter | 8 bois, 4 tissu, 4 ferraille |
 | Stock | +60 places : ce qui ne rentre pas reste sur le quai au retour | 10 bois, 6 ferraille |
 | Cabine, atelier | Uniques, présentes dès le départ | — |
+
+**Agrandir les voitures** (table du capitaine, onglet Train) : chaque type de voiture monte de niveau, et toutes ses voitures avec (le coût est multiplié par leur nombre). Le niveau 3 demande le plan **Aménagement des voitures**.
+
+| Voiture | Niv. 2 | Niv. 3 (plan Aménagement) |
+|---|---|---|
+| Dortoir | +2 couchettes | +2 couchettes |
+| Stock | +30 places | +30 places |
+| Infirmerie | médicaments +5 points | médicaments +5 points |
+| Serre | +1 plante par trajet | +1 plante par trajet |
+| Laboratoire | +1 produit chimique par trajet | — |
 
 **Équipement** : tenue, masque, sac, outil, arme. Il se fabrique à l'atelier avec les matériaux du stock, ou se trouve et s'achète en sortie.
 

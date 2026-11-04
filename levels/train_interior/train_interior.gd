@@ -66,7 +66,7 @@ const FURNITURE_Y: float = -12.0
 ## Meubles de chaque type de voiture (id de WagonData) : [type, x, poste, texte].
 ## Poste : onglet du menu à ouvrir, &"lever" pour descendre à l'arrêt, &"" pour rien.
 const LAYOUTS: Dictionary[StringName, Array] = {
-	&"dormitory": [[&"bunk", -34.0, &"crew", "Voir l'équipage"], [&"bunk", 14.0, &"", ""]],
+	&"dormitory": [[&"bunk", -40.0, &"crew", "Voir l'équipage"], [&"bunk", -4.0, &"", ""]],
 	&"workshop": [[&"workbench", -36.0, &"workshop", "Fabriquer"], [&"plan_table", 4.0, &"plans", "Étudier les plans"],
 		[&"locker", 40.0, &"equipment", "S'équiper"]],
 	&"infirmary": [[&"med_cabinet", -20.0, &"infirmary", "Infirmerie : se soigner"], [&"bunk", 30.0, &"", ""]],
@@ -75,8 +75,17 @@ const LAYOUTS: Dictionary[StringName, Array] = {
 	&"stock": [[&"chest", 0.0, &"stock", "Ouvrir le stock"]],
 	&"cabin": [[&"plan_table", -30.0, &"train", "Plans du train"], [&"engine", 24.0, &"lever", "Descendre au prochain arrêt"]],
 }
+## Meubles en plus quand une voiture est agrandie : type -> niveau -> meubles.
+const LEVEL_EXTRAS: Dictionary[StringName, Dictionary] = {
+	&"dormitory": {2: [[&"bunk", 32.0, &"", ""]], 3: [[&"locker", 54.0, &"", ""]]},
+	&"stock": {2: [[&"locker", -46.0, &"", ""]], 3: [[&"locker", 46.0, &"", ""]]},
+	&"infirmary": {2: [[&"locker", 54.0, &"", ""]]},
+}
 ## Places des équipiers dans un dortoir (une par couchette).
-const CREW_SPOTS: Array[Vector2] = [Vector2(-10, 6), Vector2(36, 2), Vector2(-48, 10), Vector2(52, 12)]
+const CREW_SPOTS: Array[Vector2] = [
+	Vector2(-22, 6), Vector2(14, 4), Vector2(-50, 10), Vector2(-2, 13),
+	Vector2(48, 6), Vector2(30, 13), Vector2(-36, 14), Vector2(56, 14),
+]
 ## Voiture où l'on apparaît (le stock : on range son butin en rentrant).
 const START_WAGON_ID: StringName = &"stock"
 const STATION_TABS: Dictionary[StringName, int] = {
@@ -212,16 +221,21 @@ func _build_train() -> void:
 		shell.offset = -SHELL_PIVOT
 		shell.position = Vector2(x, 0.0)
 		_floors.add_child(shell)
-		_floors.add_child(_sign(wagon.display_name, x))
+		var level: int = GameState.wagon_level(wagon.id)
+		_floors.add_child(_sign(wagon.display_name + (" niv. %d" % level if level > 1 else ""), x))
 		for entry: Array in LAYOUTS.get(wagon.id, []):
 			_add_furniture(x, entry)
+		var extras: Dictionary = LEVEL_EXTRAS.get(wagon.id, {})
+		for extra_level: int in range(2, level + 1):
+			for entry: Array in extras.get(extra_level, []):
+				_add_furniture(x, entry)
 		if i < GameState.train.size() - 1:
 			_floors.add_child(_gangway(x + WAGON_LENGTH / 2.0))
 	# L'équipage remplit les dortoirs en partant de la tête : un dortoir construit
 	# en queue reste vide jusqu'aux prochaines recrues.
 	var crew_index: int = 0
 	for i: int in range(GameState.train.size() - 1, -1, -1):
-		var beds: int = GameState.train[i].beds
+		var beds: int = GameState.train[i].beds_at(GameState.wagon_level(GameState.train[i].id))
 		if beds > 0:
 			crew_index = _add_crew(_wagon_x(i), crew_index, mini(beds, CREW_SPOTS.size()))
 	_build_walls()

@@ -9,6 +9,7 @@ const ALL: Array[BlueprintData] = [
 	preload("res://data/plans/armory.tres"),
 	preload("res://data/plans/pharmacy.tres"),
 	preload("res://data/plans/distillery.tres"),
+	preload("res://data/plans/outfitting.tres"),
 	preload("res://data/plans/vaccine.tres"),
 ]
 
@@ -50,4 +51,7 @@ static func unlocks(plan_id: StringName) -> PackedStringArray:
 	for wagon: WagonData in GameState.WAGON_TYPES:
 		if wagon.plan == plan_id:
 			names.append("voiture " + wagon.display_name)
+		for level: int in range(2, wagon.max_level() + 1):
+			if wagon.upgrade_to(level).plan == plan_id:
+				names.append("%s niv. %d" % [wagon.display_name, level])
 	return names

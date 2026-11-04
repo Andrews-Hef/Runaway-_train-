@@ -51,18 +51,42 @@ static func count(train: Array[WagonData], wagon: WagonData) -> int:
 	return train.count(wagon)
 
 
-static func beds(train: Array[WagonData]) -> int:
+## `levels` : niveau d'agrandissement par type de voiture (id -> niveau, 1 par défaut).
+static func beds(train: Array[WagonData], levels: Dictionary[StringName, int] = {}) -> int:
 	var total: int = 0
 	for wagon: WagonData in train:
-		total += wagon.beds
+		total += wagon.beds_at(levels.get(wagon.id, 1))
 	return total
 
 
-static func storage_capacity(train: Array[WagonData]) -> int:
+static func storage_capacity(train: Array[WagonData], levels: Dictionary[StringName, int] = {}) -> int:
 	var total: int = 0
 	for wagon: WagonData in train:
-		total += wagon.storage
+		total += wagon.storage_at(levels.get(wagon.id, 1))
 	return total
+
+
+## Coût pour agrandir toutes les voitures d'un type (`count` voitures) au niveau `level`.
+static func upgrade_cost(wagon: WagonData, level: int, count: int) -> Dictionary[StringName, int]:
+	var cost: Dictionary[StringName, int] = {}
+	var upgrade: WagonUpgrade = wagon.upgrade_to(level)
+	if upgrade:
+		for id: StringName in upgrade.cost:
+			cost[id] = upgrade.cost[id] * maxi(count, 1)
+	return cost
+
+
+## Peut-on agrandir ce type de voiture au niveau suivant ? Problem.NONE si oui.
+static func upgrade_wagon_problem(wagon: WagonData, current_level: int, count: int,
+		storage: Dictionary[StringName, int], plan_known: bool) -> Problem:
+	var upgrade: WagonUpgrade = wagon.upgrade_to(current_level + 1)
+	if upgrade == null:
+		return Problem.MAX_LEVEL
+	if not plan_known:
+		return Problem.NEEDS_PLAN
+	if not missing(upgrade_cost(wagon, current_level + 1, count), storage).is_empty():
+		return Problem.MISSING_MATERIALS
+	return Problem.NONE
 
 
 ## Ce qui manque dans le stock pour payer : id -> quantité (vide = payable).

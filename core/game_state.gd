@@ -101,6 +101,8 @@ var loadout: Loadout = Loadout.new()
 ## Composition du train, de la queue à la tête. Les règles sont dans TrainRules.
 var train: Array[WagonData] = []
 var locomotive_level: int = 1
+## Niveau d'agrandissement par type de voiture (id -> niveau ; absent = niveau 1).
+var wagon_levels: Dictionary[StringName, int] = {}
 ## Carrière : mérite cumulé, talents choisis, grades obtenus dont le talent reste à choisir.
 var merit: int = 0
 var perks: Array[PerkData] = []
@@ -142,6 +144,7 @@ func new_run(run_seed: int = 0) -> void:
 		loadout.equip(item)
 	train = START_TRAIN.duplicate()
 	locomotive_level = 1
+	wagon_levels.clear()
 	merit = 0
 	perks.clear()
 	pending_promotions.clear()
@@ -277,10 +280,18 @@ func take_medicine(medicine: LootData) -> bool:
 	if not medicine.is_medicine() or storage_amount(medicine.id) <= 0 or infection <= 0.0:
 		return false
 	TrainRules.pay({medicine.id: 1} as Dictionary[StringName, int], storage)
-	infection = maxf(infection - medicine.cure, 0.0)
+	infection = maxf(infection - medicine_cure(medicine), 0.0)
 	storage_changed.emit()
 	infection_changed.emit()
 	return true
+
+
+## Effet d'un médicament pris à bord : le sien, plus le bonus de l'infirmerie agrandie.
+func medicine_cure(medicine: LootData) -> float:
+	var bonus: float = 0.0
+	for wagon: WagonData in train:
+		bonus = maxf(bonus, wagon.cure_bonus_at(wagon_level(wagon.id)))
+	return medicine.cure + bonus
 
 
 func has_wagon(id: StringName) -> bool:
@@ -364,19 +375,20 @@ func make_recipe(recipe: RecipeData) -> bool:
 func run_machines() -> Dictionary[StringName, int]:
 	var produced: Dictionary[StringName, int] = {}
 	for wagon: WagonData in train:
-		if wagon.production.is_empty() or not TrainRules.missing(wagon.production_cost, storage).is_empty():
+		var production: Dictionary[StringName, int] = wagon.production_at(wagon_level(wagon.id))
+		if production.is_empty() or not TrainRules.missing(wagon.production_cost, storage).is_empty():
 			continue
 		var gained: int = 0
-		for amount: int in wagon.production.values():
+		for amount: int in production.values():
 			gained += amount
 		for amount: int in wagon.production_cost.values():
 			gained -= amount
 		if gained > storage_free():
 			continue
 		TrainRules.pay(wagon.production_cost, storage)
-		for id: StringName in wagon.production:
-			storage[id] = storage.get(id, 0) + wagon.production[id]
-			produced[id] = produced.get(id, 0) + wagon.production[id]
+		for id: StringName in production:
+			storage[id] = storage.get(id, 0) + production[id]
+			produced[id] = produced.get(id, 0) + production[id]
 	if not produced.is_empty():
 		storage_changed.emit()
 	return produced
@@ -439,7 +451,7 @@ func max_cars() -> int:
 
 
 func beds() -> int:
-	return TrainRules.beds(train)
+	return TrainRules.beds(train, wagon_levels)
 
 
 ## Couchettes libres : combien de recrues le train peut encore accueillir.
@@ -448,7 +460,39 @@ func free_beds() -> int:
 
 
 func storage_capacity() -> int:
-	return TrainRules.storage_capacity(train)
+	return TrainRules.storage_capacity(train, wagon_levels)
+
+
+func wagon_level(id: StringName) -> int:
+	return wagon_levels.get(id, 1)
+
+
+## Combien de voitures de ce type dans le train.
+func wagon_count(id: StringName) -> int:
+	var count: int = 0
+	for wagon: WagonData in train:
+		if wagon.id == id:
+			count += 1
+	return count
+
+
+## Pourquoi on ne peut pas agrandir ce type de voiture (Problem.NONE = c'est possible).
+func upgrade_wagon_problem(wagon: WagonData) -> TrainRules.Problem:
+	var next: WagonUpgrade = wagon.upgrade_to(wagon_level(wagon.id) + 1)
+	return TrainRules.upgrade_wagon_problem(wagon, wagon_level(wagon.id), wagon_count(wagon.id), storage,
+		next == null or is_known(next.plan))
+
+
+## Agrandit toutes les voitures d'un type (niveau suivant), avec le stock.
+func upgrade_wagon(wagon: WagonData) -> bool:
+	if wagon_count(wagon.id) == 0 or upgrade_wagon_problem(wagon) != TrainRules.Problem.NONE:
+		return false
+	var level: int = wagon_level(wagon.id) + 1
+	TrainRules.pay(TrainRules.upgrade_cost(wagon, level, wagon_count(wagon.id)), storage)
+	wagon_levels[wagon.id] = level
+	storage_changed.emit()
+	train_changed.emit()
+	return true
 
 
 func storage_free() -> int:
@@ -530,6 +574,7 @@ func to_save() -> Dictionary:
 		"equipped": equipped,
 		"train": train.map(func(wagon: WagonData) -> String: return String(wagon.id)),
 		"locomotive_level": locomotive_level,
+		"wagon_levels": wagon_levels,
 		"merit": merit,
 		"perks": perks.map(func(perk: PerkData) -> String: return String(perk.id)),
 		"pending_promotions": pending_promotions.map(func(g: GradeData) -> String: return String(g.id)),
@@ -580,6 +625,12 @@ func load_save(data: Dictionary) -> bool:
 	if train.is_empty():
 		train = START_TRAIN.duplicate()
 	locomotive_level = clampi(int(data.get("locomotive_level", 1)), 1, TrainRules.max_level())
+	wagon_levels.clear()
+	var saved_levels: Dictionary = data.get("wagon_levels", {})
+	for id: String in saved_levels:
+		var wagon: WagonData = _find_by_id(WAGON_TYPES, id)
+		if wagon:
+			wagon_levels[StringName(id)] = clampi(int(saved_levels[id]), 1, wagon.max_level())
 	merit = int(data.get("merit", 0))
 	perks.clear()
 	for id: String in data.get("perks", []):

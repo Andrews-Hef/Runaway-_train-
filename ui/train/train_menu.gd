@@ -321,3 +321,28 @@ func _fill_train() -> void:
 			"%s (%s)" % [wagon.display_name, wagon.describe_effects()], detail,
 			GOOD if problem == TrainRules.Problem.NONE else BAD,
 			"Construire", problem != TrainRules.Problem.NONE, func() -> void: GameState.build_wagon(wagon)))
+
+	# Agrandir : chaque type de voiture du train, au niveau suivant (toutes ses voitures).
+	var shown: Array[StringName] = []
+	for wagon: WagonData in GameState.train:
+		if wagon.upgrades.is_empty() or wagon.id in shown:
+			continue
+		shown.append(wagon.id)
+		if shown.size() == 1:
+			_train_list.add_child(MenuKit.label("Agrandir", GOLD))
+		var level: int = GameState.wagon_level(wagon.id)
+		var count: int = GameState.wagon_count(wagon.id)
+		var title: String = "%s niv. %d" % [wagon.display_name, level]
+		if count > 1:
+			title += " (×%d voitures)" % count
+		var next_upgrade: WagonUpgrade = wagon.upgrade_to(level + 1)
+		if next_upgrade == null:
+			_train_list.add_child(MenuKit.row(title, "Niveau maximum.", MUTED, "Max", true, Callable()))
+			continue
+		var problem: TrainRules.Problem = GameState.upgrade_wagon_problem(wagon)
+		var detail: String = "Niv. %d : %s · Coût : %s" % [level + 1, next_upgrade.describe(),
+			MenuKit.describe_amounts(TrainRules.upgrade_cost(wagon, level + 1, count))]
+		if problem == TrainRules.Problem.NEEDS_PLAN:
+			detail = "Niv. %d : %s · Plan à étudier : %s" % [level + 1, next_upgrade.describe(), BlueprintCatalog.get_plan(next_upgrade.plan).display_name]
+		_train_list.add_child(MenuKit.row(title, detail, GOOD if problem == TrainRules.Problem.NONE else BAD,
+			"Agrandir", problem != TrainRules.Problem.NONE, func() -> void: GameState.upgrade_wagon(wagon)))
