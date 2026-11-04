@@ -19,3 +19,5 @@ village_chance = 0.2
 refuge_chance = 0.6
 merchant_chance = 0.25
 lone_events = Vector2i(1, 2)
+infected = Vector2i(2, 3)
+raiders = Vector2i(0, 1)

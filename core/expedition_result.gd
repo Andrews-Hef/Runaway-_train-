@@ -12,6 +12,8 @@ var loot: Dictionary[StringName, int] = {}
 var exposure: float = 0.0
 ## Le joueur est-il remonté à bord avant le départ du train ?
 var boarded: bool = false
+## Le joueur est tombé au combat (il n'est donc pas remonté à bord).
+var fell: bool = false
 ## Personnes recrutées pendant la sortie : elles montent à bord avec le joueur.
 var recruits: Array[CrewMember] = []
 ## Équipements trouvés ou achetés pendant la sortie (rangés dans le train au retour).

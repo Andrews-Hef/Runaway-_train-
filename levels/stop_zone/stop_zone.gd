@@ -25,6 +25,12 @@ const SCENES: Dictionary[StringName, PackedScene] = {
 	&"locker": preload("res://props/locker/locker.tscn"),
 }
 
+const ENEMY_SCENE: PackedScene = preload("res://entities/enemy/enemy.tscn")
+## Types d'ennemis par type d'apparition du générateur.
+const ENEMIES: Dictionary[StringName, EnemyData] = {
+	&"infected": preload("res://data/enemies/infected.tres"),
+	&"raider": preload("res://data/enemies/raider.tres"),
+}
 const GROUND_SOURCE_ID: int = 0
 
 ## Pour tester un type de zone précis depuis l'éditeur (vide = celui de GameState).
@@ -47,6 +53,8 @@ var zone: ZoneProfile
 
 ## Hasard des rencontres (gains aléatoires, prénoms, infection cachée).
 var _encounter_rng: RandomNumberGenerator = RandomNumberGenerator.new()
+## Hasard du combat (vols), séparé de celui des rencontres.
+var _combat_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 ## Rencontre en cours (null si aucune fenêtre ouverte).
 var _active_spot: EncounterSpot
 
@@ -57,6 +65,7 @@ func _ready() -> void:
 	var player_spawn: Vector2 = ZoneGenerator.TRAIN_POSITION + _train.door.position + Vector2(0.0, 40.0)
 	layout = ZoneGenerator.generate(zone, zone_seed, [player_spawn])
 	_encounter_rng.seed = zone_seed + 1
+	_combat_rng.seed = zone_seed + 2
 	_apply_layout()
 	_build_bounds()
 	_setup_camera()
@@ -78,6 +87,9 @@ func _apply_layout() -> void:
 	_player.position = layout.train_position + _train.door.position + Vector2(0.0, 40.0)
 
 	for spawn: ZoneGenerator.Spawn in layout.spawns:
+		if ENEMIES.has(spawn.kind):
+			_spawn_enemy(ENEMIES[spawn.kind], spawn.position)
+			continue
 		var node := SCENES[spawn.kind].instantiate() as Node2D
 		node.position = spawn.position
 		_world.add_child(node)
@@ -87,6 +99,17 @@ func _apply_layout() -> void:
 			var spot := node as EncounterSpot
 			spot.encounter = EncounterLibrary.get_encounter(spawn.data)
 			spot.encounter_requested.connect(_open_encounter)
+
+
+func _spawn_enemy(enemy_data: EnemyData, at: Vector2) -> void:
+	var enemy := ENEMY_SCENE.instantiate() as Enemy
+	enemy.data = enemy_data
+	enemy.position = at
+	enemy.name = String(enemy_data.id).capitalize()
+	_world.add_child(enemy, true)
+	enemy.target = _player
+	enemy.attack_landed.connect(_on_enemy_attack)
+	enemy.died.connect(_on_enemy_died)
 
 
 ## Quatre murs invisibles autour de la zone.
@@ -131,6 +154,8 @@ func _wire_systems() -> void:
 		return "Sac plein !" if target is Harvestable and _session.is_bag_full() else ""
 	_session.capacity = loadout.capacity()
 	_session.free_beds = GameState.free_beds()
+	_player.attack_damage = maxi(loadout.damage(), 1)
+	_player.health.died.connect(_session.fall)
 	_session.exposure_source = _player.exposure
 	_train.boarding_requested.connect(_session.board)
 	_session.whistle_blown.connect(_train.whistle)
@@ -141,6 +166,56 @@ func _wire_systems() -> void:
 	_dialog.connect(&"closed", _on_dialog_closed)
 	_result_screen.connect(&"continue_requested", _continue_journey)
 	_result_screen.connect(&"retry_requested", _retry)
+
+
+# --- Combat ------------------------------------------------------------------------
+
+## Un ennemi a porté son coup : dégâts, puis exposition (infecté) ou vol (pilleur).
+func _on_enemy_attack(enemy: Enemy) -> void:
+	if not _session.is_running():
+		return
+	var enemy_data: EnemyData = enemy.data
+	if _player.health.take_damage(enemy_data.damage, enemy.global_position) == 0:
+		return # invincible juste après un coup
+	_player.exposure.add(enemy_data.exposure_on_hit)
+	if enemy_data.steal_amount > 0:
+		var stolen := _session.steal(enemy_data.steal_amount, _combat_rng)
+		for id: StringName in stolen:
+			enemy.carried[id] = enemy.carried.get(id, 0) + stolen[id]
+		if not stolen.is_empty():
+			_hud.call(&"toast", "%s t'a volé %s !" % [enemy_data.display_name, MenuKit.describe_amounts(stolen)], true)
+
+
+## Un ennemi est tombé : il lâche ce qu'il a volé et son butin (dans la limite du sac).
+func _on_enemy_died(enemy: Enemy) -> void:
+	var dropped: Dictionary[StringName, int] = enemy.carried.duplicate()
+	for id: StringName in enemy.data.drop:
+		dropped[id] = dropped.get(id, 0) + enemy.data.drop[id]
+	var gained: Dictionary[StringName, int] = {}
+	for id: StringName in dropped:
+		var taken: int = _session.add_loot(_loot_type(id), dropped[id])
+		if taken > 0:
+			gained[id] = taken
+	if not gained.is_empty():
+		_hud.call(&"toast", "Récupéré : " + MenuKit.describe_amounts(gained), false)
+	elif not dropped.is_empty():
+		_hud.call(&"toast", "Sac plein : tu n'as rien pu ramasser.", true)
+
+
+func _end_combat() -> void:
+	_set_enemies_active(false)
+
+
+func _set_enemies_active(value: bool) -> void:
+	for node: Node in get_tree().get_nodes_in_group(Enemy.GROUP):
+		(node as Enemy).active = value
+
+
+static func _loot_type(id: StringName) -> LootData:
+	for loot: LootData in GameState.LOOT_TYPES:
+		if loot.id == id:
+			return loot
+	return null
 
 
 func _connect_harvestable(harvestable: Harvestable) -> void:
@@ -157,6 +232,7 @@ func _open_encounter(spot: EncounterSpot) -> void:
 		return
 	_active_spot = spot
 	_player.set_controls_enabled(false)
+	_set_enemies_active(false) # pas de coup dans le dos pendant un dialogue
 	_dialog.call(&"open", spot.encounter, _session.result, _session.capacity, _session.free_beds)
 
 
@@ -180,12 +256,19 @@ func _on_dialog_closed() -> void:
 	_active_spot = null
 	if _session.is_running():
 		_player.set_controls_enabled(true)
+		_set_enemies_active(true)
 
 
 # --- Fin de la sortie -------------------------------------------------------------
 
 func _on_session_ended(result: ExpeditionResult) -> void:
+	_end_combat()
 	_dialog.call(&"close")
+	if result.fell:
+		# Le joueur s'effondre.
+		var fall := create_tween()
+		fall.tween_property(_player, "rotation", PI / 2.0, 0.4)
+		fall.parallel().tween_property(_player, "modulate", Color(0.6, 0.6, 0.6, 0.8), 0.4)
 	_player.set_controls_enabled(false)
 	GameState.record_expedition(result)
 	if not result.boarded:

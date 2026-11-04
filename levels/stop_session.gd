@@ -97,6 +97,31 @@ func resolve_choice(choice: EncounterChoice, rng: RandomNumberGenerator, taken_n
 	return outcome
 
 
+## Un pilleur vole dans le sac : `amount` ressources prises au hasard.
+## Renvoie ce qui a été volé (id -> quantité).
+func steal(amount: int, rng: RandomNumberGenerator) -> Dictionary[StringName, int]:
+	var stolen: Dictionary[StringName, int] = {}
+	if state == State.ENDED:
+		return stolen
+	for i: int in amount:
+		var ids: Array[StringName] = result.loot.keys()
+		if ids.is_empty():
+			break
+		var id: StringName = ids[rng.randi_range(0, ids.size() - 1)]
+		result.remove_loot(id, 1)
+		stolen[id] = stolen.get(id, 0) + 1
+	if not stolen.is_empty():
+		loot_changed.emit(result)
+	return stolen
+
+
+## Le joueur tombe au combat : la sortie se termine, il ne remonte pas à bord.
+func fall() -> void:
+	if state != State.ENDED:
+		result.fell = true
+		_finish(false)
+
+
 ## Le joueur remonte à bord : la sortie se termine tout de suite.
 func board() -> void:
 	if state != State.ENDED:

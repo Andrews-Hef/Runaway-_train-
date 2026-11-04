@@ -1,5 +1,5 @@
 extends CanvasLayer
-## Interface en jeu : temps d'arrêt restant, exposition, butin et consignes.
+## Interface en jeu : temps d'arrêt restant, vie, exposition, butin et consignes.
 ##
 ## Elle n'a aucune logique de jeu : elle affiche ce que les systèmes lui signalent.
 
@@ -7,6 +7,9 @@ const NORMAL_TIME_COLOR: Color = Color(1.0, 1.0, 1.0)
 const WHISTLE_TIME_COLOR: Color = Color(1.0, 0.45, 0.35)
 
 @onready var _timer_label: Label = %TimerLabel
+@onready var _health_label: Label = %HealthLabel
+@onready var _health_bar: ProgressBar = %HealthBar
+@onready var _toast: Label = %Toast
 @onready var _exposure_label: Label = %ExposureLabel
 @onready var _exposure_bar: ProgressBar = %ExposureBar
 @onready var _zone_warning: Label = %ZoneWarning
@@ -22,6 +25,7 @@ var _interactor: Interactor
 var _session: StopSession
 var _bag_label: Label
 var _banner_tween: Tween
+var _toast_tween: Tween
 
 
 func bind(session: StopSession, player: Player, loot_types: Array[LootData]) -> void:
@@ -34,11 +38,13 @@ func bind(session: StopSession, player: Player, loot_types: Array[LootData]) -> 
 	session.loot_changed.connect(_on_loot_changed)
 	session.recruited.connect(_on_recruited)
 	session.ended.connect(func(_result: ExpeditionResult) -> void: visible = false)
+	player.health.changed.connect(_on_health_changed)
 	player.exposure.changed.connect(_on_exposure_changed)
 	player.exposure.zone_changed.connect(_on_zone_changed)
 	player.interactor.target_changed.connect(_on_target_changed)
 	InputMode.changed.connect(func(_device: int) -> void: _refresh_prompt())
 	_on_time_changed(session.remaining)
+	_on_health_changed(player.health.health, player.health.max_health)
 	_on_exposure_changed(player.exposure.value)
 	_on_loot_changed(session.result)
 
@@ -52,6 +58,20 @@ func announce_zone(stop_number: int, zone_name: String) -> void:
 	tween.tween_interval(2.5)
 	tween.tween_property(_zone_title, "modulate:a", 0.0, 0.8)
 	tween.tween_callback(_zone_title.hide)
+
+
+## Message court au-dessus du jeu (vol, butin récupéré...). `bad` : en rouge.
+func toast(text: String, bad: bool = false) -> void:
+	_toast.text = text
+	_toast.add_theme_color_override(&"font_color", Color(1.0, 0.45, 0.35) if bad else Color(0.55, 0.85, 0.45))
+	_toast.visible = true
+	_toast.modulate.a = 1.0
+	if _toast_tween:
+		_toast_tween.kill()
+	_toast_tween = create_tween()
+	_toast_tween.tween_interval(1.8)
+	_toast_tween.tween_property(_toast, "modulate:a", 0.0, 0.5)
+	_toast_tween.tween_callback(_toast.hide)
 
 
 static func format_time(seconds: float) -> String:
@@ -108,6 +128,13 @@ func _on_recruited(member: CrewMember) -> void:
 	label.text = "Recrue : " + member.display_name
 	label.add_theme_color_override(&"font_color", Color(1.0, 0.82, 0.35))
 	_loot_list.add_child(label)
+
+
+func _on_health_changed(health: int, max_health: int) -> void:
+	_health_bar.max_value = max_health
+	_health_bar.value = health
+	_health_label.text = "Vie %d/%d" % [health, max_health]
+	_health_label.add_theme_color_override(&"font_color", Color(1.0, 0.45, 0.35) if health * 3 <= max_health else Color.WHITE)
 
 
 func _on_exposure_changed(value: float) -> void:

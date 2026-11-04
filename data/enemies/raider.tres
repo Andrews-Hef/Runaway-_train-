@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://core/enemy_data.gd" id="1_enemy"]
+[ext_resource type="SpriteFrames" path="res://assets/sprites/raider/raider.tres" id="2_frames"]
+
+[resource]
+script = ExtResource("1_enemy")
+id = &"raider"
+display_name = "Pilleur"
+frames = ExtResource("2_frames")
+max_health = 4
+wander_speed = 22.0
+chase_speed = 58.0
+sight_range = 96.0
+leash_range = 220.0
+attack_range = 16.0
+windup = 0.4
+cooldown = 0.8
+damage = 2
+steal_amount = 1
+drop = Dictionary[StringName, int]({
+&"scrap": 2
+})

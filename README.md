@@ -38,8 +38,16 @@ Pendant un arrêt :
 1. Le train s'arrête. Tu as **60 à 110 secondes** selon la zone avant le départ.
 2. Tu récoltes en **maintenant Agir** près d'un objet : **ferraille** (épaves), **bois** (arbres morts), **plantes**, et **plantes infectées** dans les zones violettes.
 3. Marcher sur le sol violet ou cueillir une plante infectée fait monter ta **jauge d'exposition**.
-4. À 15 secondes du départ, **le train siffle**. Remonte à bord en maintenant Agir devant la porte du wagon.
-5. **Bilan** : butin, exposition et risque d'infection. Si tu rates le train, il part sans toi et la partie est perdue.
+4. **Combat** : des **infectés** rôdent dans les zones violettes, des **pilleurs** dans les zones saines. Frappe avec **Coup** (dégâts de l'arme portée). Tu as **10 points de vie**, rendus à chaque arrêt.
+5. À 15 secondes du départ, **le train siffle**. Remonte à bord en maintenant Agir devant la porte du wagon.
+6. **Bilan** : butin, exposition et risque d'infection. Si tu rates le train ou si tu tombes, tu reprends à la dernière gare refuge.
+
+| Ennemi | Vie | Coup | Particularité |
+|---|---|---|---|
+| Infecté | 3 | 1 dégât + 8 % d'exposition | Lent, voûté, dans les zones violettes |
+| Pilleur | 4 | 2 dégâts + vole 1 ressource du sac | Rapide ; tué, il rend ce qu'il a volé et 2 ferrailles |
+
+Les ennemis prennent leur élan avant de frapper : s'éloigner à temps esquive le coup. Ils ne bougent pas pendant un dialogue.
 
 ## Prérequis
 
@@ -106,6 +114,8 @@ Le forçage est ignoré dans un build release.
 | `RefugeRules` | `core/refuge_rules.gd` | Règles des offres d'une gare, payées avec le stock (pur, testable) |
 | `SaveStore` | `core/save_store.gd` | Sauvegardes JSON sur le disque (`user://saves/`), une par emplacement |
 | `Campaign` | `levels/campaign.gd` | Le fil de la campagne : nouvelle partie, continuer, quand sauvegarder, où reprendre |
+| `HealthComponent` | `entities/combat/health_component.gd` | Points de vie (joueur et ennemis), invincibilité après un coup |
+| `Enemy` / `EnemyData` | `entities/enemy/`, `core/enemy_data.gd` | Ennemi à états (errance, poursuite, élan, recul) réglé par un `.tres` de `data/enemies/` |
 | `MenuKit` | `ui/common/menu_kit.gd` | Morceaux d'interface partagés par les menus (lignes, coûts, couleurs) |
 
 **Ajouter une rencontre** : créer un `EncounterData` dans `data/encounters/` (titre, texte, choix réglés dans l'inspecteur), puis l'ajouter à `BY_ID` et à un pool dans `core/encounter_library.gd`. Chaque rencontre doit proposer un choix « Partir » (vérifié par les tests).
@@ -115,6 +125,8 @@ Le forçage est ignoré dans un build release.
 **Ajouter un type de voiture** : créer un `WagonData` dans `data/wagons/` (effets, coût), l'ajouter à `BUILDABLE_WAGONS` dans `core/game_state.gd`, puis placer ses meubles dans `LAYOUTS` (`levels/train_interior/train_interior.gd`), sous le même id.
 
 **Régler la traction** : `max_cars` et le coût de chaque niveau dans `data/locomotive/level_*.tres`.
+
+**Ajouter un type d'ennemi** : créer un `EnemyData` dans `data/enemies/` (vie, vitesses, portée, dégâts, exposition, vol, butin), l'ajouter à `ENEMIES` dans `levels/stop_zone/stop_zone.gd` et à `ENEMY_RULES` dans `levels/zone_generator.gd`, puis régler son nombre dans les types de zones.
 
 **Ajouter une gare refuge** : créer un `RefugeData` dans `data/refuges/` (nom, texte, échanges, recrues), puis l'ajouter à `REFUGES` dans `core/game_state.gd`. Les gares se succèdent dans l'ordre de la liste, puis on recommence. Le rythme (une gare tous les 5 arrêts) est `REFUGE_EVERY`.
 

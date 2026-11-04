@@ -41,6 +41,13 @@ extends Resource
 @export var lone_events: Vector2i = Vector2i(0, 1)
 
 
+@export_group("Ennemis")
+## Infectés (membres de la ruche), (min, max). Ils rôdent dans les zones violettes.
+@export var infected: Vector2i = Vector2i(1, 2)
+## Pilleurs, (min, max). Ils volent dans le sac.
+@export var raiders: Vector2i = Vector2i(0, 1)
+
+
 ## Fourchette (min, max) du nombre d'objets d'un type.
 func count_range(kind: StringName) -> Vector2i:
 	match kind:
@@ -54,5 +61,9 @@ func count_range(kind: StringName) -> Vector2i:
 			return herbs
 		&"infected_herb":
 			return infected_herbs
+		&"infected":
+			return infected
+		&"raider":
+			return raiders
 		_:
 			return Vector2i.ZERO

@@ -17,6 +17,8 @@ const BORDER: int = 2
 const TRAIN_POSITION: Vector2 = Vector2(3.0 * TILE_SIZE, (RAILS_ROW + 0.5) * TILE_SIZE)
 ## Rayon sans objet autour des points réservés (apparition du joueur...).
 const RESERVED_RADIUS: float = 40.0
+## Aucun ennemi ne commence aussi près de l'apparition du joueur.
+const ENEMY_SAFE_RADIUS: float = 150.0
 
 ## Index des tuiles dans assets/tiles/ground_placeholder.png
 enum Tile { GRASS_A, GRASS_B, DIRT, INFECTED, RAILS }
@@ -31,6 +33,13 @@ const RULES: Dictionary[StringName, Array] = {
 	&"rock": [Placement.ANYWHERE, 22.0],
 	&"herb": [Placement.HEALTHY, 18.0],
 	&"infected_herb": [Placement.INFECTED, 18.0],
+}
+
+
+## Ennemis : [placement, espacement minimal en px]. Placés après le décor.
+const ENEMY_RULES: Dictionary[StringName, Array] = {
+	&"infected": [Placement.INFECTED, 40.0],
+	&"raider": [Placement.HEALTHY, 64.0],
 }
 
 
@@ -140,6 +149,11 @@ static func generate(profile: ZoneProfile, zone_seed: int, reserved: Array[Vecto
 		var range_: Vector2i = profile.count_range(kind)
 		var wanted: int = rng.randi_range(range_.x, range_.y)
 		_scatter(layout, kind, wanted, rng, occupied, reserved)
+	# Les ennemis en dernier : le décor d'une graine ne change pas quand on règle les ennemis.
+	for kind: StringName in ENEMY_RULES:
+		var range_: Vector2i = profile.count_range(kind)
+		var wanted: int = rng.randi_range(range_.x, range_.y)
+		_scatter(layout, kind, wanted, rng, occupied, reserved, ENEMY_RULES[kind], ENEMY_SAFE_RADIUS)
 	return layout
 
 
@@ -296,8 +310,9 @@ static func _pick_tile(cell: Vector2i, layout: Layout, profile: ZoneProfile, rng
 
 
 static func _scatter(layout: Layout, kind: StringName, wanted: int, rng: RandomNumberGenerator,
-		occupied: Array[Vector2], reserved: Array[Vector2]) -> void:
-	var rule: Array = RULES[kind]
+		occupied: Array[Vector2], reserved: Array[Vector2], rule: Array = [], reserved_radius: float = RESERVED_RADIUS) -> void:
+	if rule.is_empty():
+		rule = RULES[kind]
 	var placement: Placement = rule[0]
 	var spacing: float = rule[1]
 	var size_px := Vector2(layout.size_in_pixels())
@@ -312,7 +327,7 @@ static func _scatter(layout: Layout, kind: StringName, wanted: int, rng: RandomN
 		).round()
 		if not _placement_allows(layout, placement, pos) or not _is_free(pos, spacing, occupied):
 			continue
-		if not _is_free(pos, RESERVED_RADIUS, reserved):
+		if not _is_free(pos, reserved_radius, reserved):
 			continue
 		if layout.is_in_poi(pos):
 			continue

@@ -71,8 +71,9 @@ func show_result(result: ExpeditionResult, loot_types: Array[LootData]) -> void:
 		_storage.visible = true
 		_button.text = "Continuer le voyage"
 	else:
-		_title.text = "Le train est parti sans toi"
-		_subtitle.text = "Seul dans la zone infectée... Tout ce qui s'est passé depuis la dernière gare est perdu."
+		_title.text = "Tu es tombé" if result.fell else "Le train est parti sans toi"
+		_subtitle.text = ("Laissé pour mort dans la zone..." if result.fell else "Seul dans la zone infectée...") \
+			+ " Tout ce qui s'est passé depuis la dernière gare est perdu."
 		_add_line("Butin perdu", RISK_HIGH)
 		if not result.recruits.is_empty():
 			_add_line("%d recrue(s) perdue(s) avec toi" % result.recruits.size(), RISK_HIGH)

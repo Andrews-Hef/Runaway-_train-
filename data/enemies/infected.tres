@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://core/enemy_data.gd" id="1_enemy"]
+[ext_resource type="SpriteFrames" path="res://assets/sprites/infected/infected.tres" id="2_frames"]
+
+[resource]
+script = ExtResource("1_enemy")
+id = &"infected"
+display_name = "Infecté"
+frames = ExtResource("2_frames")
+max_health = 3
+wander_speed = 14.0
+chase_speed = 38.0
+sight_range = 80.0
+leash_range = 170.0
+attack_range = 14.0
+windup = 0.5
+cooldown = 1.0
+damage = 1
+exposure_on_hit = 0.08

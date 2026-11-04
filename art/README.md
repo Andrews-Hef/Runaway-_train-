@@ -33,6 +33,7 @@ Le train est **noir** (`iron-black`) avec des liserés rouges (`train-red`) et d
 | `props/backpack`, `props/locker` | 1 | — | Petites rencontres : sac abandonné, armoire métallique |
 | `props/station-house`, `props/palisade` | 1 | — | Gare refuge : bâtiment de la gare, palissade de pieux |
 | `characters/refugee`, `characters/merchant` | 1 (s) | `idle` | PNJ : réfugié à recruter, marchand |
+| `characters/infected`, `characters/raider` | 4 (s, e, n, w) | `idle`, `walk`, `attack` | Ennemis : infecté (membre de la ruche), pilleur |
 | `train/locomotive`, `train/wagon` | 1 | `idle`, `run` (roues qui tournent, léger tangage) | Le train, à quai et en marche |
 
 ### Intérieur du train (vue de dessus)

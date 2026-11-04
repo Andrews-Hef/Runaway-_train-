@@ -21,3 +21,5 @@ infected_herbs = Vector2i(3, 6)
 village_chance = 0.15
 refuge_chance = 0.3
 merchant_chance = 0.7
+infected = Vector2i(1, 2)
+raiders = Vector2i(2, 3)

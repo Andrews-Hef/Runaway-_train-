@@ -4,6 +4,7 @@
 [ext_resource type="SpriteFrames" path="res://assets/sprites/survivor/survivor.tres" id="2_frames"]
 [ext_resource type="Script" path="res://entities/interaction/interactor.gd" id="3_interactor"]
 [ext_resource type="Script" path="res://entities/player/exposure_component.gd" id="4_exposure"]
+[ext_resource type="Script" path="res://entities/combat/health_component.gd" id="5_health"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_feet"]
 size = Vector2(10, 6)
@@ -35,3 +36,7 @@ shape = SubResource("CircleShape2D_reach")
 
 [node name="Exposure" type="Node" parent="."]
 script = ExtResource("4_exposure")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("5_health")
+invulnerable_time = 0.7
