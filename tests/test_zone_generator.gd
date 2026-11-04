@@ -102,6 +102,17 @@ func test_les_points_reserves_restent_degages() -> void:
 				assert_true(s.position.distance_to(spawn) >= ZoneGenerator.RESERVED_RADIUS, "%s trop près du joueur" % s.kind)
 
 
+func test_le_joueur_n_apparait_jamais_pres_du_violet() -> void:
+	var spawn := Vector2(204.0, 128.0)
+	for zone: ZoneProfile in ZONES:
+		for zone_seed: int in SEEDS + [3, 17, 256, 4242, 31337]:
+			var layout := ZoneGenerator.generate(zone, zone_seed, [spawn])
+			for dy: int in range(-2, 3):
+				for dx: int in range(-2, 3):
+					var probe: Vector2 = spawn + Vector2(dx, dy) * 12.0
+					assert_false(layout.is_infected_at(probe), "%s (graine %d) : violet près de l'apparition en %s" % [zone.id, zone_seed, probe])
+
+
 func _poi_profile(chance: float) -> ZoneProfile:
 	var zone: ZoneProfile = ZONES[0].duplicate()
 	zone.village_chance = chance

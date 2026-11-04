@@ -2,10 +2,10 @@ extends Node2D
 ## Trajet entre deux arrêts : le train roule, le décor défile.
 ##
 ## Affiche le stock du train et le prochain arrêt (tiré par GameState), puis
-## descend à l'arrêt automatiquement ou dès que le joueur appuie sur Agir.
-## Plus tard, c'est ici que se fera la gestion du train (mode gestion).
+## entre dans le train (automatiquement ou dès que le joueur appuie sur Agir).
 
-const STOP_SCENE: String = "res://levels/stop_zone/stop_zone.tscn"
+## Après le trajet vu de dehors, on entre dans le train (stock, atelier, équipage).
+const TRAIN_SCENE: String = "res://levels/train_interior/train_interior.tscn"
 const TILE_SIZE: int = 16
 const GROUND_SOURCE_ID: int = 0
 ## Largeur d'un motif de décor qui se répète, en tuiles.
@@ -19,8 +19,8 @@ const SCENERY_TEXTURES: Array[Texture2D] = [
 ## Pivots (base au sol) des textures ci-dessus, voir tools/sync_td2d.py.
 const SCENERY_PIVOTS: Array[Vector2] = [Vector2(20, 51), Vector2(20, 51), Vector2(14, 16), Vector2(36, 38)]
 
-## Descente automatique à l'arrêt après ce délai (secondes).
-@export var auto_continue_after: float = 8.0
+## Entrée automatique dans le train après ce délai (secondes).
+@export var auto_continue_after: float = 6.0
 
 @onready var _scenery: Parallax2D = $Scenery
 @onready var _ground: TileMapLayer = $Scenery/Ground
@@ -119,7 +119,7 @@ static func _crew_summary() -> String:
 
 
 func _refresh_hint() -> void:
-	_hint.text = "Appuie sur %s pour descendre" % InputMode.label_for(&"interact")
+	_hint.text = "Appuie sur %s pour entrer dans le train" % InputMode.label_for(&"interact")
 
 
 func _continue() -> void:
@@ -128,4 +128,4 @@ func _continue() -> void:
 	_leaving = true
 	var tween := create_tween()
 	tween.tween_property(_fade, "color:a", 1.0, 0.35)
-	tween.tween_callback(func() -> void: get_tree().change_scene_to_file(STOP_SCENE))
+	tween.tween_callback(func() -> void: get_tree().change_scene_to_file(TRAIN_SCENE))

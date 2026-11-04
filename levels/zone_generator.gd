@@ -129,8 +129,8 @@ static func generate(profile: ZoneProfile, zone_seed: int, reserved: Array[Vecto
 	layout.stop_duration = roundf(rng.randf_range(profile.stop_duration.x, profile.stop_duration.y))
 
 	_place_pois(layout, profile, rng)
-	_place_infected_patches(layout, profile, rng)
-	_paint_tiles(layout, profile, rng)
+	_place_infected_patches(layout, profile, rng, reserved)
+	_paint_tiles(layout, profile, rng, reserved)
 	_fill_pois(layout, rng)
 
 	var occupied: Array[Vector2] = []
@@ -223,7 +223,7 @@ static func _pick_encounter(pool_kind: StringName, rng: RandomNumberGenerator) -
 
 # --- Sol --------------------------------------------------------------------------
 
-static func _place_infected_patches(layout: Layout, profile: ZoneProfile, rng: RandomNumberGenerator) -> void:
+static func _place_infected_patches(layout: Layout, profile: ZoneProfile, rng: RandomNumberGenerator, reserved: Array[Vector2]) -> void:
 	var count: int = rng.randi_range(profile.infected_patches.x, profile.infected_patches.y)
 	var min_y: float = RAILS_ROW + PLATFORM_ROWS + 2.0
 	for i: int in count:
@@ -234,9 +234,18 @@ static func _place_infected_patches(layout: Layout, profile: ZoneProfile, rng: R
 				rng.randf_range(BORDER + 2.0, layout.size_in_tiles.x - BORDER - 2.0),
 				rng.randf_range(min_y, layout.size_in_tiles.y - BORDER - 1.0)
 			)
-			if not _patch_touches_poi(layout, center, radius):
+			if not _patch_touches_poi(layout, center, radius) and not _patch_touches_points(center, radius, reserved):
 				layout.infected_patches.append(Vector3(center.x, center.y, radius))
 				break
+
+
+## Le joueur ne doit pas apparaître dans (ni au bord de) une zone infectée.
+static func _patch_touches_points(center_tiles: Vector2, radius_tiles: float, points: Array[Vector2]) -> bool:
+	var reach: float = (radius_tiles + 1.0) * TILE_SIZE + RESERVED_RADIUS
+	for point: Vector2 in points:
+		if (center_tiles * TILE_SIZE).distance_to(point) < reach:
+			return true
+	return false
 
 
 static func _patch_touches_poi(layout: Layout, center_tiles: Vector2, radius_tiles: float) -> bool:
@@ -252,12 +261,19 @@ static func _patch_touches_poi(layout: Layout, center_tiles: Vector2, radius_til
 	return false
 
 
-static func _paint_tiles(layout: Layout, profile: ZoneProfile, rng: RandomNumberGenerator) -> void:
+static func _paint_tiles(layout: Layout, profile: ZoneProfile, rng: RandomNumberGenerator, reserved: Array[Vector2]) -> void:
 	var size: Vector2i = layout.size_in_tiles
 	layout.tiles.resize(size.x * size.y)
 	for y: int in size.y:
 		for x: int in size.x:
-			layout.tiles[y * size.x + x] = _pick_tile(Vector2i(x, y), layout, profile, rng)
+			var tile: int = _pick_tile(Vector2i(x, y), layout, profile, rng)
+			# Filet de sécurité : jamais de sol infecté autour d'un point réservé.
+			if tile == Tile.INFECTED:
+				var cell_center := (Vector2(x, y) + Vector2(0.5, 0.5)) * TILE_SIZE
+				for point: Vector2 in reserved:
+					if cell_center.distance_to(point) < RESERVED_RADIUS:
+						tile = Tile.GRASS_A
+			layout.tiles[y * size.x + x] = tile
 
 
 static func _pick_tile(cell: Vector2i, layout: Layout, profile: ZoneProfile, rng: RandomNumberGenerator) -> int:
