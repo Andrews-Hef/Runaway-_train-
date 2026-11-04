@@ -1,0 +1,146 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "interior/bunk",
+  "type": "prop",
+  "description": "Couchettes superposees du dortoir, couvertures rouges.",
+  "frame": {
+    "width": 96,
+    "height": 88
+  },
+  "directions": "d1",
+  "camera": "side",
+  "pixelsPerUnit": 32,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "post-a",
+        "material": "iron",
+        "size": [
+          0.08,
+          2.0,
+          0.08
+        ],
+        "position": [
+          -0.95,
+          1.0,
+          0.3
+        ]
+      },
+      {
+        "type": "box",
+        "id": "post-b",
+        "material": "iron",
+        "size": [
+          0.08,
+          2.0,
+          0.08
+        ],
+        "position": [
+          0.95,
+          1.0,
+          0.3
+        ]
+      },
+      {
+        "type": "box",
+        "id": "bed-low",
+        "material": "floor-wood",
+        "size": [
+          2.0,
+          0.12,
+          0.8
+        ],
+        "position": [
+          0,
+          0.45,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "mat-low",
+        "material": "blanket",
+        "size": [
+          1.9,
+          0.12,
+          0.75
+        ],
+        "position": [
+          0,
+          0.57,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "pillow-low",
+        "material": "canvas",
+        "size": [
+          0.35,
+          0.1,
+          0.5
+        ],
+        "position": [
+          -0.75,
+          0.68,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "bed-high",
+        "material": "floor-wood",
+        "size": [
+          2.0,
+          0.12,
+          0.8
+        ],
+        "position": [
+          0,
+          1.45,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "mat-high",
+        "material": "blanket",
+        "size": [
+          1.9,
+          0.12,
+          0.75
+        ],
+        "position": [
+          0,
+          1.57,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "pillow-high",
+        "material": "canvas",
+        "size": [
+          0.35,
+          0.1,
+          0.5
+        ],
+        "position": [
+          0.75,
+          1.68,
+          0
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

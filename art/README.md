@@ -34,6 +34,17 @@ Le train est **noir** (`iron-black`) avec des liserés rouges (`train-red`) et d
 | `characters/refugee`, `characters/merchant` | 1 (s) | `idle` | PNJ : réfugié à recruter, marchand |
 | `train/locomotive`, `train/wagon` | 1 | `idle`, `run` (roues qui tournent, léger tangage) | Le train, à quai et en marche |
 
+### Intérieur du train (vue de côté)
+
+L'intérieur du train est rendu avec la caméra `side` et **32 px par mètre** (plus de détails, puisqu'on y est à l'abri).
+
+| Id | Directions | Animations | Utilisé par |
+|---|---|---|---|
+| `characters/survivor-side` | profil (e, retourné pour aller à gauche) | `idle`, `walk` | Le joueur dans le train |
+| `characters/crew-side` | face (s) | `idle` | Les équipiers du dortoir |
+| `train/interior-shell` | 1 | — | Coque d'un wagon : mur du fond **ajouré** (on voit le paysage par les fenêtres) |
+| `interior/chest`, `interior/workbench`, `interior/locker`, `interior/bunk`, `interior/engine-panel` | 1 | — | Coffre, établi, casier, couchettes, chaudière et levier |
+
 ## Générer et mettre à jour les sprites
 
 Prérequis : Node.js 24+, et td2d cloné et compilé une fois (`pnpm install && pnpm build`, voir son README).

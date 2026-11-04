@@ -135,6 +135,31 @@
         "color": "#7c5c3a",
         "bands": 3,
         "hueShift": 30
+      },
+      "panel-wood": {
+        "color": "#5e4834",
+        "bands": 3,
+        "hueShift": 30
+      },
+      "floor-wood": {
+        "color": "#4a3a2c",
+        "bands": 3,
+        "hueShift": 30
+      },
+      "fire": {
+        "color": "#f08a3a",
+        "emissive": "#a04010",
+        "bands": 2
+      },
+      "blanket": {
+        "color": "#7a3a3a",
+        "bands": 3,
+        "hueShift": 25
+      },
+      "canvas": {
+        "color": "#a8936c",
+        "bands": 3,
+        "hueShift": 25
       }
     }
   }

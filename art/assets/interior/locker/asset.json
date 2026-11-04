@@ -1,0 +1,132 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "interior/locker",
+  "type": "prop",
+  "description": "Casier d'equipement : armoire metallique ouverte, veste et masque accroches.",
+  "frame": {
+    "width": 56,
+    "height": 88
+  },
+  "directions": "d1",
+  "camera": "side",
+  "pixelsPerUnit": 32,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "body",
+        "material": "iron",
+        "size": [
+          0.9,
+          2.0,
+          0.5
+        ],
+        "position": [
+          0,
+          1.0,
+          -0.2
+        ]
+      },
+      {
+        "type": "box",
+        "id": "inside",
+        "material": "dark",
+        "size": [
+          0.8,
+          1.85,
+          0.05
+        ],
+        "position": [
+          0,
+          1.0,
+          0.04
+        ]
+      },
+      {
+        "type": "box",
+        "id": "door",
+        "material": "iron",
+        "size": [
+          0.06,
+          1.85,
+          0.5
+        ],
+        "position": [
+          0.75,
+          1.0,
+          0.25
+        ],
+        "rotation": [
+          0,
+          -60,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "jacket",
+        "material": "jacket",
+        "size": [
+          0.4,
+          0.6,
+          0.1
+        ],
+        "position": [
+          -0.15,
+          1.4,
+          0.1
+        ]
+      },
+      {
+        "type": "box",
+        "id": "mask-hook",
+        "material": "steel",
+        "size": [
+          0.2,
+          0.15,
+          0.1
+        ],
+        "position": [
+          0.2,
+          1.6,
+          0.1
+        ]
+      },
+      {
+        "type": "box",
+        "id": "boots",
+        "material": "boots",
+        "size": [
+          0.35,
+          0.12,
+          0.2
+        ],
+        "position": [
+          0,
+          0.2,
+          0.1
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  },
+  "materials": {
+    "jacket": {
+      "color": "#b0742e",
+      "bands": 3,
+      "hueShift": 30
+    },
+    "boots": {
+      "color": "#2b2522",
+      "bands": 2
+    }
+  }
+}

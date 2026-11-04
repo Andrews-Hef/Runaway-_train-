@@ -26,7 +26,7 @@ def main() -> None:
         animated = any(clip["frames"] > 1 for clip in manifest["clips"]) or len(manifest["directions"]) > 1
 
         if animated:
-            dest = SPRITES / name
+            dest = SPRITES / name.replace("-", "_")
             dest.mkdir(parents=True, exist_ok=True)
             for sheet in manifest["files"]["sheets"]:
                 shutil.copy(sheets_dir / sheet, dest / sheet)

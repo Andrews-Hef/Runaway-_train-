@@ -1,0 +1,231 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "characters/crew-side",
+  "type": "character",
+  "description": "Membre d'equipage vu de face, pour le dortoir du train (vue de cote).",
+  "frame": {
+    "width": 48,
+    "height": 72
+  },
+  "directions": [
+    "s"
+  ],
+  "rig": "humanoid-basic",
+  "export": {
+    "formats": [
+      "manifest",
+      "godot-spriteframes"
+    ],
+    "godot": {
+      "directory": "res://assets/sprites/crew_side/"
+    }
+  },
+  "materials": {
+    "skin": {
+      "color": "#c98f6b",
+      "bands": 3,
+      "hueShift": 25
+    },
+    "pants": {
+      "color": "#3a3f4b",
+      "bands": 3,
+      "hueShift": 20
+    },
+    "boots": {
+      "color": "#2b2522",
+      "bands": 2
+    }
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "pelvis",
+        "bone": "hips",
+        "material": "pants",
+        "size": [
+          0.34,
+          0.18,
+          0.22
+        ],
+        "position": [
+          0,
+          0.95,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "torso",
+        "bone": "chest",
+        "material": "coat",
+        "size": [
+          0.42,
+          0.52,
+          0.28
+        ],
+        "position": [
+          0,
+          1.26,
+          0
+        ]
+      },
+      {
+        "type": "capsule",
+        "id": "upper-arm",
+        "bone": "leftUpperArm",
+        "material": "coat",
+        "radius": 0.065,
+        "length": 0.18,
+        "position": [
+          0.26,
+          1.3,
+          0
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "capsule",
+        "id": "lower-arm",
+        "bone": "leftLowerArm",
+        "material": "coat",
+        "radius": 0.055,
+        "length": 0.18,
+        "position": [
+          0.26,
+          1.04,
+          0
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "sphere",
+        "id": "hand",
+        "bone": "leftLowerArm",
+        "material": "skin",
+        "radius": 0.05,
+        "position": [
+          0.26,
+          0.88,
+          0
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "capsule",
+        "id": "thigh",
+        "bone": "leftUpperLeg",
+        "material": "pants",
+        "radius": 0.085,
+        "length": 0.24,
+        "position": [
+          0.1,
+          0.71,
+          0
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "capsule",
+        "id": "shin",
+        "bone": "leftLowerLeg",
+        "material": "pants",
+        "radius": 0.075,
+        "length": 0.24,
+        "position": [
+          0.1,
+          0.31,
+          0
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "box",
+        "id": "boot",
+        "bone": "leftFoot",
+        "material": "boots",
+        "size": [
+          0.13,
+          0.1,
+          0.24
+        ],
+        "position": [
+          0.1,
+          0.05,
+          0.03
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "sphere",
+        "id": "face",
+        "bone": "head",
+        "material": "skin",
+        "radius": 0.12,
+        "position": [
+          0,
+          1.62,
+          0.03
+        ]
+      },
+      {
+        "type": "sphere",
+        "id": "hood",
+        "bone": "head",
+        "material": "hood-grey",
+        "radius": 0.145,
+        "position": [
+          0,
+          1.64,
+          -0.03
+        ]
+      },
+      {
+        "type": "box",
+        "id": "scarf",
+        "bone": "chest",
+        "material": "cloth-red",
+        "size": [
+          0.3,
+          0.1,
+          0.3
+        ],
+        "position": [
+          0,
+          1.5,
+          0.02
+        ]
+      },
+      {
+        "type": "box",
+        "id": "patch",
+        "bone": "chest",
+        "material": "tarp",
+        "size": [
+          0.12,
+          0.12,
+          0.02
+        ],
+        "position": [
+          0.1,
+          1.2,
+          0.15
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 1,
+        "generator": {
+          "type": "idle-breathe"
+        }
+      }
+    }
+  },
+  "camera": "side",
+  "pixelsPerUnit": 32
+}

@@ -1,0 +1,193 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "interior/workbench",
+  "type": "prop",
+  "description": "Etabli d'atelier : plateau en bois, etau, outils accroches au mur, lampe.",
+  "frame": {
+    "width": 96,
+    "height": 80
+  },
+  "directions": "d1",
+  "camera": "side",
+  "pixelsPerUnit": 32,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "top",
+        "material": "floor-wood",
+        "size": [
+          2.0,
+          0.12,
+          0.8
+        ],
+        "position": [
+          0,
+          0.95,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "leg-a",
+        "material": "wood",
+        "size": [
+          0.1,
+          0.9,
+          0.1
+        ],
+        "position": [
+          -0.9,
+          0.45,
+          0.3
+        ]
+      },
+      {
+        "type": "box",
+        "id": "leg-b",
+        "material": "wood",
+        "size": [
+          0.1,
+          0.9,
+          0.1
+        ],
+        "position": [
+          0.9,
+          0.45,
+          0.3
+        ]
+      },
+      {
+        "type": "box",
+        "id": "shelf",
+        "material": "wood",
+        "size": [
+          1.8,
+          0.08,
+          0.6
+        ],
+        "position": [
+          0,
+          0.35,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "vise",
+        "material": "steel",
+        "size": [
+          0.25,
+          0.25,
+          0.2
+        ],
+        "position": [
+          -0.7,
+          1.12,
+          0.2
+        ]
+      },
+      {
+        "type": "box",
+        "id": "board",
+        "material": "panel-wood",
+        "size": [
+          2.0,
+          1.0,
+          0.06
+        ],
+        "position": [
+          0,
+          1.75,
+          -0.45
+        ]
+      },
+      {
+        "type": "box",
+        "id": "saw",
+        "material": "steel",
+        "size": [
+          0.6,
+          0.18,
+          0.03
+        ],
+        "position": [
+          -0.4,
+          1.8,
+          -0.4
+        ]
+      },
+      {
+        "type": "box",
+        "id": "hammer",
+        "material": "dead-wood",
+        "size": [
+          0.06,
+          0.4,
+          0.03
+        ],
+        "position": [
+          0.3,
+          1.7,
+          -0.4
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wrench",
+        "material": "steel",
+        "size": [
+          0.06,
+          0.45,
+          0.03
+        ],
+        "position": [
+          0.55,
+          1.75,
+          -0.4
+        ],
+        "rotation": [
+          0,
+          0,
+          15
+        ]
+      },
+      {
+        "type": "box",
+        "id": "scrap-pile",
+        "material": "rust",
+        "size": [
+          0.4,
+          0.15,
+          0.3
+        ],
+        "position": [
+          0.5,
+          1.08,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "bench-lamp",
+        "material": "lamp",
+        "radius": 0.08,
+        "height": 0.15,
+        "position": [
+          0.85,
+          1.15,
+          0.1
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

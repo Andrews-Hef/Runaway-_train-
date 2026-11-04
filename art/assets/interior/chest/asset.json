@@ -1,0 +1,158 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "interior/chest",
+  "type": "prop",
+  "description": "Coffre de stockage du train entoure de caisses et de sacs : c'est le stock.",
+  "frame": {
+    "width": 96,
+    "height": 64
+  },
+  "directions": "d1",
+  "camera": "side",
+  "pixelsPerUnit": 32,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "chest",
+        "material": "wood",
+        "size": [
+          1.0,
+          0.6,
+          0.6
+        ],
+        "position": [
+          0,
+          0.3,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "chest-band",
+        "material": "brass",
+        "size": [
+          1.04,
+          0.08,
+          0.64
+        ],
+        "position": [
+          0,
+          0.45,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "chest-lid",
+        "material": "floor-wood",
+        "size": [
+          1.04,
+          0.12,
+          0.64
+        ],
+        "position": [
+          0,
+          0.66,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "crate-a",
+        "material": "wood",
+        "size": [
+          0.7,
+          0.7,
+          0.6
+        ],
+        "position": [
+          -1.0,
+          0.35,
+          -0.2
+        ]
+      },
+      {
+        "type": "box",
+        "id": "crate-b",
+        "material": "wood",
+        "size": [
+          0.55,
+          0.5,
+          0.55
+        ],
+        "position": [
+          -1.0,
+          0.95,
+          -0.2
+        ],
+        "rotation": [
+          0,
+          0,
+          4
+        ]
+      },
+      {
+        "type": "box",
+        "id": "sack-a",
+        "material": "canvas",
+        "size": [
+          0.5,
+          0.55,
+          0.4
+        ],
+        "position": [
+          1.0,
+          0.28,
+          -0.1
+        ],
+        "rotation": [
+          0,
+          0,
+          -6
+        ]
+      },
+      {
+        "type": "box",
+        "id": "sack-b",
+        "material": "canvas",
+        "size": [
+          0.45,
+          0.45,
+          0.35
+        ],
+        "position": [
+          1.25,
+          0.75,
+          -0.2
+        ],
+        "rotation": [
+          0,
+          0,
+          10
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "barrel",
+        "material": "rust",
+        "radius": 0.28,
+        "height": 0.8,
+        "position": [
+          1.65,
+          0.4,
+          -0.3
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}
