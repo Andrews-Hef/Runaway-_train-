@@ -14,8 +14,7 @@ en dehors de ceux strictement prévus par les conditions d'utilisation de GitHub
 Pour toute demande d'autorisation : https://github.com/Andrews-Hef
 
 Exception : les composants tiers inclus restent sous leur propre licence.
-- Police Tiny5 (assets/fonts/tiny5/) : SIL Open Font License 1.1, voir OFL.txt.
-- Police Press Start 2P (assets/fonts/press_start_2p/) : SIL Open Font License 1.1, voir OFL.txt.
+- Police Barlow (assets/fonts/barlow/) : SIL Open Font License 1.1, voir OFL.txt.
 
 --------------------------------------------------------------------------------
 
@@ -35,5 +34,4 @@ strictly provided by the GitHub Terms of Service.
 For permission requests: https://github.com/Andrews-Hef
 
 Exception: bundled third-party components remain under their own licenses.
-- Tiny5 font (assets/fonts/tiny5/): SIL Open Font License 1.1, see OFL.txt.
-- Press Start 2P font (assets/fonts/press_start_2p/): SIL Open Font License 1.1, see OFL.txt.
+- Barlow font (assets/fonts/barlow/): SIL Open Font License 1.1, see OFL.txt.

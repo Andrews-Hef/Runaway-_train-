@@ -34,6 +34,8 @@ const DOOR_FUNNEL: float = 6.0
 const SIDE_TRACK_ROW: int = 2
 ## Grossissement de la caméra : on est à l'intérieur, on voit de plus près.
 const ZOOM: float = 2.0
+## Taille (à l'écran, avant zoom) des textes posés dans le monde du train.
+const WORLD_FONT_SIZE: float = 8.0
 ## Hauteur fixe de la caméra : le train (paroi du fond comprise) est centré.
 const CAMERA_Y: float = -17.0
 
@@ -288,16 +290,8 @@ func _add_crew(wagon_x: float, first: int, places: int) -> int:
 		sprite.play(&"idle_s")
 		sprite.frame = i * 3 % 10 # pas tous la même respiration
 		_world.add_child(sprite)
-		var label := Label.new()
-		label.theme = GAME_THEME
-		label.text = member.display_name
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.position = Vector2(-30.0, -44.0)
-		label.size = Vector2(60.0, 10.0)
-		label.add_theme_color_override(&"font_color", Color(1.0, 0.82, 0.35))
-		label.add_theme_color_override(&"font_outline_color", Color(0.08, 0.06, 0.06))
-		label.add_theme_constant_override(&"outline_size", 3)
-		sprite.add_child(label)
+		sprite.add_child(_world_label(member.display_name, Vector2(0.0, -44.0), 60.0,
+				Color(1.0, 0.82, 0.35)))
 	return last
 
 
@@ -356,15 +350,25 @@ static func _box_collision(rect: Rect2) -> CollisionShape2D:
 
 
 func _sign(title: String, x: float) -> Label:
+	return _world_label(title, Vector2(x, -64.0), 80.0, Color(0.9, 0.8, 0.55))
+
+
+## Texte posé dans le monde du train. La caméra zoome ×ZOOM : un texte de 8 px
+## serait rendu petit puis agrandi (flou, pixelisé). On le rend donc ZOOM fois
+## plus grand et on le réduit d'autant : à l'écran il a la même taille, mais net.
+## `top_center` : milieu du bord haut, en coordonnées du monde.
+func _world_label(text: String, top_center: Vector2, width: float, color: Color) -> Label:
 	var label := Label.new()
 	label.theme = GAME_THEME
-	label.text = title
+	label.text = text
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.position = Vector2(x - 40.0, -64.0)
-	label.size = Vector2(80.0, 10.0)
-	label.add_theme_color_override(&"font_color", Color(0.9, 0.8, 0.55))
+	label.size = Vector2(width * ZOOM, 10.0 * ZOOM)
+	label.scale = Vector2.ONE / ZOOM
+	label.position = top_center - Vector2(width * 0.5, 0.0)
+	label.add_theme_font_size_override(&"font_size", roundi(WORLD_FONT_SIZE * ZOOM))
+	label.add_theme_color_override(&"font_color", color)
 	label.add_theme_color_override(&"font_outline_color", Color(0.08, 0.06, 0.06))
-	label.add_theme_constant_override(&"outline_size", 3)
+	label.add_theme_constant_override(&"outline_size", roundi(3.0 * ZOOM))
 	return label
 
 

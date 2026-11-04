@@ -2,7 +2,7 @@ extends CanvasLayer
 ## Interface en jeu : temps d'arrêt restant, vie, infection, butin et consignes.
 ##
 ## Elle n'a aucune logique de jeu : elle affiche ce que les systèmes lui signalent.
-## Icônes 12 px (assets/ui/icons/) et chiffres en 16 px, textes cernés de noir :
+## Icônes 12 px (assets/ui/icons/), chiffres en gras plus gros, ombre sous les textes :
 ## lisible sur un petit écran.
 
 const NORMAL_TIME_COLOR: Color = Color(1.0, 1.0, 1.0)
@@ -11,8 +11,9 @@ const OUTLINE_COLOR: Color = Color(0.06, 0.05, 0.06)
 const BAG_ICON: Texture2D = preload("res://assets/ui/icons/bag.png")
 const RECRUIT_ICON: Texture2D = preload("res://assets/ui/icons/recruit.png")
 const PLAN_ICON: Texture2D = preload("res://assets/ui/icons/plan.png")
-## Police des chiffres : Press Start 2P (OFL), chiffres épais, nets à 8 px.
-const NUMBERS_FONT: Font = preload("res://assets/fonts/press_start_2p/PressStart2P-Regular.ttf")
+## Police des chiffres : Barlow Bold (OFL), plus grosse que le texte.
+const NUMBERS_FONT: Font = preload("res://assets/fonts/barlow/Barlow-Bold.ttf")
+const NUMBERS_SIZE: int = 11
 
 @onready var _timer_label: Label = %TimerLabel
 @onready var _health_label: Label = %HealthLabel
@@ -184,7 +185,7 @@ static func _icon_row(icon: Texture2D) -> HBoxContainer:
 	row.add_child(picture)
 	var label := Label.new()
 	label.add_theme_font_override(&"font", NUMBERS_FONT)
-	label.add_theme_font_size_override(&"font_size", 8)
+	label.add_theme_font_size_override(&"font_size", NUMBERS_SIZE)
 	label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(label)
 	return row

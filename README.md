@@ -199,7 +199,8 @@ tools/       scripts hors Godot (ignorés par Godot via .gdignore)
 - Rendu *Compatibility* (meilleure couverture Android), filtre *Nearest* pour des pixels nets.
 - **Le violet est réservé à l'infection** : aucune autre chose du jeu ne doit l'utiliser.
 - **Sprites temporaires** générés par [td2d](https://github.com/brphillis/threedee-twodee) à partir de modèles 3D décrits en JSON : voir `art/README.md`. Les tuiles du sol viennent de `python tools/gen_placeholders.py`.
-- **Police** : [Tiny5](https://github.com/Gissio/font_tiny5), une police pixel de 5 px, nette à 8 px (texte) et 16 px (titres).
+- **Police** : [Barlow](https://github.com/jpt/barlow) (SemiBold pour les textes, Bold pour les chiffres du HUD), une police lisse et lisible sur téléphone. Le jeu est rendu en mode `canvas_items` : le pixel art est agrandi par paliers entiers (net), le texte est dessiné à la vraie résolution de l'écran.
+- **Icônes** : pixel art 12 px, générées par `tools/gen_icons.py`.
 
 ## Tests
 
@@ -221,4 +222,4 @@ Code de sortie 0 = tout est vert. Une erreur de script pendant un test le fait �
 
 **Tous droits réservés.** Aucune utilisation, copie, modification ou distribution du contenu de ce dépôt n'est autorisée sans l'accord écrit de l'auteur. Voir [LICENSE](LICENSE).
 
-Exception : la police Tiny5 (`assets/fonts/tiny5/`) reste sous sa propre licence, la SIL Open Font License 1.1 (`OFL.txt`).
+Exception : la police Barlow (`assets/fonts/barlow/`) reste sous sa propre licence, la SIL Open Font License 1.1 (`OFL.txt`).
