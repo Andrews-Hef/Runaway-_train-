@@ -11,6 +11,7 @@ const JOURNEY_SCENE: String = "res://levels/journey/journey.tscn"
 ## Scène à instancier pour chaque type d'objet du plan.
 const SCENES: Dictionary[StringName, PackedScene] = {
 	&"wreck": preload("res://props/wreck/wreck.tscn"),
+	&"heavy_wreck": preload("res://props/truck_wreck/truck_wreck.tscn"),
 	&"dead_tree": preload("res://props/dead_tree/dead_tree.tscn"),
 	&"rock": preload("res://props/rock/rock.tscn"),
 	&"herb": preload("res://props/plant/herb.tscn"),
@@ -26,6 +27,8 @@ const SCENES: Dictionary[StringName, PackedScene] = {
 }
 
 const ENEMY_SCENE: PackedScene = preload("res://entities/enemy/enemy.tscn")
+## Chance de trouver un plan en fouillant une caisse.
+const CACHE_PLAN_CHANCE: float = 0.2
 const GROUND_SOURCE_ID: int = 0
 
 ## Pour tester un type de zone précis depuis l'éditeur (vide = celui de GameState).
@@ -52,6 +55,9 @@ var _encounter_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _combat_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 ## Armure du joueur pour cet arrêt (équipement + talents).
 var _armor: int = 0
+## Vitesse du joueur sans malus d'infection.
+var _base_speed: float = 0.0
+var _infection_stage: int = -1
 ## Rencontre en cours (null si aucune fenêtre ouverte).
 var _active_spot: EncounterSpot
 
@@ -147,18 +153,29 @@ func _setup_camera() -> void:
 func _wire_systems() -> void:
 	var loadout: Loadout = GameState.loadout
 	_player.exposure.ground = _ground
+	# L'infection continue celle des arrêts précédents : elle ne redescend pas toute seule.
+	_player.exposure.value = GameState.infection
+	_base_speed = _player.move_speed
 	# Équipement + talents de la carrière.
 	_player.exposure.protection = minf(loadout.protection() + GameState.perk_bonus(&"protection"), Loadout.MAX_PROTECTION)
 	var harvest_bonus: float = 1.0 + GameState.perk_bonus(&"harvest_speed")
 	_player.interactor.speed_for = func(target: Interactable) -> float:
 		return loadout.harvest_speed_for((target as Harvestable).harvest_tag) * harvest_bonus if target is Harvestable else 1.0
 	_player.interactor.block_reason_for = func(target: Interactable) -> String:
-		return "Sac plein !" if target is Harvestable and _session.is_bag_full() else ""
+		if not target is Harvestable:
+			return ""
+		var needed: StringName = (target as Harvestable).required_tag
+		if needed != &"" and not _tool_has_tag(needed):
+			return "Il faut : " + _tool_name_for(needed)
+		return "Sac plein !" if _session.is_bag_full() else ""
 	_session.capacity = GameState.bag_capacity()
 	_session.free_beds = GameState.free_beds()
+	_session.plan_pool = GameState.unfound_plans()
 	_player.attack_damage = maxi(loadout.damage(), 1) + int(GameState.perk_bonus(&"damage"))
 	_player.mash_power = 1.0 + GameState.perk_bonus(&"mash_power")
 	_player.health.reset(GameState.max_health())
+	_on_infection_changed(_player.exposure.value)
+	_player.exposure.changed.connect(_on_infection_changed)
 	_armor = loadout.armor() + int(GameState.perk_bonus(&"armor"))
 	_player.health.died.connect(_session.fall)
 	_player.freed.connect(func(by: Node2D) -> void:
@@ -260,7 +277,51 @@ func _connect_harvestable(harvestable: Harvestable) -> void:
 	harvestable.harvested.connect(func(loot: LootData, amount: int, exposure: float) -> void:
 		_session.add_loot(loot, amount)
 		_player.exposure.add(exposure)
+		_extract_with_tool(loot)
+		if harvestable.harvest_tag == &"cache" and _combat_rng.randf() < CACHE_PLAN_CHANCE:
+			var plan: StringName = _session.find_plan(_combat_rng)
+			if plan != &"":
+				_hud.call(&"toast", "Plan trouvé : %s !" % BlueprintCatalog.get_plan(plan).display_name, false)
 	)
+
+
+## Outil d'extraction (kit de chimie) : une ressource en plus en récoltant la bonne chose.
+func _extract_with_tool(loot: LootData) -> void:
+	var tool: ItemData = GameState.loadout.get_item(ItemData.Slot.TOOL)
+	if tool == null or loot == null or tool.extra_from != loot.id:
+		return
+	for id: StringName in tool.extra_loot:
+		_session.add_loot(_loot_type(id), tool.extra_loot[id])
+
+
+func _tool_has_tag(tag: StringName) -> bool:
+	var tool: ItemData = GameState.loadout.get_item(ItemData.Slot.TOOL)
+	return tool != null and tag in tool.harvest_tags
+
+
+static func _tool_name_for(tag: StringName) -> String:
+	for item: ItemData in ItemCatalog.ALL:
+		if tag in item.harvest_tags:
+			return item.display_name.to_lower()
+	return "un outil"
+
+
+## L'infection change pendant l'arrêt : paliers (PV, vitesse) et, à 100 %, la ruche.
+func _on_infection_changed(value: float) -> void:
+	var stage: int = Infection.stage_for(value)
+	if stage == Infection.Stage.TURNED:
+		if _session.is_running():
+			_session.turn()
+		return
+	if stage == _infection_stage:
+		return
+	var worse: bool = _infection_stage >= 0 and stage > _infection_stage
+	_infection_stage = stage
+	var max_health: int = maxi(GameState.BASE_HEALTH + int(GameState.perk_bonus(&"max_health")) - Infection.health_malus(value), 1)
+	_player.health.set_max(max_health)
+	_player.move_speed = _base_speed * Infection.speed_factor(value)
+	if worse:
+		_hud.call(&"toast", "Infection : %s" % Infection.describe(value), true)
 
 
 # --- Rencontres -------------------------------------------------------------------
@@ -287,7 +348,7 @@ func _on_choice_selected(choice: EncounterChoice) -> void:
 	var repeatable: bool = _active_spot.encounter.repeatable
 	if not repeatable:
 		_active_spot.mark_resolved(outcome.recruit != null)
-	_dialog.call(&"show_outcome", outcome.text, outcome.gained, repeatable, outcome.item)
+	_dialog.call(&"show_outcome", outcome.text, outcome.gained, repeatable, outcome.item, outcome.plan)
 
 
 func _on_dialog_closed() -> void:
@@ -302,7 +363,10 @@ func _on_dialog_closed() -> void:
 func _on_session_ended(result: ExpeditionResult) -> void:
 	_end_combat()
 	_dialog.call(&"close")
-	if result.fell:
+	if result.turned:
+		# Les spores ont gagné.
+		create_tween().tween_property(_player, "modulate", Color(0.75, 0.42, 1.0), 0.8)
+	elif result.fell:
 		# Le joueur s'effondre.
 		var fall := create_tween()
 		fall.tween_property(_player, "rotation", PI / 2.0, 0.4)

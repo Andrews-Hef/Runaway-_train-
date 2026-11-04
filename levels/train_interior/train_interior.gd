@@ -56,6 +56,9 @@ const FURNITURE: Dictionary[StringName, Array] = {
 	&"chest": [preload("res://assets/sprites/interior/chest.png"), Vector2(32, 39), Vector2(52, 8)],
 	&"engine": [preload("res://assets/sprites/interior/engine_panel.png"), Vector2(26, 54), Vector2(40, 12)],
 	&"plan_table": [preload("res://assets/sprites/interior/plan_table.png"), Vector2(20, 38), Vector2(28, 6)],
+	&"med_cabinet": [preload("res://assets/sprites/interior/med_cabinet.png"), Vector2(22, 42), Vector2(36, 8)],
+	&"planter": [preload("res://assets/sprites/interior/planter.png"), Vector2(22, 36), Vector2(36, 8)],
+	&"still": [preload("res://assets/sprites/interior/still.png"), Vector2(20, 44), Vector2(30, 8)],
 }
 ## Les meubles sont contre le mur du fond.
 const FURNITURE_Y: float = -12.0
@@ -64,7 +67,11 @@ const FURNITURE_Y: float = -12.0
 ## Poste : onglet du menu à ouvrir, &"lever" pour descendre à l'arrêt, &"" pour rien.
 const LAYOUTS: Dictionary[StringName, Array] = {
 	&"dormitory": [[&"bunk", -34.0, &"crew", "Voir l'équipage"], [&"bunk", 14.0, &"", ""]],
-	&"workshop": [[&"workbench", -28.0, &"workshop", "Fabriquer"], [&"locker", 30.0, &"equipment", "S'équiper"]],
+	&"workshop": [[&"workbench", -36.0, &"workshop", "Fabriquer"], [&"plan_table", 4.0, &"plans", "Étudier les plans"],
+		[&"locker", 40.0, &"equipment", "S'équiper"]],
+	&"infirmary": [[&"med_cabinet", -20.0, &"infirmary", "Infirmerie : se soigner"], [&"bunk", 30.0, &"", ""]],
+	&"greenhouse": [[&"planter", -30.0, &"", ""], [&"planter", 22.0, &"", ""]],
+	&"laboratory": [[&"still", -26.0, &"workshop", "Laboratoire : transformer"], [&"planter", 28.0, &"", ""]],
 	&"stock": [[&"chest", 0.0, &"stock", "Ouvrir le stock"]],
 	&"cabin": [[&"plan_table", -30.0, &"train", "Plans du train"], [&"engine", 24.0, &"lever", "Descendre au prochain arrêt"]],
 }
@@ -78,6 +85,8 @@ const STATION_TABS: Dictionary[StringName, int] = {
 	&"equipment": TrainMenu.Tab.EQUIPMENT,
 	&"crew": TrainMenu.Tab.CREW,
 	&"train": TrainMenu.Tab.TRAIN,
+	&"plans": TrainMenu.Tab.PLANS,
+	&"infirmary": TrainMenu.Tab.INFIRMARY,
 }
 
 @onready var _ground: Parallax2D = $Ground
@@ -108,7 +117,7 @@ func _ready() -> void:
 	_camera.reset_smoothing()
 	_player.interactor.target_changed.connect(_on_target_changed)
 	_menu.connect(&"closed", _on_menu_closed)
-	for signal_name: StringName in [&"storage_changed", &"crew_changed", &"equipment_changed", &"train_changed", &"career_changed"]:
+	for signal_name: StringName in [&"storage_changed", &"crew_changed", &"equipment_changed", &"train_changed", &"career_changed", &"infection_changed"]:
 		GameState.connect(signal_name, _refresh_texts)
 	GameState.train_changed.connect(_build_train)
 	InputMode.changed.connect(func(_device: int) -> void: _refresh_prompt())
@@ -387,9 +396,9 @@ func _refresh_texts() -> void:
 		("Ordre du capitaine : " + order.text()) if order else "Pas d'ordre en gare"]
 	if not GameState.pending_promotions.is_empty():
 		_order.text += " · Talent à choisir (onglet Grade)"
-	_summary.text = "Stock : %d/%d · Équipage : %d/%d · Voitures : %d/%d" % [
-		GameState.storage_total(), GameState.storage_capacity(), GameState.crew.size(), GameState.beds(),
-		GameState.train.size(), GameState.max_cars()]
+	_summary.text = "Infection %d %% · Stock %d/%d · Équipage %d/%d · Voitures %d/%d" % [
+		roundi(GameState.infection * 100.0), GameState.storage_total(), GameState.storage_capacity(),
+		GameState.crew.size(), GameState.beds(), GameState.train.size(), GameState.max_cars()]
 
 
 func _on_target_changed(target: Interactable) -> void:

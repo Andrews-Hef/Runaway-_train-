@@ -12,7 +12,7 @@ extends RefCounted
 ## Pur : on lui passe la composition, le niveau de la locomotive et le stock.
 
 ## Ce qui empêche une construction ou une amélioration.
-enum Problem { NONE, NOT_BUILDABLE, ALREADY_THERE, NO_TRACTION, MISSING_MATERIALS, MAX_LEVEL }
+enum Problem { NONE, NOT_BUILDABLE, ALREADY_THERE, NO_TRACTION, MISSING_MATERIALS, MAX_LEVEL, NEEDS_PLAN }
 
 ## Niveaux de la locomotive, du premier au dernier.
 const LEVELS: Array[LocomotiveLevel] = [
@@ -29,6 +29,7 @@ const PROBLEM_TEXTS: Dictionary[Problem, String] = {
 	Problem.NO_TRACTION: "La locomotive ne peut pas tirer une voiture de plus : renforce-la.",
 	Problem.MISSING_MATERIALS: "Il manque des matériaux dans le stock.",
 	Problem.MAX_LEVEL: "La locomotive est au niveau maximum.",
+	Problem.NEEDS_PLAN: "Il faut d'abord étudier son plan.",
 }
 
 
@@ -76,9 +77,11 @@ static func missing(cost: Dictionary[StringName, int], storage: Dictionary[Strin
 
 ## Peut-on ajouter cette voiture au train ? Problem.NONE si oui.
 static func build_problem(wagon: WagonData, train: Array[WagonData], level: int,
-		storage: Dictionary[StringName, int]) -> Problem:
+		storage: Dictionary[StringName, int], plan_known: bool = true) -> Problem:
 	if not wagon.is_buildable():
 		return Problem.NOT_BUILDABLE
+	if not plan_known:
+		return Problem.NEEDS_PLAN
 	if wagon.unique and wagon in train:
 		return Problem.ALREADY_THERE
 	if train.size() >= max_cars(level):

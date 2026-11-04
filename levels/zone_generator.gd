@@ -28,6 +28,7 @@ enum Placement { ANYWHERE, HEALTHY, INFECTED }
 ## Règles de placement par type d'objet : [placement, espacement minimal en px].
 ## L'ordre compte : les gros objets d'abord, pour qu'ils trouvent de la place.
 const RULES: Dictionary[StringName, Array] = {
+	&"heavy_wreck": [Placement.HEALTHY, 70.0],
 	&"wreck": [Placement.HEALTHY, 44.0],
 	&"dead_tree": [Placement.HEALTHY, 26.0],
 	&"rock": [Placement.ANYWHERE, 22.0],

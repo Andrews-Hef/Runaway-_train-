@@ -48,12 +48,15 @@ func open(encounter: EncounterData, carrying: ExpeditionResult, capacity: int = 
 
 
 ## Affiche le résultat d'un choix. `return_to_choices` : revenir aux choix ensuite (marchand).
-func show_outcome(text: String, gained: Dictionary[StringName, int], return_to_choices: bool, item: ItemData = null) -> void:
+func show_outcome(text: String, gained: Dictionary[StringName, int], return_to_choices: bool, item: ItemData = null,
+		plan: StringName = &"") -> void:
 	var lines: PackedStringArray = [text]
 	for id: StringName in gained:
 		lines.append("+%d %s" % [gained[id], loot_name(id)])
 	if item:
 		lines.append("Obtenu : %s (%s)" % [item.display_name, item.describe_effects()])
+	if plan != &"":
+		lines.append("Plan trouvé : %s (à étudier à l'atelier)" % BlueprintCatalog.get_plan(plan).display_name)
 	_outcome.text = "\n".join(lines)
 	_outcome.visible = true
 	_choices.visible = false

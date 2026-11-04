@@ -83,8 +83,9 @@ func _refresh_order() -> void:
 	var done: bool
 	var progress: String
 	if _captain_order.data.kind == OrderData.Kind.LOW_EXPOSURE:
-		done = _exposure_value * 100.0 < _captain_order.amount
-		progress = "%d %%" % roundi(_exposure_value * 100.0)
+		var gained: float = maxf(_exposure_value - _session.result.exposure_start, 0.0)
+		done = gained * 100.0 < _captain_order.amount
+		progress = "+%d %%" % roundi(gained * 100.0)
 	else:
 		done = _captain_order.is_completed(_session.result)
 		progress = _captain_order.progress_text(_session.result)
@@ -148,7 +149,7 @@ func _on_loot_changed(result: ExpeditionResult) -> void:
 		var amount: int = result.get_amount(loot.id)
 		_loot_labels[loot.id].text = "%s %d" % [loot.display_name, amount]
 		# Les matériaux rares n'apparaissent qu'une fois trouvés, pour garder le HUD lisible.
-		_loot_labels[loot.id].get_parent().visible = amount > 0 or not loot.id in [&"cloth", &"parts"]
+		_loot_labels[loot.id].get_parent().visible = amount > 0 or not loot.rare
 	_refresh_order()
 	if _session and _session.capacity >= 0:
 		_bag_label.text = "Sac %d/%d" % [result.total_items(), _session.capacity]
@@ -184,7 +185,8 @@ func _on_exposure_changed(value: float) -> void:
 	_exposure_value = value
 	_refresh_order()
 	_exposure_bar.value = value
-	_exposure_label.text = "Exposition %d %%" % roundi(value * 100.0)
+	_exposure_label.text = "Infection %d %% · %s" % [roundi(value * 100.0), Infection.stage_name(Infection.stage_for(value))]
+	_exposure_label.add_theme_color_override(&"font_color", Infection.color(value))
 
 
 func _on_zone_changed(inside: bool) -> void:

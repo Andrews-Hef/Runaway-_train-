@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3]
+
+[ext_resource type="Script" path="res://core/recipe_data.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+id = &"metal_plate"
+display_name = "Plaques de métal"
+description = "On martèle la ferraille en plaques solides."
+station = 0
+cost = Dictionary[StringName, int]({
+&"scrap": 3
+})
+output = Dictionary[StringName, int]({
+&"metal_plate": 1
+})
+plan = &"metallurgy"

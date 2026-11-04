@@ -89,12 +89,16 @@ func _fill_offers(list: VBoxContainer, offers: Array[RefugeOffer], verb: String)
 	list.add_child(MenuKit.label("Stock du train : %d/%d" % [GameState.storage_total(), GameState.storage_capacity()], MenuKit.GOLD))
 	for offer: RefugeOffer in offers:
 		var problem: RefugeRules.Problem = RefugeRules.problem(offer, GameState.storage, GameState.storage_free(),
-			GameState.free_beds(), offer in _done)
+			GameState.free_beds(), offer in _done or GameState.knows_plan(offer.reward_plan))
 		var detail: String = "Donne : " + MenuKit.describe_amounts(offer.cost)
 		if not offer.reward.is_empty():
 			detail += " · Reçois : " + MenuKit.describe_amounts(offer.reward)
+		if offer.reward_plan != &"":
+			detail += " · Plan : " + BlueprintCatalog.get_plan(offer.reward_plan).display_name
 		if problem != RefugeRules.Problem.NONE and problem != RefugeRules.Problem.MISSING_MATERIALS:
 			detail = RefugeRules.PROBLEM_TEXTS[problem]
+			if problem == RefugeRules.Problem.ALREADY_DONE and offer.reward_plan != &"":
+				detail = "Plan déjà connu."
 		var title: String = offer.label
 		if offer.recruits():
 			title += " (%s)" % offer.recruit_role_label

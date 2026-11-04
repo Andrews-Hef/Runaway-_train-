@@ -16,6 +16,23 @@ Un **voyage** d'arrêt en arrêt :
 - **Retour à bord** : le butin et les recrues rejoignent le train et on repart vers l'arrêt suivant.
 - **Campagne continue et sauvegarde** : chaque gare refuge est un **point de reprise**. **Train raté** : on reprend à la dernière gare (ou au départ du train), tout ce qui s'est passé depuis est perdu. La session est aussi sauvegardée à chaque trajet (`user://saves/`), pour reprendre après avoir fermé le jeu.
 
+**Médicaments et infirmerie** : antiseptique (−10 %) et antibiotiques (−20 %) se trouvent dans les caisses et les armoires, et s'achètent chez les marchands et en gare. Le **sérum de sève** (−35 %) et le **vaccin expérimental** (−60 %) se préparent à l'**infirmerie**, une voiture à construire, avec les plans Pharmacie et Vaccin. On prend ses médicaments dans l'onglet **Infirmerie** du menu du train.
+
+**Plans et recherche** : les recettes avancées sont dans des **plans**. On les trouve en fouillant (caisses, armoires, sacs), on les achète aux marchands et en gare, puis on les **étudie** à l'atelier (table des plans) en payant des ressources. Les plans ont des prérequis : c'est un arbre.
+
+| Plan | Prérequis | Débloque |
+|---|---|---|
+| Métallurgie | — | Plaques de métal (3 ferrailles → 1 plaque), plastron en tôle |
+| Chimie de base | — | Produits chimiques (3 plantes infectées → 1), kit de chimie, masque à cartouches |
+| Horticulture | — | Voiture **Serre** (2 plantes saines à chaque trajet) |
+| Chalumeau | Métallurgie | Chalumeau (découpe les **épaves de camion** : plaques et pièces) |
+| Armurerie | Métallurgie | Masse de chantier (dégâts 4) |
+| Pharmacie | Chimie | Antibiotiques et sérum de sève (infirmerie) |
+| Distillerie | Chimie, Métallurgie | Voiture **Laboratoire** (2 plantes infectées → 1 produit chimique à chaque trajet) |
+| Vaccin expérimental | Pharmacie | Vaccin (infirmerie) |
+
+**Extraction** : des outils ouvrent de nouvelles ressources (chalumeau sur les épaves de camion, kit de chimie qui tire des produits chimiques des plantes infectées), l'atelier transforme (ferraille → plaques), et les machines du train (serre, laboratoire) produisent pendant les trajets.
+
 **Grades et ordres du capitaine** : à chaque arrêt (sauf en gare), le capitaine donne un **ordre** adapté à la zone : « Ramène 6 ferrailles », « Élimine 2 pilleurs », « Reviens avec moins de 25 % d'exposition »… Il est suivi en haut de l'écran. Ordre rempli et ennemis éliminés rapportent du **mérite**. Au fil du mérite, tu montes en grade : **Recrue → Soldat → Caporal → Sergent → Lieutenant → Capitaine**. À chaque promotion, tu choisis **un talent parmi deux** (+2 PV, sac +4, dégâts +1, se dégager plus vite, récolte plus rapide, armure…). Onglet **Grade** du menu du train : grade, mérite, ordre en cours, talents.
 
 **Le train** : la locomotive tire un nombre limité de voitures, cabine comprise. On part avec 4 voitures (dortoir, atelier, stock, cabine) et une locomotive qui en tire 5 ; chaque renfort, fait au **dépôt d'une gare refuge**, en ajoute une, **jusqu'à 8**. Les voitures se construisent à bord avec le stock et s'attellent en queue.
@@ -39,7 +56,7 @@ Pendant un arrêt :
 
 1. Le train s'arrête. Tu as **60 à 110 secondes** selon la zone avant le départ.
 2. Tu récoltes en **maintenant Agir** près d'un objet : **ferraille** (épaves), **bois** (arbres morts), **plantes**, et **plantes infectées** dans les zones violettes.
-3. Marcher sur le sol violet ou cueillir une plante infectée fait monter ta **jauge d'exposition**.
+3. Marcher sur le sol violet, cueillir une plante infectée ou prendre un coup d'infecté fait monter ton **infection**. Elle **reste d'un arrêt à l'autre** (ni le train ni les gares ne la font baisser) : seuls les **médicaments** la soignent. Paliers : **Fièvre** (30 %, −2 PV), **Contaminé** (60 %, −4 PV, plus lent), **Critique** (90 %, −6 PV, encore plus lent) ; à **100 %**, tu rejoins la ruche (reprise à la dernière gare).
 4. **Combat** : des **infectés** rôdent dans les zones violettes, des **pilleurs** dans les zones saines. Frappe avec **Coup** (dégâts de l'arme portée). Tu as **10 points de vie**, rendus à chaque arrêt. Plaqué au sol par un rampant : **martèle Coup** pour te dégager.
 5. À 15 secondes du départ, **le train siffle**. Remonte à bord en maintenant Agir devant la porte du wagon.
 6. **Bilan** : butin, exposition et risque d'infection. Si tu rates le train ou si tu tombes, tu reprends à la dernière gare refuge.
@@ -127,6 +144,9 @@ Le forçage est ignoré dans un build release.
 | `Projectile` | `entities/enemy/projectile.gd` | Balle ou crachat : file tout droit, arrêté par le décor |
 | `Career` / `GradeData` / `PerkData` | `core/` | Grades (`data/grades/*.tres`, avec leurs deux talents), mérite, bonus des talents |
 | `CaptainOrders` / `OrderData` | `core/` | Ordres du capitaine (`data/orders/*.tres`) : tirage adapté à la zone, suivi, évaluation au retour |
+| `Infection` | `core/infection.gd` | Paliers de l'infection (PV, vitesse), 100 % = la ruche |
+| `BlueprintData` / `BlueprintCatalog` | `core/` | Plans (`data/plans/*.tres`) : prérequis, coût d'étude, ce qu'ils débloquent |
+| `RecipeData` / `RecipeCatalog` | `core/` | Transformations et médicaments (`data/recipes/*.tres`), à l'atelier ou à l'infirmerie |
 | `MenuKit` | `ui/common/menu_kit.gd` | Morceaux d'interface partagés par les menus (lignes, coûts, couleurs) |
 
 **Ajouter une rencontre** : créer un `EncounterData` dans `data/encounters/` (titre, texte, choix réglés dans l'inspecteur), puis l'ajouter à `BY_ID` et à un pool dans `core/encounter_library.gd`. Chaque rencontre doit proposer un choix « Partir » (vérifié par les tests).
@@ -138,6 +158,10 @@ Le forçage est ignoré dans un build release.
 **Régler la traction** : `max_cars` et le coût de chaque niveau dans `data/locomotive/level_*.tres`.
 
 **Ajouter un type d'ennemi** : créer un `EnemyData` dans `data/enemies/` (faction, profil, vie, vitesses, portée, dégâts, exposition, vol, butin, premier arrêt), l'ajouter à `ALL` dans `core/enemy_catalog.gd`, puis régler son nombre dans `enemies` des types de zones.
+
+**Ajouter un plan** : créer un `BlueprintData` dans `data/plans/` (coût, prérequis), l'ajouter à `ALL` dans `core/blueprint_catalog.gd`, puis mettre son id dans le champ `plan` de ce qu'il débloque (équipement, recette ou voiture).
+
+**Ajouter une recette ou un médicament** : créer un `RecipeData` dans `data/recipes/` (poste, coût, produit, plan) et l'ajouter à `core/recipe_catalog.gd`. Un médicament est une ressource (`data/loot/`) avec un champ `cure`.
 
 **Ajouter un ordre du capitaine** : créer un `OrderData` dans `data/orders/` (texte avec `{n}`, type, cible, fourchette, mérite, premier arrêt) et l'ajouter à `ORDERS` dans `core/captain_orders.gd`. Il n'est tiré que s'il est faisable dans la zone.
 

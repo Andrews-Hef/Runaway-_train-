@@ -13,6 +13,10 @@ signal equipment_changed
 signal train_changed
 ## Mérite, grade, talents ou ordre du capitaine ont changé.
 signal career_changed
+## L'infection du joueur a changé (sortie, médicament).
+signal infection_changed
+## Un plan a été trouvé ou étudié.
+signal plans_changed
 
 const FIXED_SEED_SETTING: String = "game/debug/fixed_seed"
 ## Le premier arrêt est toujours celui-ci : une zone simple pour commencer.
@@ -43,6 +47,12 @@ const LOOT_TYPES: Array[LootData] = [
 	preload("res://data/loot/infected_herb.tres"),
 	preload("res://data/loot/cloth.tres"),
 	preload("res://data/loot/parts.tres"),
+	preload("res://data/loot/metal_plate.tres"),
+	preload("res://data/loot/chemicals.tres"),
+	preload("res://data/loot/antiseptic.tres"),
+	preload("res://data/loot/antibiotics.tres"),
+	preload("res://data/loot/serum.tres"),
+	preload("res://data/loot/vaccine.tres"),
 ]
 
 ## Le train du départ, de la queue à la tête (la cabine est toujours en tête).
@@ -58,6 +68,9 @@ const WAGON_TYPES: Array[WagonData] = [
 	preload("res://data/wagons/workshop.tres"),
 	preload("res://data/wagons/stock.tres"),
 	preload("res://data/wagons/dormitory.tres"),
+	preload("res://data/wagons/infirmary.tres"),
+	preload("res://data/wagons/greenhouse.tres"),
+	preload("res://data/wagons/laboratory.tres"),
 ]
 ## Version du format de sauvegarde (à augmenter si le format change).
 const SAVE_VERSION: int = 1
@@ -65,6 +78,9 @@ const SAVE_VERSION: int = 1
 const BUILDABLE_WAGONS: Array[WagonData] = [
 	preload("res://data/wagons/dormitory.tres"),
 	preload("res://data/wagons/stock.tres"),
+	preload("res://data/wagons/infirmary.tres"),
+	preload("res://data/wagons/greenhouse.tres"),
+	preload("res://data/wagons/laboratory.tres"),
 ]
 
 ## Numéro de l'arrêt en cours ou à venir (1 = premier arrêt).
@@ -91,6 +107,13 @@ var perks: Array[PerkData] = []
 var pending_promotions: Array[GradeData] = []
 ## Ordre du capitaine pour l'arrêt à venir (null en gare refuge).
 var current_order: CaptainOrders.Order
+## Infection du joueur (0 à 1) : elle ne baisse qu'avec des médicaments. Voir Infection.
+var infection: float = 0.0
+## Plans trouvés (pas encore étudiés) et plans étudiés (ids de BlueprintData).
+var found_plans: Array[StringName] = []
+var researched_plans: Array[StringName] = []
+## Ce que les machines du train ont produit pendant le dernier trajet (pour l'afficher).
+var last_production: Dictionary[StringName, int] = {}
 
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
@@ -122,17 +145,27 @@ func new_run(run_seed: int = 0) -> void:
 	merit = 0
 	perks.clear()
 	pending_promotions.clear()
+	infection = 0.0
+	found_plans.clear()
+	researched_plans.clear()
+	last_production.clear()
 	storage_changed.emit()
 	crew_changed.emit()
 	equipment_changed.emit()
 	train_changed.emit()
 	prepare_next_stop()
 	career_changed.emit()
+	infection_changed.emit()
+	plans_changed.emit()
 
 
 ## Tire le prochain arrêt : gare refuge (tous les REFUGE_EVERY arrêts) ou type de
 ## zone, et graine de génération.
 func prepare_next_stop() -> void:
+	# On quitte un arrêt : les machines du train travaillent pendant le trajet.
+	last_production.clear()
+	if stop_number >= 1:
+		last_production = run_machines()
 	stop_number += 1
 	if stop_number % REFUGE_EVERY == 0:
 		current_refuge = REFUGES[(stop_number / REFUGE_EVERY - 1) % REFUGES.size()]
@@ -177,6 +210,13 @@ func record_expedition(result: ExpeditionResult) -> void:
 	result.order_completed = current_order != null and current_order.is_completed(result)
 	result.merit_gained = result.kill_merit() + (current_order.data.merit if result.order_completed else 0)
 	result.promotions = add_merit(result.merit_gained)
+	infection = clampf(result.exposure, 0.0, 1.0)
+	infection_changed.emit()
+	for plan_id: StringName in result.plans:
+		if not plan_id in found_plans and not plan_id in researched_plans:
+			found_plans.append(plan_id)
+	if not result.plans.is_empty():
+		plans_changed.emit()
 	var free: int = storage_free()
 	result.left_behind.clear()
 	for id: StringName in result.loot:
@@ -197,9 +237,9 @@ func record_expedition(result: ExpeditionResult) -> void:
 		equipment_changed.emit()
 
 
-## Fabrique un équipement à l'atelier avec les matériaux du stock.
+## Fabrique un équipement à l'atelier avec les matériaux du stock (son plan doit être étudié).
 func craft(item: ItemData) -> bool:
-	if not Crafting.craft(item, storage, owned_items):
+	if not is_known(item.plan) or not Crafting.craft(item, storage, owned_items):
 		return false
 	storage_changed.emit()
 	equipment_changed.emit()
@@ -228,6 +268,118 @@ func crew_names() -> Array[String]:
 	for member: CrewMember in crew:
 		names.append(member.display_name)
 	return names
+
+
+# --- Infection et médicaments -----------------------------------------------------
+
+## Prend un médicament du stock : l'infection baisse. Renvoie false si impossible.
+func take_medicine(medicine: LootData) -> bool:
+	if not medicine.is_medicine() or storage_amount(medicine.id) <= 0 or infection <= 0.0:
+		return false
+	TrainRules.pay({medicine.id: 1} as Dictionary[StringName, int], storage)
+	infection = maxf(infection - medicine.cure, 0.0)
+	storage_changed.emit()
+	infection_changed.emit()
+	return true
+
+
+func has_wagon(id: StringName) -> bool:
+	for wagon: WagonData in train:
+		if wagon.id == id:
+			return true
+	return false
+
+
+# --- Plans, recherche, recettes ----------------------------------------------------
+
+## Plan déjà trouvé ou étudié (on ne le rachète pas).
+func knows_plan(plan_id: StringName) -> bool:
+	return plan_id != &"" and (plan_id in found_plans or plan_id in researched_plans)
+
+
+## Une recette, un équipement ou une voiture avec ce plan est-il connu ?
+func is_known(plan_id: StringName) -> bool:
+	return plan_id == &"" or plan_id in researched_plans
+
+
+## Plans qu'on peut encore trouver par hasard à cet arrêt.
+func unfound_plans() -> Array[StringName]:
+	var list: Array[StringName] = []
+	for plan: BlueprintData in BlueprintCatalog.ALL:
+		if stop_number >= plan.min_stop and not plan.id in found_plans and not plan.id in researched_plans:
+			list.append(plan.id)
+	return list
+
+
+## Ajoute un plan trouvé (gare, marchand...). Renvoie false s'il était déjà connu.
+func add_plan(plan_id: StringName) -> bool:
+	if plan_id == &"" or plan_id in found_plans or plan_id in researched_plans:
+		return false
+	found_plans.append(plan_id)
+	plans_changed.emit()
+	return true
+
+
+## Étudie un plan trouvé à l'atelier : paie son coût, débloque ce qu'il contient.
+func research(plan: BlueprintData) -> bool:
+	if not BlueprintCatalog.research_problem(plan, found_plans, researched_plans, storage).is_empty():
+		return false
+	TrainRules.pay(plan.research_cost, storage)
+	found_plans.erase(plan.id)
+	researched_plans.append(plan.id)
+	storage_changed.emit()
+	plans_changed.emit()
+	return true
+
+
+## Pourquoi on ne peut pas préparer cette recette (vide = c'est possible).
+func recipe_problem(recipe: RecipeData) -> String:
+	if not is_known(recipe.plan):
+		return "Plan à étudier."
+	if recipe.station == RecipeData.Station.INFIRMARY and not has_wagon(&"infirmary"):
+		return "Il faut une infirmerie (onglet Train)."
+	if not TrainRules.missing(recipe.cost, storage).is_empty():
+		return "Il manque des matériaux dans le stock."
+	var gained: int = 0
+	for amount: int in recipe.output.values():
+		gained += amount
+	for amount: int in recipe.cost.values():
+		gained -= amount
+	if gained > storage_free():
+		return "Pas assez de place dans le stock."
+	return ""
+
+
+func make_recipe(recipe: RecipeData) -> bool:
+	if not recipe_problem(recipe).is_empty():
+		return false
+	TrainRules.pay(recipe.cost, storage)
+	for id: StringName in recipe.output:
+		storage[id] = storage.get(id, 0) + recipe.output[id]
+	storage_changed.emit()
+	return true
+
+
+## Les machines du train (serre, laboratoire) produisent : renvoie ce qui a été produit.
+func run_machines() -> Dictionary[StringName, int]:
+	var produced: Dictionary[StringName, int] = {}
+	for wagon: WagonData in train:
+		if wagon.production.is_empty() or not TrainRules.missing(wagon.production_cost, storage).is_empty():
+			continue
+		var gained: int = 0
+		for amount: int in wagon.production.values():
+			gained += amount
+		for amount: int in wagon.production_cost.values():
+			gained -= amount
+		if gained > storage_free():
+			continue
+		TrainRules.pay(wagon.production_cost, storage)
+		for id: StringName in wagon.production:
+			storage[id] = storage.get(id, 0) + wagon.production[id]
+			produced[id] = produced.get(id, 0) + wagon.production[id]
+	if not produced.is_empty():
+		storage_changed.emit()
+	return produced
 
 
 # --- Carrière ----------------------------------------------------------------------
@@ -269,8 +421,9 @@ func perk_bonus(stat: StringName) -> float:
 	return Career.bonus(perks, stat)
 
 
+## PV max : base + talents − palier d'infection.
 func max_health() -> int:
-	return BASE_HEALTH + int(perk_bonus(&"max_health"))
+	return maxi(BASE_HEALTH + int(perk_bonus(&"max_health")) - Infection.health_malus(infection), 1)
 
 
 ## Taille du sac : celle du sac porté, plus les talents.
@@ -304,7 +457,7 @@ func storage_free() -> int:
 
 ## Construit une voiture avec le stock. Elle s'attelle en queue du train.
 func build_wagon(wagon: WagonData) -> bool:
-	if TrainRules.build_problem(wagon, train, locomotive_level, storage) != TrainRules.Problem.NONE:
+	if TrainRules.build_problem(wagon, train, locomotive_level, storage, is_known(wagon.plan)) != TrainRules.Problem.NONE:
 		return false
 	TrainRules.pay(wagon.cost, storage)
 	train.insert(0, wagon)
@@ -316,9 +469,10 @@ func build_wagon(wagon: WagonData) -> bool:
 ## Prend une offre de gare refuge (échange ou recrue), payée avec le stock.
 ## `done` : offre déjà prise pendant ce passage. Renvoie false si c'est impossible.
 func use_refuge_offer(offer: RefugeOffer, rng: RandomNumberGenerator, done: bool = false) -> bool:
-	if RefugeRules.problem(offer, storage, storage_free(), free_beds(), done) != RefugeRules.Problem.NONE:
+	if RefugeRules.problem(offer, storage, storage_free(), free_beds(), done or knows_plan(offer.reward_plan)) != RefugeRules.Problem.NONE:
 		return false
 	var recruit: CrewMember = RefugeRules.apply(offer, storage, rng, crew_names())
+	add_plan(offer.reward_plan)
 	storage_changed.emit()
 	if recruit:
 		crew.append(recruit)
@@ -379,6 +533,9 @@ func to_save() -> Dictionary:
 		"merit": merit,
 		"perks": perks.map(func(perk: PerkData) -> String: return String(perk.id)),
 		"pending_promotions": pending_promotions.map(func(g: GradeData) -> String: return String(g.id)),
+		"infection": infection,
+		"found_plans": found_plans.map(func(id: StringName) -> String: return String(id)),
+		"researched_plans": researched_plans.map(func(id: StringName) -> String: return String(id)),
 		"order": String(current_order.data.id) if current_order else "",
 		"order_amount": current_order.amount if current_order else 0,
 	}
@@ -434,6 +591,13 @@ func load_save(data: Dictionary) -> bool:
 		var promotion: GradeData = _find_by_id(Career.GRADES, id)
 		if promotion:
 			pending_promotions.append(promotion)
+	infection = clampf(float(data.get("infection", 0.0)), 0.0, 1.0)
+	found_plans.clear()
+	for id: String in data.get("found_plans", []):
+		found_plans.append(StringName(id))
+	researched_plans.clear()
+	for id: String in data.get("researched_plans", []):
+		researched_plans.append(StringName(id))
 	var order_data: OrderData = CaptainOrders.find(StringName(data.get("order", "")))
 	current_order = CaptainOrders.Order.new(order_data, int(data.get("order_amount", 0))) if order_data else null
 	storage_changed.emit()
@@ -441,6 +605,8 @@ func load_save(data: Dictionary) -> bool:
 	equipment_changed.emit()
 	train_changed.emit()
 	career_changed.emit()
+	infection_changed.emit()
+	plans_changed.emit()
 	return true
 
 

@@ -28,6 +28,8 @@ var exposure_source: ExposureComponent
 var capacity: int = -1
 ## Couchettes libres dans le train au début de l'arrêt (-1 = illimité) : limite les recrues.
 var free_beds: int = -1
+## Plans qu'on peut encore trouver pendant cet arrêt (ids).
+var plan_pool: Array[StringName] = []
 
 
 func _ready() -> void:
@@ -40,6 +42,8 @@ func start(stop_duration: float) -> void:
 	remaining = stop_duration
 	state = State.RUNNING
 	result = ExpeditionResult.new()
+	if exposure_source:
+		result.exposure_start = exposure_source.value
 	time_changed.emit(remaining)
 
 
@@ -90,7 +94,7 @@ func resolve_choice(choice: EncounterChoice, rng: RandomNumberGenerator, taken_n
 	var names: Array[String] = taken_names.duplicate()
 	for member: CrewMember in result.recruits:
 		names.append(member.display_name)
-	var outcome := EncounterResolver.apply(choice, result, rng, names)
+	var outcome := EncounterResolver.apply(choice, result, rng, names, plan_pool)
 	loot_changed.emit(result)
 	if outcome.recruit:
 		recruited.emit(outcome.recruit)
@@ -115,12 +119,33 @@ func steal(amount: int, rng: RandomNumberGenerator) -> Dictionary[StringName, in
 	return stolen
 
 
+## Un plan trouvé en fouillant (caisse) : il rejoint le butin de la sortie.
+## Renvoie l'id du plan, ou vide s'il n'y en a plus à trouver.
+func find_plan(rng: RandomNumberGenerator) -> StringName:
+	if state == State.ENDED:
+		return &""
+	var pool: Array[StringName] = plan_pool.filter(func(id: StringName) -> bool: return not id in result.plans)
+	if pool.is_empty():
+		return &""
+	var plan: StringName = pool[rng.randi_range(0, pool.size() - 1)]
+	result.plans.append(plan)
+	loot_changed.emit(result)
+	return plan
+
+
 ## Un ennemi est éliminé (pour le mérite et les ordres « Élimine N... »).
 func record_kill(enemy: EnemyData) -> void:
 	if state == State.ENDED:
 		return
 	result.record_kill(enemy)
 	loot_changed.emit(result)
+
+
+## L'infection atteint 100 % : le joueur rejoint la ruche, la sortie se termine.
+func turn() -> void:
+	if state != State.ENDED:
+		result.turned = true
+		_finish(false)
 
 
 ## Le joueur tombe au combat : la sortie se termine, il ne remonte pas à bord.

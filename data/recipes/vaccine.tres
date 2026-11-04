@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3]
+
+[ext_resource type="Script" path="res://core/recipe_data.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+id = &"vaccine"
+display_name = "Vaccin expérimental"
+description = "Le travail d'une vie de médecin. Recule la maladie de loin."
+station = 1
+cost = Dictionary[StringName, int]({
+&"chemicals": 3,
+&"parts": 2,
+&"serum": 1
+})
+output = Dictionary[StringName, int]({
+&"vaccine": 1
+})
+plan = &"vaccine"

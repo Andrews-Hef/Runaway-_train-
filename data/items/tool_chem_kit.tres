@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://core/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"tool_chem_kit"
+display_name = "Kit de chimie"
+description = "Fioles et filtres : chaque plante infectée cueillie donne aussi des produits chimiques."
+slot = 3
+extra_from = &"infected_herb"
+extra_loot = Dictionary[StringName, int]({
+&"chemicals": 1
+})
+recipe = Dictionary[StringName, int]({
+&"metal_plate": 1,
+&"cloth": 1,
+&"parts": 1
+})
+plan = &"chemistry"

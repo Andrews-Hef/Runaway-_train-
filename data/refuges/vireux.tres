@@ -53,10 +53,41 @@ cost = Dictionary[StringName, int]({
 recruit_role = &"mechanic"
 recruit_role_label = "mécanique"
 
+[sub_resource type="Resource" id="Resource_vx_chem"]
+script = ExtResource("1_offer")
+label = "L'infirmerie vend des produits chimiques"
+cost = Dictionary[StringName, int]({
+&"herb": 4,
+&"scrap": 2
+})
+reward = Dictionary[StringName, int]({
+&"chemicals": 1
+})
+
+[sub_resource type="Resource" id="Resource_vx_meds"]
+script = ExtResource("1_offer")
+label = "L'infirmerie : antibiotiques"
+cost = Dictionary[StringName, int]({
+&"herb": 3,
+&"cloth": 2
+})
+reward = Dictionary[StringName, int]({
+&"antibiotics": 1
+})
+
+[sub_resource type="Resource" id="Resource_vx_plan_pharma"]
+script = ExtResource("1_offer")
+label = "Le médecin : plan « Pharmacie »"
+cost = Dictionary[StringName, int]({
+&"herb": 6,
+&"cloth": 2
+})
+reward_plan = &"pharmacy"
+
 [resource]
 script = ExtResource("2_refuge")
 id = &"vireux"
 display_name = "Gare refuge de Vireux"
 description = "Un bourg ferroviaire au bord du fleuve. Les marchands y sont durs en affaires, mais l'infirmerie est la meilleure de la ligne."
-trades = Array[ExtResource("1_offer")]([SubResource("Resource_t0"), SubResource("Resource_t1"), SubResource("Resource_t2")])
+trades = Array[ExtResource("1_offer")]([SubResource("Resource_t0"), SubResource("Resource_t1"), SubResource("Resource_t2"), SubResource("Resource_vx_chem"), SubResource("Resource_vx_meds"), SubResource("Resource_vx_plan_pharma")])
 recruits = Array[ExtResource("1_offer")]([SubResource("Resource_r0"), SubResource("Resource_r1")])

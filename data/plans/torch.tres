@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BlueprintData" format=3]
+
+[ext_resource type="Script" path="res://core/blueprint_data.gd" id="1_plan"]
+
+[resource]
+script = ExtResource("1_plan")
+id = &"torch"
+display_name = "Chalumeau"
+description = "Découper les grosses épaves de camion."
+research_cost = Dictionary[StringName, int]({
+&"parts": 2,
+&"metal_plate": 2
+})
+requires = Array[StringName]([&"metallurgy"])
+min_stop = 2

@@ -17,7 +17,8 @@ const PROBLEM_TEXTS: Dictionary[Problem, String] = {
 ## Peut-on prendre cette offre ? `done` : offre déjà prise pendant ce passage.
 static func problem(offer: RefugeOffer, storage: Dictionary[StringName, int], free_space: int,
 		free_beds: int, done: bool = false) -> Problem:
-	if done and offer.recruits():
+	# `done` : recrue déjà prise pendant ce passage, ou plan déjà connu.
+	if done and (offer.recruits() or offer.reward_plan != &""):
 		return Problem.ALREADY_DONE
 	if not TrainRules.missing(offer.cost, storage).is_empty():
 		return Problem.MISSING_MATERIALS

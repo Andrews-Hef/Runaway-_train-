@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="LootData" format=3]
+
+[ext_resource type="Script" path="res://core/loot_data.gd" id="1_loot"]
+
+[resource]
+script = ExtResource("1_loot")
+id = &"vaccine"
+display_name = "Vaccin expérimental"
+color = Color(1.0, 0.9, 0.4, 1)
+rare = true
+cure = 0.6

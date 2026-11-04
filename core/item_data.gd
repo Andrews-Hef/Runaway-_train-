@@ -28,12 +28,18 @@ const SLOT_NAMES: Array[String] = ["Tenue", "Masque", "Sac", "Outil", "Arme"]
 @export var harvest_speed: float = 1.0
 ## Dégâts au combat (armes).
 @export var damage: int = 0
+## Extraction : en récoltant cette ressource (id de LootData), on obtient aussi `extra_loot`
+## (ex. le kit de chimie tire des produits chimiques des plantes infectées).
+@export var extra_from: StringName
+@export var extra_loot: Dictionary[StringName, int] = {}
 
 @export_group("Fabrication")
 ## Matériaux à prendre dans le stock du train. Vide = ne se fabrique pas.
 @export var recipe: Dictionary[StringName, int] = {}
 ## Équipement de départ, porté dès le début de la partie.
 @export var starter: bool = false
+## Plan à étudier avant de pouvoir le fabriquer (vide = recette connue).
+@export var plan: StringName
 
 
 func slot_name() -> String:
@@ -57,4 +63,8 @@ func describe_effects() -> String:
 		parts.append("Récolte +%d %%" % roundi((harvest_speed - 1.0) * 100.0))
 	if damage > 0:
 		parts.append("Dégâts %d" % damage)
+	if &"heavy_wreck" in harvest_tags:
+		parts.append("Découpe les épaves de camion")
+	if not extra_loot.is_empty():
+		parts.append("Extrait des produits chimiques")
 	return " · ".join(parts) if not parts.is_empty() else "Aucun effet"

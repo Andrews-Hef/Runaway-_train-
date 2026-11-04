@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_order")
 id = &"low_exposure"
-title = "Reviens avec moins de {n} % d'exposition"
+title = "Ne prends pas plus de {n} % d'infection"
 kind = 3
 target = &""
-amount = Vector2i(20, 30)
+amount = Vector2i(10, 20)
 merit = 15
 min_stop = 2

@@ -17,6 +17,8 @@ class Outcome:
 	var gained: Dictionary[StringName, int] = {}
 	var recruit: CrewMember
 	var item: ItemData
+	## Plan trouvé ou acheté (id), vide sinon.
+	var plan: StringName
 	var exposure: float = 0.0
 
 
@@ -69,9 +71,10 @@ static func _cost_total(choice: EncounterChoice) -> int:
 	return total
 
 
-## Applique le choix. `taken_names` évite de recruter deux personnes du même nom.
+## Applique le choix. `taken_names` évite de recruter deux personnes du même nom ;
+## `plan_pool` : plans qu'on peut encore trouver (ni trouvés, ni étudiés).
 static func apply(choice: EncounterChoice, result: ExpeditionResult, rng: RandomNumberGenerator,
-		taken_names: Array[String] = []) -> Outcome:
+		taken_names: Array[String] = [], plan_pool: Array[StringName] = []) -> Outcome:
 	assert(missing(choice, result).is_empty(), "Choix appliqué sans pouvoir le payer")
 	var outcome := Outcome.new()
 	outcome.text = choice.outcome_text
@@ -93,6 +96,14 @@ static func apply(choice: EncounterChoice, result: ExpeditionResult, rng: Random
 	if choice.reward_item and not choice.reward_item in result.items:
 		outcome.item = choice.reward_item
 		result.items.append(choice.reward_item)
+
+	var pool: Array[StringName] = plan_pool.filter(func(id: StringName) -> bool: return not id in result.plans)
+	if choice.reward_plan != &"" and choice.reward_plan in pool:
+		outcome.plan = choice.reward_plan
+	elif choice.plan_chance > 0.0 and not pool.is_empty() and rng.randf() < choice.plan_chance:
+		outcome.plan = pool[rng.randi_range(0, pool.size() - 1)]
+	if outcome.plan != &"":
+		result.plans.append(outcome.plan)
 
 	outcome.exposure = choice.exposure
 	return outcome

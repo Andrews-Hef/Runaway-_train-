@@ -10,7 +10,8 @@ description = "Des plaques de tôle cousues sur une veste. Lourd, mais ça encai
 armor = 1
 protection = 0.05
 recipe = Dictionary[StringName, int]({
-&"scrap": 5,
+&"metal_plate": 2,
 &"cloth": 2,
-&"parts": 1
+&"scrap": 2
 })
+plan = &"metallurgy"

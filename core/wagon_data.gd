@@ -17,9 +17,17 @@ extends Resource
 ## Places dans le stock du train (nombre de ressources).
 @export var storage: int = 0
 
+@export_group("Machines")
+## Ressources produites à chaque trajet (serre, laboratoire...).
+@export var production: Dictionary[StringName, int] = {}
+## Ressources consommées à chaque trajet pour produire (vide = gratuit).
+@export var production_cost: Dictionary[StringName, int] = {}
+
 @export_group("Construction")
 ## Matériaux à prendre dans le stock. Vide = ne se construit pas (fourni au départ).
 @export var cost: Dictionary[StringName, int] = {}
+## Plan à étudier avant de pouvoir la construire (vide = connue).
+@export var plan: StringName
 
 
 func is_buildable() -> bool:

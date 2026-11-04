@@ -14,6 +14,9 @@ signal harvested(loot: LootData, amount: int, exposure: float)
 @export var amount_max: int = 2
 ## Type d'objet, pour les outils qui récoltent plus vite : &"scrap", &"wood", &"plant", &"cache".
 @export var harvest_tag: StringName
+## Outil obligatoire : il faut porter un outil avec ce type dans ses harvest_tags
+## (ex. &"heavy_wreck" : le chalumeau pour les épaves de camion). Vide = à mains nues.
+@export var required_tag: StringName
 ## Ressource bonus possible en plus (ex. une pièce mécanique dans une épave).
 @export var bonus_loot: LootData
 @export_range(0.0, 1.0) var bonus_chance: float = 0.0

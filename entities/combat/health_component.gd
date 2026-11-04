@@ -30,6 +30,13 @@ func reset(new_max: int = -1) -> void:
 	changed.emit(health, max_health)
 
 
+## Change les PV max (ex. palier d'infection) ; les PV actuels ne dépassent pas le nouveau max.
+func set_max(new_max: int) -> void:
+	max_health = maxi(new_max, 1)
+	health = mini(health, max_health)
+	changed.emit(health, max_health)
+
+
 func is_dead() -> bool:
 	return health <= 0
 

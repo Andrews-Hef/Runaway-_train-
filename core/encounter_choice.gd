@@ -20,6 +20,10 @@ extends Resource
 @export var reward_item: ItemData
 ## Exposition à l'infection ajoutée au joueur.
 @export_range(0.0, 1.0) var exposure: float = 0.0
+## Plan obtenu à coup sûr (achat chez un marchand) : id de BlueprintData.
+@export var reward_plan: StringName
+## Chance de trouver un plan au hasard parmi ceux qu'on n'a pas encore (fouille).
+@export_range(0.0, 1.0) var plan_chance: float = 0.0
 
 @export_group("Recrutement")
 ## Rôle de la personne recrutée. Vide = ce choix ne recrute personne.

@@ -1,0 +1,175 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/truck-wreck",
+  "type": "prop",
+  "description": "Épave de camion : grosse carcasse rouillée, tôles épaisses (il faut un chalumeau).",
+  "frame": {
+    "width": 104,
+    "height": 72
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "chassis",
+        "material": "rust",
+        "size": [
+          5.2,
+          0.4,
+          2.2
+        ],
+        "position": [
+          0.0,
+          0.5,
+          0.0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "cab",
+        "material": "rust-light",
+        "size": [
+          1.6,
+          1.6,
+          2.1
+        ],
+        "position": [
+          1.9,
+          1.4,
+          0.0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "windshield",
+        "material": "glass",
+        "size": [
+          0.05,
+          0.6,
+          1.8
+        ],
+        "position": [
+          2.72,
+          1.75,
+          0.0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "cargo",
+        "material": "rust",
+        "size": [
+          3.4,
+          1.9,
+          2.2
+        ],
+        "position": [
+          -0.8,
+          1.65,
+          0.0
+        ],
+        "rotation": [
+          0,
+          0,
+          3
+        ]
+      },
+      {
+        "type": "box",
+        "id": "cargo-dent",
+        "material": "dark",
+        "size": [
+          1.2,
+          0.8,
+          0.05
+        ],
+        "position": [
+          -1.0,
+          1.4,
+          1.12
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "wheel-a",
+        "material": "dark",
+        "radius": 0.45,
+        "height": 0.35,
+        "position": [
+          1.9,
+          0.45,
+          1.05
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "wheel-b",
+        "material": "dark",
+        "radius": 0.45,
+        "height": 0.35,
+        "position": [
+          -1.6,
+          0.45,
+          1.05
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "wheel-c",
+        "material": "dark",
+        "radius": 0.45,
+        "height": 0.35,
+        "position": [
+          -0.4,
+          0.45,
+          1.05
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "plate",
+        "material": "steel",
+        "size": [
+          1.0,
+          0.08,
+          0.8
+        ],
+        "position": [
+          -2.9,
+          0.1,
+          0.9
+        ],
+        "rotation": [
+          0,
+          25,
+          8
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

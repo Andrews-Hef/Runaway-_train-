@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BlueprintData" format=3]
+
+[ext_resource type="Script" path="res://core/blueprint_data.gd" id="1_plan"]
+
+[resource]
+script = ExtResource("1_plan")
+id = &"distillery"
+display_name = "Distillerie"
+description = "Un laboratoire à bord qui produit pendant le trajet."
+research_cost = Dictionary[StringName, int]({
+&"metal_plate": 2,
+&"parts": 2,
+&"chemicals": 1
+})
+requires = Array[StringName]([&"chemistry", &"metallurgy"])
+min_stop = 3

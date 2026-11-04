@@ -79,7 +79,7 @@ show_percentage = false
 [node name="ExposureLabel" type="Label" parent="Root/Status/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Exposition 0 %"
+text = "Infection 0 % · Sain"
 
 [node name="ExposureBar" type="ProgressBar" parent="Root/Status/VBox"]
 unique_name_in_owner = true

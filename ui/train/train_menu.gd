@@ -6,7 +6,7 @@ extends CanvasLayer
 
 signal closed
 
-enum Tab { STOCK, WORKSHOP, EQUIPMENT, CREW, TRAIN, GRADE }
+enum Tab { STOCK, WORKSHOP, EQUIPMENT, CREW, TRAIN, GRADE, PLANS, INFIRMARY }
 
 const GOOD: Color = MenuKit.GOOD
 const BAD: Color = MenuKit.BAD
@@ -21,21 +21,26 @@ const GOLD: Color = MenuKit.GOLD
 @onready var _crew_list: VBoxContainer = %CrewList
 @onready var _train_list: VBoxContainer = %TrainList
 @onready var _grade_list: VBoxContainer = %GradeList
+@onready var _plans_list: VBoxContainer = %PlansList
+@onready var _infirmary_list: VBoxContainer = %InfirmaryList
 @onready var _close: Button = %Close
 
 
 func _ready() -> void:
 	_root.visible = false
 	_close.pressed.connect(close)
-	for signal_name: StringName in [&"storage_changed", &"equipment_changed", &"crew_changed", &"train_changed", &"career_changed"]:
+	for signal_name: StringName in [&"storage_changed", &"equipment_changed", &"crew_changed", &"train_changed", &"career_changed",
+			&"infection_changed", &"plans_changed"]:
 		# Différé : un bouton ne doit pas être détruit pendant son propre clic.
 		GameState.connect(signal_name, _refresh, CONNECT_DEFERRED)
 	_tabs.set_tab_title(Tab.STOCK, "Stock")
 	_tabs.set_tab_title(Tab.WORKSHOP, "Atelier")
-	_tabs.set_tab_title(Tab.EQUIPMENT, "Équipement")
+	_tabs.set_tab_title(Tab.EQUIPMENT, "Équiper")
 	_tabs.set_tab_title(Tab.CREW, "Équipage")
 	_tabs.set_tab_title(Tab.TRAIN, "Train")
 	_tabs.set_tab_title(Tab.GRADE, "Grade")
+	_tabs.set_tab_title(Tab.PLANS, "Plans")
+	_tabs.set_tab_title(Tab.INFIRMARY, "Infirmerie")
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -69,6 +74,8 @@ func _refresh() -> void:
 	_fill_crew()
 	_fill_train()
 	_fill_grade()
+	_fill_plans()
+	_fill_infirmary()
 
 
 # --- Stock ------------------------------------------------------------------------
@@ -96,7 +103,12 @@ func _fill_stock() -> void:
 
 func _fill_workshop() -> void:
 	MenuKit.clear(_workshop_list)
+	var hidden: int = 0
+	_workshop_list.add_child(MenuKit.label("Équipement", GOLD))
 	for item: ItemData in ItemCatalog.craftables():
+		if not GameState.is_known(item.plan):
+			hidden += 1
+			continue
 		var owned: bool = item in GameState.owned_items
 		var lacking := Crafting.missing(item, GameState.storage)
 		var row := HBoxContainer.new()
@@ -117,6 +129,16 @@ func _fill_workshop() -> void:
 			button.pressed.connect(func() -> void: GameState.craft(item))
 		row.add_child(button)
 		_workshop_list.add_child(row)
+	# Transformations : ferraille en plaques, sève en produits chimiques...
+	var recipes: Array[RecipeData] = RecipeCatalog.for_station(RecipeData.Station.WORKBENCH)
+	_workshop_list.add_child(MenuKit.label("Transformer", GOLD))
+	for recipe: RecipeData in recipes:
+		if not GameState.is_known(recipe.plan):
+			hidden += 1
+			continue
+		_workshop_list.add_child(_recipe_row(recipe, "Transformer"))
+	if hidden > 0:
+		_workshop_list.add_child(MenuKit.label("%d recette(s) encore inconnue(s) : trouve et étudie des plans (onglet Plans)." % hidden, MUTED))
 
 
 # --- Équipement -------------------------------------------------------------------
@@ -170,6 +192,72 @@ func _fill_crew() -> void:
 		_crew_list.add_child(MenuKit.label("%s — %s" % [member.display_name, member.role_label]))
 
 
+## Une recette de transformation : coût → produit, avec la raison si c'est impossible.
+func _recipe_row(recipe: RecipeData, verb: String) -> HBoxContainer:
+	var problem: String = GameState.recipe_problem(recipe)
+	var detail: String = "%s → %s" % [MenuKit.describe_amounts(recipe.cost), MenuKit.describe_amounts(recipe.output)]
+	if not problem.is_empty() and problem != "Il manque des matériaux dans le stock.":
+		detail += " · " + problem
+	return MenuKit.row(recipe.display_name, detail, GOOD if problem.is_empty() else BAD, verb, not problem.is_empty(),
+		func() -> void: GameState.make_recipe(recipe))
+
+
+# --- Plans -------------------------------------------------------------------------
+
+func _fill_plans() -> void:
+	MenuKit.clear(_plans_list)
+	var unknown: int = BlueprintCatalog.ALL.size() - GameState.found_plans.size() - GameState.researched_plans.size()
+	_plans_list.add_child(MenuKit.label("Étudie les plans trouvés pour débloquer recettes, outils et voitures.", MUTED))
+	if GameState.found_plans.is_empty():
+		_plans_list.add_child(MenuKit.label("Aucun plan à étudier : fouille les caisses et les armoires, ou achète-en aux marchands et en gare.", MUTED))
+	for plan_id: StringName in GameState.found_plans:
+		var plan: BlueprintData = BlueprintCatalog.get_plan(plan_id)
+		var problem: String = BlueprintCatalog.research_problem(plan, GameState.found_plans, GameState.researched_plans, GameState.storage)
+		var detail: String = "Débloque : %s · Coût : %s" % [", ".join(BlueprintCatalog.unlocks(plan.id)), MenuKit.describe_amounts(plan.research_cost)]
+		if not problem.is_empty() and problem != "Il manque des matériaux dans le stock.":
+			detail += " · " + problem
+		_plans_list.add_child(MenuKit.row("Plan : " + plan.display_name, detail, GOOD if problem.is_empty() else BAD,
+			"Étudier", not problem.is_empty(), func() -> void: GameState.research(plan)))
+	if not GameState.researched_plans.is_empty():
+		_plans_list.add_child(MenuKit.label("Étudiés", GOLD))
+		for plan_id: StringName in GameState.researched_plans:
+			var plan: BlueprintData = BlueprintCatalog.get_plan(plan_id)
+			_plans_list.add_child(MenuKit.label("%s : %s" % [plan.display_name, ", ".join(BlueprintCatalog.unlocks(plan.id))], Color.WHITE))
+	if unknown > 0:
+		_plans_list.add_child(MenuKit.label("%d plan(s) encore à trouver." % unknown, MUTED))
+
+
+# --- Infirmerie --------------------------------------------------------------------
+
+func _fill_infirmary() -> void:
+	MenuKit.clear(_infirmary_list)
+	_infirmary_list.add_child(MenuKit.label("Infection : " + Infection.describe(GameState.infection), Infection.color(GameState.infection)))
+	_infirmary_list.add_child(MenuKit.label("Elle ne baisse pas toute seule. À 100 %, tu rejoins la ruche.", MUTED))
+	var any_medicine: bool = false
+	for loot: LootData in GameState.LOOT_TYPES:
+		if not loot.is_medicine():
+			continue
+		var amount: int = GameState.storage_amount(loot.id)
+		if amount <= 0:
+			continue
+		any_medicine = true
+		_infirmary_list.add_child(MenuKit.row("%s (×%d)" % [loot.display_name, amount], "Infection −%d %%" % roundi(loot.cure * 100.0),
+			GOOD, "Prendre", GameState.infection <= 0.0, func() -> void: GameState.take_medicine(loot)))
+	if not any_medicine:
+		_infirmary_list.add_child(MenuKit.label("Aucun médicament à bord : fouille les caisses et les armoires, ou achète-en en gare.", MUTED))
+	_infirmary_list.add_child(MenuKit.label("Médicaments spéciaux", GOLD))
+	if not GameState.has_wagon(&"infirmary"):
+		_infirmary_list.add_child(MenuKit.label("Construis une infirmerie (onglet Train) pour les préparer.", MUTED))
+	var hidden: int = 0
+	for recipe: RecipeData in RecipeCatalog.for_station(RecipeData.Station.INFIRMARY):
+		if not GameState.is_known(recipe.plan):
+			hidden += 1
+			continue
+		_infirmary_list.add_child(_recipe_row(recipe, "Préparer"))
+	if hidden > 0:
+		_infirmary_list.add_child(MenuKit.label("%d préparation(s) encore inconnue(s) : il faut des plans (Pharmacie…)." % hidden, MUTED))
+
+
 # --- Grade ------------------------------------------------------------------------
 
 func _fill_grade() -> void:
@@ -219,10 +307,16 @@ func _fill_train() -> void:
 
 	# Voitures à construire : elles s'attellent en queue.
 	for wagon: WagonData in GameState.BUILDABLE_WAGONS:
-		var problem: TrainRules.Problem = TrainRules.build_problem(wagon, GameState.train, GameState.locomotive_level, GameState.storage)
+		var plan_known: bool = GameState.is_known(wagon.plan)
+		var problem: TrainRules.Problem = TrainRules.build_problem(wagon, GameState.train, GameState.locomotive_level,
+			GameState.storage, plan_known)
+		if problem == TrainRules.Problem.ALREADY_THERE:
+			continue # déjà dans le train (voiture unique)
 		var detail: String = "Coût : " + MenuKit.describe_amounts(wagon.cost)
 		if problem == TrainRules.Problem.NO_TRACTION:
 			detail = TrainRules.PROBLEM_TEXTS[problem]
+		elif problem == TrainRules.Problem.NEEDS_PLAN:
+			detail = "Plan à étudier : " + BlueprintCatalog.get_plan(wagon.plan).display_name
 		_train_list.add_child(MenuKit.row(
 			"%s (%s)" % [wagon.display_name, wagon.describe_effects()], detail,
 			GOOD if problem == TrainRules.Problem.NONE else BAD,

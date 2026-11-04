@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="WagonData" format=3]
+
+[ext_resource type="Script" path="res://core/wagon_data.gd" id="1_wagon"]
+
+[resource]
+script = ExtResource("1_wagon")
+id = &"laboratory"
+display_name = "Laboratoire"
+description = "Un alambic : 2 plantes infectées deviennent 1 produit chimique à chaque trajet."
+unique = true
+production = Dictionary[StringName, int]({
+&"chemicals": 1
+})
+production_cost = Dictionary[StringName, int]({
+&"infected_herb": 2
+})
+cost = Dictionary[StringName, int]({
+&"metal_plate": 3,
+&"parts": 3,
+&"wood": 4
+})
+plan = &"distillery"

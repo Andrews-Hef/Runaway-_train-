@@ -8,7 +8,7 @@ enum Kind {
 	COLLECT, ## ramener `amount` d'une ressource (target = id de LootData)
 	COLLECT_ANY, ## ramener au moins `amount` ressources, toutes confondues
 	ELIMINATE, ## éliminer `amount` ennemis d'une faction (target = &"infected" ou &"raider")
-	LOW_EXPOSURE, ## revenir avec moins de `amount` % d'exposition
+	LOW_EXPOSURE, ## prendre moins de `amount` % d'infection pendant la sortie
 }
 
 @export var id: StringName

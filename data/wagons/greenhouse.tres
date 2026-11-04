@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="WagonData" format=3]
+
+[ext_resource type="Script" path="res://core/wagon_data.gd" id="1_wagon"]
+
+[resource]
+script = ExtResource("1_wagon")
+id = &"greenhouse"
+display_name = "Serre"
+description = "Des bacs de terre sous une lampe : 2 plantes saines à chaque trajet."
+unique = true
+production = Dictionary[StringName, int]({
+&"herb": 2
+})
+cost = Dictionary[StringName, int]({
+&"wood": 8,
+&"cloth": 2,
+&"scrap": 4
+})
+plan = &"horticulture"

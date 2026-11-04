@@ -63,9 +63,10 @@ func test_l_exposition_du_joueur_est_recopiee_dans_le_resultat() -> void:
 	exposure.free()
 
 
-func test_risque_d_infection_selon_la_protection() -> void:
+func test_l_infection_prise_pendant_la_sortie() -> void:
 	var result := ExpeditionResult.new()
-	result.exposure = 0.6
-	assert_almost(result.infection_risk(), 0.6, "sans protection")
-	assert_almost(result.infection_risk(0.5), 0.3, "avec un masque à 50 %")
-	assert_almost(result.infection_risk(2.0), 0.0, "jamais négatif")
+	result.exposure_start = 0.4
+	result.exposure = 0.55
+	assert_almost(result.exposure_gained(), 0.15, "15 points pris pendant la sortie")
+	result.exposure = 0.3
+	assert_almost(result.exposure_gained(), 0.0, "jamais négatif")

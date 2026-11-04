@@ -1,0 +1,160 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "interior/still",
+  "type": "prop",
+  "description": "Laboratoire : alambic en cuivre, serpentin, bocaux de produits chimiques.",
+  "frame": {
+    "width": 40,
+    "height": 48
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "bench",
+        "material": "wood",
+        "size": [
+          1.4,
+          0.08,
+          0.6
+        ],
+        "position": [
+          0.0,
+          0.8,
+          0.0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "bench-leg-a",
+        "material": "dark",
+        "size": [
+          0.08,
+          0.76,
+          0.5
+        ],
+        "position": [
+          -0.62,
+          0.38,
+          0.0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "bench-leg-b",
+        "material": "dark",
+        "size": [
+          0.08,
+          0.76,
+          0.5
+        ],
+        "position": [
+          0.62,
+          0.38,
+          0.0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "boiler",
+        "material": "brass",
+        "radius": 0.2,
+        "height": 0.45,
+        "position": [
+          -0.35,
+          1.07,
+          0.0
+        ]
+      },
+      {
+        "type": "sphere",
+        "id": "dome",
+        "material": "brass",
+        "radius": 0.2,
+        "position": [
+          -0.35,
+          1.3,
+          0.0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "pipe",
+        "material": "brass",
+        "radius": 0.03,
+        "height": 0.55,
+        "position": [
+          -0.05,
+          1.4,
+          0.0
+        ],
+        "rotation": [
+          0,
+          0,
+          -70
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "coil",
+        "material": "steel",
+        "radius": 0.1,
+        "height": 0.35,
+        "position": [
+          0.3,
+          1.02,
+          0.0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "jar-a",
+        "material": "infected-glow",
+        "radius": 0.06,
+        "height": 0.16,
+        "position": [
+          0.55,
+          0.92,
+          0.12
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "jar-b",
+        "material": "glass",
+        "radius": 0.06,
+        "height": 0.16,
+        "position": [
+          0.4,
+          0.92,
+          0.18
+        ]
+      },
+      {
+        "type": "box",
+        "id": "burner",
+        "material": "fire",
+        "size": [
+          0.16,
+          0.06,
+          0.16
+        ],
+        "position": [
+          -0.35,
+          0.86,
+          0.0
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

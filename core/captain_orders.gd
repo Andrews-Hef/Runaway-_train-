@@ -47,11 +47,11 @@ class Order:
 			OrderData.Kind.ELIMINATE:
 				return result.kills_of_faction(data.target)
 			_:
-				return roundi(result.exposure * 100.0)
+				return roundi(result.exposure_gained() * 100.0)
 
 	func is_completed(result: ExpeditionResult) -> bool:
 		if data.kind == OrderData.Kind.LOW_EXPOSURE:
-			return result.exposure * 100.0 < amount
+			return result.exposure_gained() * 100.0 < amount
 		return progress(result) >= amount
 
 	## « 3/6 », ou « 12 % / < 25 % » pour l'exposition.

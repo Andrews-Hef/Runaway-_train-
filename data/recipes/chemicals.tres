@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3]
+
+[ext_resource type="Script" path="res://core/recipe_data.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+id = &"chemicals"
+display_name = "Produits chimiques"
+description = "On distille la sève violette des plantes infectées."
+station = 0
+cost = Dictionary[StringName, int]({
+&"infected_herb": 3
+})
+output = Dictionary[StringName, int]({
+&"chemicals": 1
+})
+plan = &"chemistry"

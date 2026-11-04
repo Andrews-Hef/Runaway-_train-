@@ -8,12 +8,18 @@ extends RefCounted
 
 ## Butin rapporté : id de LootData -> quantité.
 var loot: Dictionary[StringName, int] = {}
-## Exposition à l'infection accumulée pendant la sortie (0 à 1).
+## Infection au départ de la sortie (elle continue celle des arrêts précédents).
+var exposure_start: float = 0.0
+## Infection à la fin de la sortie (0 à 1). Voir Infection.
 var exposure: float = 0.0
 ## Le joueur est-il remonté à bord avant le départ du train ?
 var boarded: bool = false
 ## Le joueur est tombé au combat (il n'est donc pas remonté à bord).
 var fell: bool = false
+## L'infection a atteint 100 % : le joueur a rejoint la ruche.
+var turned: bool = false
+## Plans trouvés pendant la sortie (ids), rangés dans le train au retour.
+var plans: Array[StringName] = []
 ## Personnes recrutées pendant la sortie : elles montent à bord avec le joueur.
 var recruits: Array[CrewMember] = []
 ## Équipements trouvés ou achetés pendant la sortie (rangés dans le train au retour).
@@ -84,6 +90,6 @@ func total_items() -> int:
 	return total
 
 
-## Probabilité d'être infecté au retour, selon la protection portée (0 à 1).
-func infection_risk(protection: float = 0.0) -> float:
-	return clampf(exposure * (1.0 - protection), 0.0, 1.0)
+## Infection prise pendant cette sortie (0 à 1).
+func exposure_gained() -> float:
+	return maxf(exposure - exposure_start, 0.0)

@@ -48,11 +48,17 @@ extends Resource
 @export var enemies: Dictionary[StringName, Vector2i] = {}
 
 
+## Épaves de camion (il faut un chalumeau), (min, max).
+@export var heavy_wrecks: Vector2i = Vector2i(0, 1)
+
+
 ## Fourchette (min, max) du nombre d'objets d'un type.
 func count_range(kind: StringName) -> Vector2i:
 	match kind:
 		&"wreck":
 			return wrecks
+		&"heavy_wreck":
+			return heavy_wrecks
 		&"dead_tree":
 			return dead_trees
 		&"rock":

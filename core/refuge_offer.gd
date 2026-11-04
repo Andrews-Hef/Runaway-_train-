@@ -9,6 +9,8 @@ extends Resource
 @export var cost: Dictionary[StringName, int] = {}
 ## Matériaux ajoutés au stock.
 @export var reward: Dictionary[StringName, int] = {}
+## Plan vendu (id de BlueprintData), vide sinon.
+@export var reward_plan: StringName
 
 @export_group("Recrue")
 ## Rôle de la recrue (vide = pas de recrue). Les recrues de la gare sortent de

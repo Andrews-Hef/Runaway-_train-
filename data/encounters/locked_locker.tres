@@ -13,7 +13,8 @@ reward = Dictionary[StringName, int]({
 &"parts": 1,
 &"scrap": 1
 })
-random_reward_pool = Array[StringName]([&"herb", &"wood", &"cloth"])
+random_reward_pool = Array[StringName]([&"herb", &"wood", &"cloth", &"antiseptic", &"antibiotics"])
+plan_chance = 0.4
 random_reward_amount = Vector2i(1, 2)
 outcome_text = "La porte cède dans un grincement."
 

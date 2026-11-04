@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BlueprintData" format=3]
+
+[ext_resource type="Script" path="res://core/blueprint_data.gd" id="1_plan"]
+
+[resource]
+script = ExtResource("1_plan")
+id = &"horticulture"
+display_name = "Horticulture"
+description = "Faire pousser des plantes saines à bord."
+research_cost = Dictionary[StringName, int]({
+&"wood": 6,
+&"herb": 3
+})
+requires = Array[StringName]([])
+min_stop = 1

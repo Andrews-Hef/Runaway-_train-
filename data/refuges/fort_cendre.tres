@@ -63,10 +63,38 @@ cost = Dictionary[StringName, int]({
 recruit_role = &"scout"
 recruit_role_label = "repérage"
 
+[sub_resource type="Resource" id="Resource_fc_meds"]
+script = ExtResource("1_offer")
+label = "Le dispensaire : antibiotiques"
+cost = Dictionary[StringName, int]({
+&"herb": 4,
+&"cloth": 2
+})
+reward = Dictionary[StringName, int]({
+&"antibiotics": 1
+})
+
+[sub_resource type="Resource" id="Resource_fc_plan_metal"]
+script = ExtResource("1_offer")
+label = "Les archives du dépôt : plan « Métallurgie »"
+cost = Dictionary[StringName, int]({
+&"scrap": 6
+})
+reward_plan = &"metallurgy"
+
+[sub_resource type="Resource" id="Resource_fc_plan_green"]
+script = ExtResource("1_offer")
+label = "Le jardinier : plan « Horticulture »"
+cost = Dictionary[StringName, int]({
+&"wood": 4,
+&"herb": 2
+})
+reward_plan = &"horticulture"
+
 [resource]
 script = ExtResource("2_refuge")
 id = &"fort_cendre"
 display_name = "Gare refuge de Fort-Cendre"
 description = "Une ancienne gare de triage derrière une palissade. On y échange, on y soigne, et le dépôt répare les locomotives."
-trades = Array[ExtResource("1_offer")]([SubResource("Resource_t0"), SubResource("Resource_t1"), SubResource("Resource_t2"), SubResource("Resource_t3")])
+trades = Array[ExtResource("1_offer")]([SubResource("Resource_t0"), SubResource("Resource_t1"), SubResource("Resource_t2"), SubResource("Resource_t3"), SubResource("Resource_fc_meds"), SubResource("Resource_fc_plan_metal"), SubResource("Resource_fc_plan_green")])
 recruits = Array[ExtResource("1_offer")]([SubResource("Resource_r0"), SubResource("Resource_r1")])

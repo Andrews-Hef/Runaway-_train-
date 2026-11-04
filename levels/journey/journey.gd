@@ -103,6 +103,8 @@ func _fill_texts() -> void:
 	_description.text = GameState.stop_description()
 	if GameState.current_order:
 		_description.text += "\nOrdre du capitaine : %s." % GameState.current_order.text()
+	if not GameState.last_production.is_empty():
+		_description.text += "\nPendant le trajet, les machines du train ont produit : %s." % MenuKit.describe_amounts(GameState.last_production)
 	_storage.text = _storage_summary() + "\n" + _crew_summary()
 
 

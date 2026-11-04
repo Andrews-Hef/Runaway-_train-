@@ -9,15 +9,19 @@ const ALL: Array[ItemData] = [
 	preload("res://data/items/outfit_kevlar.tres"),
 	preload("res://data/items/mask_worn.tres"),
 	preload("res://data/items/mask_filter.tres"),
+	preload("res://data/items/mask_cartridge.tres"),
 	preload("res://data/items/bag_small.tres"),
 	preload("res://data/items/bag_hiking.tres"),
 	preload("res://data/items/bag_military.tres"),
 	preload("res://data/items/tool_crowbar.tres"),
 	preload("res://data/items/tool_hatchet.tres"),
 	preload("res://data/items/tool_shears.tres"),
+	preload("res://data/items/tool_torch.tres"),
+	preload("res://data/items/tool_chem_kit.tres"),
 	preload("res://data/items/weapon_pipe.tres"),
 	preload("res://data/items/weapon_machete.tres"),
 	preload("res://data/items/weapon_axe.tres"),
+	preload("res://data/items/weapon_sledge.tres"),
 ]
 
 

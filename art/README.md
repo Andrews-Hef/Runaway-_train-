@@ -32,6 +32,7 @@ Le train est **noir** (`iron-black`) avec des liserés rouges (`train-red`) et d
 | `props/shelter`, `props/cart` | 1 | — | Refuge (abri de fortune), charrette du marchand |
 | `props/backpack`, `props/locker` | 1 | — | Petites rencontres : sac abandonné, armoire métallique |
 | `props/station-house`, `props/palisade` | 1 | — | Gare refuge : bâtiment de la gare, palissade de pieux |
+| `props/truck-wreck` | 1 | — | Épave de camion (il faut un chalumeau) |
 | `characters/refugee`, `characters/merchant` | 1 (s) | `idle` | PNJ : réfugié à recruter, marchand |
 | `characters/infected`, `characters/raider` | 4 (s, e, n, w) | `idle`, `walk`, `attack` | Ennemis d'infanterie : infecté (membre de la ruche), pilleur |
 | `characters/infected-crawler`, `characters/raider-lurker` | 4 | `idle`, `walk` (rampe), `attack` (bond) | Rampants : couchés au sol |
@@ -47,7 +48,8 @@ L'intérieur utilise la même caméra trois-quarts et les mêmes 16 px par mètr
 |---|---|---|---|
 | `train/interior-top` | 1 | — | Wagon sans toit, 8,5 m × 5 m : mur du fond avec fenêtres, rebord avant, portes aux deux bouts |
 | `interior/chest`, `interior/workbench`, `interior/locker`, `interior/bunk`, `interior/engine-panel` | 1 | — | Coffre, établi, casier, couchettes, chaudière et levier |
-| `interior/plan-table` | 1 | — | Table du capitaine : plans du train (construire, renforcer la locomotive) |
+| `interior/plan-table` | 1 | — | Table des plans : plans du train (cabine), étude des plans (atelier) |
+| `interior/med-cabinet`, `interior/planter`, `interior/still` | 1 | — | Infirmerie (armoire à pharmacie), serre (bacs), laboratoire (alambic) |
 
 ## Générer et mettre à jour les sprites
 

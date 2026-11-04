@@ -57,6 +57,15 @@ cost = Dictionary[StringName, int]({
 reward_item = ExtResource("3_kevlar")
 outcome_text = "« Pris sur un flic, il y a longtemps. Il m'a sauvé deux fois. »"
 
+[sub_resource type="Resource" id="Resource_metal_plan"]
+script = ExtResource("1_q485j")
+label = "3 bois contre le plan « Métallurgie »"
+cost = Dictionary[StringName, int]({
+&"wood": 3
+})
+reward_plan = &"metallurgy"
+outcome_text = "« Mon vieux carnet de forgeron. Il m'encombrait. »"
+
 [sub_resource type="Resource" id="Resource_bjmyo"]
 script = ExtResource("1_q485j")
 label = "Partir"
@@ -68,5 +77,5 @@ script = ExtResource("2_s66ln")
 id = &"merchant_scrapper"
 title = "Un ferrailleur"
 text = "Un ferrailleur trie des pièces sur sa charrette. « Du bois et des plantes, c'est ce qui manque le plus par ici. »"
-choices = Array[ExtResource("1_q485j")]([SubResource("Resource_r5133"), SubResource("Resource_ky12q"), SubResource("Resource_a1t5l"), SubResource("Resource_aroi3"), SubResource("Resource_kevlar"), SubResource("Resource_bjmyo")])
+choices = Array[ExtResource("1_q485j")]([SubResource("Resource_r5133"), SubResource("Resource_ky12q"), SubResource("Resource_a1t5l"), SubResource("Resource_aroi3"), SubResource("Resource_kevlar"), SubResource("Resource_metal_plan"), SubResource("Resource_bjmyo")])
 repeatable = true

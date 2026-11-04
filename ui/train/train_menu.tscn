@@ -46,7 +46,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Panel" type="PanelContainer" parent="Root/Center"]
-custom_minimum_size = Vector2(380, 220)
+custom_minimum_size = Vector2(440, 220)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
@@ -127,6 +127,30 @@ horizontal_scroll_mode = 0
 metadata/_tab_index = 5
 
 [node name="GradeList" type="VBoxContainer" parent="Root/Center/Panel/VBox/Tabs/Grade"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="Plans" type="ScrollContainer" parent="Root/Center/Panel/VBox/Tabs"]
+visible = false
+layout_mode = 2
+horizontal_scroll_mode = 0
+metadata/_tab_index = 6
+
+[node name="PlansList" type="VBoxContainer" parent="Root/Center/Panel/VBox/Tabs/Plans"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="Infirmary" type="ScrollContainer" parent="Root/Center/Panel/VBox/Tabs"]
+visible = false
+layout_mode = 2
+horizontal_scroll_mode = 0
+metadata/_tab_index = 7
+
+[node name="InfirmaryList" type="VBoxContainer" parent="Root/Center/Panel/VBox/Tabs/Infirmary"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
