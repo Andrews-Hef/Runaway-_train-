@@ -6,8 +6,10 @@ extends Resource
 ## Identifiant stable, utilisé dans les sauvegardes et le butin.
 @export var id: StringName
 @export var display_name: String
-## Couleur du compteur dans le HUD, en attendant les icônes.
+## Couleur du texte de la ressource (listes, bilan).
 @export var color: Color = Color.WHITE
+## Icône 12x12 (HUD, menus, bilan). Générées par tools/gen_icons.py.
+@export var icon: Texture2D
 ## Ressource infectée : vaut plus, mais expose le joueur quand il la récolte.
 @export var infected: bool = false
 ## Rare : n'apparaît dans le HUD qu'une fois trouvée.

@@ -19,7 +19,7 @@ script = ExtResource("1_interior")
 
 [node name="Ground" type="Parallax2D" parent="."]
 repeat_size = Vector2(768, 0)
-autoscroll = Vector2(-240, 0)
+autoscroll = Vector2(-90, 0)
 repeat_times = 3
 
 [node name="Tiles" type="TileMapLayer" parent="Ground"]

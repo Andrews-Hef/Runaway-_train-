@@ -1,5 +1,6 @@
 [gd_resource type="Resource" script_class="LootData" format=3]
 
+[ext_resource type="Texture2D" path="res://assets/ui/icons/wood.png" id="2_icon"]
 [ext_resource type="Script" path="res://core/loot_data.gd" id="1_tieyh"]
 
 [resource]
@@ -7,3 +8,4 @@ script = ExtResource("1_tieyh")
 id = &"wood"
 display_name = "Bois"
 color = Color(0.65882355, 0.45882353, 0.2901961, 1)
+icon = ExtResource("2_icon")

@@ -2,13 +2,18 @@
 
 [ext_resource type="Script" path="res://ui/hud/hud.gd" id="1_hud"]
 [ext_resource type="Theme" path="res://ui/theme/game_theme.tres" id="9_theme"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/timer.png" id="10_timer"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/health.png" id="11_health"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/infection.png" id="12_infection"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/order.png" id="13_order"]
+[ext_resource type="FontFile" path="res://assets/fonts/press_start_2p/PressStart2P-Regular.ttf" id="14_numbers"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 content_margin_left = 4.0
 content_margin_top = 3.0
 content_margin_right = 4.0
 content_margin_bottom = 3.0
-bg_color = Color(0.05, 0.05, 0.07, 0.65)
+bg_color = Color(0.04, 0.04, 0.06, 0.8)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_bg"]
 bg_color = Color(0, 0, 0, 0.6)
@@ -44,7 +49,7 @@ mouse_filter = 2
 layout_mode = 0
 offset_left = 4.0
 offset_top = 4.0
-offset_right = 84.0
+offset_right = 70.0
 offset_bottom = 40.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
@@ -53,20 +58,47 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 layout_mode = 2
 theme_override_constants/separation = 2
 
-[node name="TimerLabel" type="Label" parent="Root/Status/VBox"]
-unique_name_in_owner = true
+[node name="TimerRow" type="HBoxContainer" parent="Root/Status/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "Départ 1:30"
+theme_override_constants/separation = 3
 
-[node name="HealthLabel" type="Label" parent="Root/Status/VBox"]
+[node name="TimerIcon" type="TextureRect" parent="Root/Status/VBox/TimerRow"]
+custom_minimum_size = Vector2(12, 12)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("10_timer")
+stretch_mode = 5
+
+[node name="TimerLabel" type="Label" parent="Root/Status/VBox/TimerRow"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Vie 10/10"
+theme_override_fonts/font = ExtResource("14_numbers")
+theme_override_font_sizes/font_size = 8
+text = "1:30"
+
+[node name="HealthRow" type="HBoxContainer" parent="Root/Status/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="HealthIcon" type="TextureRect" parent="Root/Status/VBox/HealthRow"]
+custom_minimum_size = Vector2(12, 12)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("11_health")
+stretch_mode = 5
+
+[node name="HealthLabel" type="Label" parent="Root/Status/VBox/HealthRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("14_numbers")
+theme_override_font_sizes/font_size = 8
+text = "10/10"
 
 [node name="HealthBar" type="ProgressBar" parent="Root/Status/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(72, 4)
+custom_minimum_size = Vector2(74, 4)
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
@@ -76,20 +108,41 @@ step = 1.0
 value = 10.0
 show_percentage = false
 
-[node name="ExposureLabel" type="Label" parent="Root/Status/VBox"]
+[node name="InfectionRow" type="HBoxContainer" parent="Root/Status/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="InfectionIcon" type="TextureRect" parent="Root/Status/VBox/InfectionRow"]
+custom_minimum_size = Vector2(12, 12)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("12_infection")
+stretch_mode = 5
+
+[node name="ExposureLabel" type="Label" parent="Root/Status/VBox/InfectionRow"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Infection 0 % · Sain"
+theme_override_fonts/font = ExtResource("14_numbers")
+theme_override_font_sizes/font_size = 8
+text = "0 %"
+
+[node name="StageLabel" type="Label" parent="Root/Status/VBox/InfectionRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 8
+text = "Sain"
 
 [node name="ExposureBar" type="ProgressBar" parent="Root/Status/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(72, 4)
+custom_minimum_size = Vector2(74, 4)
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_bar_fill")
 max_value = 1.0
 step = 0.001
+value = 0.0
 show_percentage = false
 
 [node name="ZoneWarning" type="Label" parent="Root/Status/VBox"]
@@ -137,22 +190,46 @@ theme_override_font_sizes/font_size = 16
 text = "Le train siffle ! Remonte à bord !"
 horizontal_alignment = 1
 
-[node name="Order" type="Label" parent="Root"]
+[node name="Order" type="PanelContainer" parent="Root"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -120.0
+offset_left = -110.0
 offset_top = 4.0
-offset_right = 120.0
-offset_bottom = 16.0
+offset_right = 110.0
+offset_bottom = 24.0
 grow_horizontal = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_panel")
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="HBox" type="HBoxContainer" parent="Root/Order"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 4
+
+[node name="OrderIcon" type="TextureRect" parent="Root/Order/HBox"]
+custom_minimum_size = Vector2(12, 12)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("13_order")
+stretch_mode = 5
+
+[node name="OrderText" type="Label" parent="Root/Order/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.82, 0.35, 1)
-text = "Ordre : Ramène 4 ferrailles · 0/4"
-horizontal_alignment = 1
+text = "Ramène 4 ferrailles"
+
+[node name="OrderProgress" type="Label" parent="Root/Order/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("14_numbers")
+theme_override_font_sizes/font_size = 8
+text = "0/4"
 
 [node name="Toast" type="Label" parent="Root"]
 unique_name_in_owner = true
@@ -162,9 +239,9 @@ anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -150.0
-offset_top = 42.0
+offset_top = 30.0
 offset_right = 150.0
-offset_bottom = 54.0
+offset_bottom = 42.0
 grow_horizontal = 2
 theme_override_colors/font_outline_color = Color(0.08, 0.06, 0.06, 1)
 theme_override_constants/outline_size = 4

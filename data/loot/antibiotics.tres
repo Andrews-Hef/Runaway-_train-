@@ -1,5 +1,6 @@
 [gd_resource type="Resource" script_class="LootData" format=3]
 
+[ext_resource type="Texture2D" path="res://assets/ui/icons/antibiotics.png" id="2_icon"]
 [ext_resource type="Script" path="res://core/loot_data.gd" id="1_loot"]
 
 [resource]
@@ -9,3 +10,4 @@ display_name = "Antibiotiques"
 color = Color(0.95, 0.55, 0.55, 1)
 rare = true
 cure = 0.2
+icon = ExtResource("2_icon")

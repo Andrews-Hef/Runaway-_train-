@@ -22,6 +22,8 @@ const BASE_WAGONS: int = 2
 ## Écart entre deux wagons, en pixels.
 const WAGON_PITCH: float = 104.0
 const WAGON_FRAMES: SpriteFrames = preload("res://assets/sprites/wagon/wagon.tres")
+## Vitesse de l'animation des roues en marche (1 = vitesse td2d).
+const RUN_ANIMATION_SPEED: float = 0.55
 
 @onready var door: Interactable = $Door
 @onready var _body: StaticBody2D = $Body
@@ -82,6 +84,8 @@ func set_running(value: bool) -> void:
 	for car: Node in _cars.get_children():
 		if car is AnimatedSprite2D:
 			(car as AnimatedSprite2D).play(&"run_s" if value else &"idle_s")
+			# Les roues tournent au rythme du décor qui défile (ralenti).
+			(car as AnimatedSprite2D).speed_scale = RUN_ANIMATION_SPEED if value else 1.0
 	_smoke.amount = 24 if value else 6
 	_smoke.initial_velocity_min = 18.0 if value else 6.0
 	_smoke.initial_velocity_max = 28.0 if value else 10.0

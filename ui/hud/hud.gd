@@ -1,16 +1,27 @@
 extends CanvasLayer
-## Interface en jeu : temps d'arrêt restant, vie, exposition, butin et consignes.
+## Interface en jeu : temps d'arrêt restant, vie, infection, butin et consignes.
 ##
 ## Elle n'a aucune logique de jeu : elle affiche ce que les systèmes lui signalent.
+## Icônes 12 px (assets/ui/icons/) et chiffres en 16 px, textes cernés de noir :
+## lisible sur un petit écran.
 
 const NORMAL_TIME_COLOR: Color = Color(1.0, 1.0, 1.0)
 const WHISTLE_TIME_COLOR: Color = Color(1.0, 0.45, 0.35)
+const OUTLINE_COLOR: Color = Color(0.06, 0.05, 0.06)
+const BAG_ICON: Texture2D = preload("res://assets/ui/icons/bag.png")
+const RECRUIT_ICON: Texture2D = preload("res://assets/ui/icons/recruit.png")
+const PLAN_ICON: Texture2D = preload("res://assets/ui/icons/plan.png")
+## Police des chiffres : Press Start 2P (OFL), chiffres épais, nets à 8 px.
+const NUMBERS_FONT: Font = preload("res://assets/fonts/press_start_2p/PressStart2P-Regular.ttf")
 
 @onready var _timer_label: Label = %TimerLabel
 @onready var _health_label: Label = %HealthLabel
 @onready var _health_bar: ProgressBar = %HealthBar
 @onready var _toast: Label = %Toast
-@onready var _order: Label = %Order
+@onready var _order: Control = %Order
+@onready var _order_text: Label = %OrderText
+@onready var _order_progress: Label = %OrderProgress
+@onready var _stage_label: Label = %StageLabel
 @onready var _mash: Control = %Mash
 @onready var _mash_label: Label = %MashLabel
 @onready var _mash_bar: ProgressBar = %MashBar
@@ -28,10 +39,30 @@ var _target: Interactable
 var _interactor: Interactor
 var _session: StopSession
 var _bag_label: Label
+var _loot_grid: GridContainer
+var _extras: VBoxContainer
+var _shown_plans: Array[StringName] = []
 var _banner_tween: Tween
 var _toast_tween: Tween
 var _captain_order: CaptainOrders.Order
 var _exposure_value: float = 0.0
+
+
+func _ready() -> void:
+	_outline_labels($Root)
+
+
+## Une ombre portée noire sous tous les textes : lisibles sur n'importe quel décor,
+## sans boucher l'intérieur des chiffres (un contour remplirait le creux des 8 et des 0).
+static func _outline_labels(node: Node) -> void:
+	for child: Node in node.get_children():
+		if child is Label and not (child as Label).has_theme_constant_override(&"outline_size"):
+			var label := child as Label
+			var big: bool = label.get_theme_font_size(&"font_size") >= 16
+			label.add_theme_color_override(&"font_shadow_color", OUTLINE_COLOR)
+			label.add_theme_constant_override(&"shadow_offset_x", 2 if big else 1)
+			label.add_theme_constant_override(&"shadow_offset_y", 2 if big else 1)
+		_outline_labels(child)
 
 
 func bind(session: StopSession, player: Player, loot_types: Array[LootData]) -> void:
@@ -85,12 +116,15 @@ func _refresh_order() -> void:
 	if _captain_order.data.kind == OrderData.Kind.LOW_EXPOSURE:
 		var gained: float = maxf(_exposure_value - _session.result.exposure_start, 0.0)
 		done = gained * 100.0 < _captain_order.amount
-		progress = "+%d %%" % roundi(gained * 100.0)
+		progress = "+%d%%" % roundi(gained * 100.0)
 	else:
 		done = _captain_order.is_completed(_session.result)
 		progress = _captain_order.progress_text(_session.result)
-	_order.text = "Ordre : %s · %s%s" % [_captain_order.text(), progress, " (fait)" if done else ""]
-	_order.add_theme_color_override(&"font_color", Color(0.55, 0.85, 0.45) if done else Color(1.0, 0.82, 0.35))
+	_order_text.text = _captain_order.text()
+	_order_progress.text = progress
+	var color: Color = Color(0.55, 0.85, 0.45) if done else Color(1.0, 0.82, 0.35)
+	_order_text.add_theme_color_override(&"font_color", color)
+	_order_progress.add_theme_color_override(&"font_color", color)
 
 
 ## Message court au-dessus du jeu (vol, butin récupéré...). `bad` : en rouge.
@@ -112,28 +146,52 @@ static func format_time(seconds: float) -> String:
 	return "%d:%02d" % [total / 60, total % 60]
 
 
+## Le sac : icône + nombre pour chaque ressource, en deux colonnes ; puis recrues et plans.
 func _build_loot_list() -> void:
 	for child: Node in _loot_list.get_children():
+		_loot_list.remove_child(child)
 		child.queue_free()
 	_loot_labels.clear()
-	_bag_label = Label.new()
-	_loot_list.add_child(_bag_label)
+	var bag_row := _icon_row(BAG_ICON)
+	_bag_label = bag_row.get_child(1) as Label
+	_loot_list.add_child(bag_row)
+	_loot_grid = GridContainer.new()
+	_loot_grid.columns = 2
+	_loot_grid.add_theme_constant_override(&"h_separation", 6)
+	_loot_grid.add_theme_constant_override(&"v_separation", 1)
+	_loot_list.add_child(_loot_grid)
 	for loot: LootData in _loot_types:
-		var row := HBoxContainer.new()
-		row.add_theme_constant_override(&"separation", 3)
-		var swatch := ColorRect.new()
-		swatch.color = loot.color
-		swatch.custom_minimum_size = Vector2(5.0, 5.0)
-		swatch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		var label := Label.new()
-		row.add_child(swatch)
-		row.add_child(label)
-		_loot_list.add_child(row)
-		_loot_labels[loot.id] = label
+		var row := _icon_row(loot.icon)
+		row.tooltip_text = loot.display_name
+		_loot_grid.add_child(row)
+		_loot_labels[loot.id] = row.get_child(1) as Label
+	_extras = VBoxContainer.new()
+	_extras.add_theme_constant_override(&"separation", 1)
+	_loot_list.add_child(_extras)
+	_outline_labels(_loot_list)
+
+
+static func _icon_row(icon: Texture2D) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override(&"separation", 2)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var picture := TextureRect.new()
+	picture.texture = icon
+	picture.custom_minimum_size = Vector2(12.0, 12.0)
+	picture.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	picture.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(picture)
+	var label := Label.new()
+	label.add_theme_font_override(&"font", NUMBERS_FONT)
+	label.add_theme_font_size_override(&"font_size", 8)
+	label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(label)
+	return row
 
 
 func _on_time_changed(remaining: float) -> void:
-	_timer_label.text = "Départ " + format_time(remaining)
+	_timer_label.text = format_time(remaining)
 
 
 func _on_whistle_blown() -> void:
@@ -147,27 +205,42 @@ func _on_whistle_blown() -> void:
 func _on_loot_changed(result: ExpeditionResult) -> void:
 	for loot: LootData in _loot_types:
 		var amount: int = result.get_amount(loot.id)
-		_loot_labels[loot.id].text = "%s %d" % [loot.display_name, amount]
+		_loot_labels[loot.id].text = str(amount)
 		# Les matériaux rares n'apparaissent qu'une fois trouvés, pour garder le HUD lisible.
 		_loot_labels[loot.id].get_parent().visible = amount > 0 or not loot.rare
+	# Plans trouvés pendant la sortie.
+	for plan_id: StringName in result.plans:
+		if plan_id in _shown_plans:
+			continue
+		_shown_plans.append(plan_id)
+		var row := _icon_row(PLAN_ICON)
+		var label := row.get_child(1) as Label
+		label.text = BlueprintCatalog.get_plan(plan_id).display_name
+		label.remove_theme_font_override(&"font")
+		label.add_theme_color_override(&"font_color", Color(0.6, 0.8, 1.0))
+		_extras.add_child(row)
+		_outline_labels(row)
 	_refresh_order()
 	if _session and _session.capacity >= 0:
-		_bag_label.text = "Sac %d/%d" % [result.total_items(), _session.capacity]
+		_bag_label.text = "%d/%d" % [result.total_items(), _session.capacity]
 		_bag_label.add_theme_color_override(&"font_color", Color(1.0, 0.45, 0.35) if _session.is_bag_full() else Color(0.85, 0.85, 0.88))
 	_refresh_prompt()
 
 
 func _on_recruited(member: CrewMember) -> void:
-	var label := Label.new()
-	label.text = "Recrue : " + member.display_name
+	var row := _icon_row(RECRUIT_ICON)
+	var label := row.get_child(1) as Label
+	label.text = member.display_name
+	label.remove_theme_font_override(&"font")
 	label.add_theme_color_override(&"font_color", Color(1.0, 0.82, 0.35))
-	_loot_list.add_child(label)
+	_extras.add_child(row)
+	_outline_labels(row)
 
 
 func _on_health_changed(health: int, max_health: int) -> void:
 	_health_bar.max_value = max_health
 	_health_bar.value = health
-	_health_label.text = "Vie %d/%d" % [health, max_health]
+	_health_label.text = "%d/%d" % [health, max_health]
 	_health_label.add_theme_color_override(&"font_color", Color(1.0, 0.45, 0.35) if health * 3 <= max_health else Color.WHITE)
 
 
@@ -185,8 +258,10 @@ func _on_exposure_changed(value: float) -> void:
 	_exposure_value = value
 	_refresh_order()
 	_exposure_bar.value = value
-	_exposure_label.text = "Infection %d %% · %s" % [roundi(value * 100.0), Infection.stage_name(Infection.stage_for(value))]
+	_exposure_label.text = "%d%%" % roundi(value * 100.0)
+	_stage_label.text = Infection.stage_name(Infection.stage_for(value))
 	_exposure_label.add_theme_color_override(&"font_color", Infection.color(value))
+	_stage_label.add_theme_color_override(&"font_color", Infection.color(value))
 
 
 func _on_zone_changed(inside: bool) -> void:

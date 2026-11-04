@@ -20,7 +20,7 @@ position = Vector2(0, -14)
 
 [node name="Scenery" type="Parallax2D" parent="."]
 repeat_size = Vector2(768, 0)
-autoscroll = Vector2(-160, 0)
+autoscroll = Vector2(-70, 0)
 repeat_times = 3
 
 [node name="Ground" type="TileMapLayer" parent="Scenery"]

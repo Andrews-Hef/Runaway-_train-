@@ -89,11 +89,12 @@ func _fill_stock() -> void:
 	for loot: LootData in GameState.LOOT_TYPES:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override(&"separation", 4)
-		var swatch := ColorRect.new()
-		swatch.color = loot.color
-		swatch.custom_minimum_size = Vector2(6.0, 6.0)
-		swatch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		row.add_child(swatch)
+		var icon := TextureRect.new()
+		icon.texture = loot.icon
+		icon.custom_minimum_size = Vector2(12.0, 12.0)
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+		icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(icon)
 		row.add_child(MenuKit.label("%s : %d" % [loot.display_name, GameState.storage_amount(loot.id)]))
 		_stock_list.add_child(row)
 	_stock_list.add_child(MenuKit.label("Équipements à bord : %d" % GameState.owned_items.size(), MUTED))
