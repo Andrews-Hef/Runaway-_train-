@@ -24,6 +24,8 @@ var remaining: float = 0.0
 var result: ExpeditionResult = ExpeditionResult.new()
 ## Source de l'exposition à recopier dans le résultat à la fin (injectée par la zone).
 var exposure_source: ExposureComponent
+## Nombre de ressources que le joueur peut porter (son sac). < 0 = illimité.
+var capacity: int = -1
 
 
 func _ready() -> void:
@@ -55,17 +57,33 @@ func tick(delta: float) -> void:
 		_finish(false)
 
 
-func add_loot(loot: LootData, amount: int) -> void:
+## Ajoute du butin dans la limite du sac. Renvoie la quantité vraiment prise.
+func add_loot(loot: LootData, amount: int) -> int:
 	if state == State.ENDED or loot == null:
-		return
-	result.add_loot(loot.id, amount)
+		return 0
+	var taken: int = amount if capacity < 0 else mini(amount, free_space())
+	if taken <= 0:
+		return 0
+	result.add_loot(loot.id, taken)
 	loot_changed.emit(result)
+	return taken
+
+
+## Place restante dans le sac (très grand si illimité).
+func free_space() -> int:
+	if capacity < 0:
+		return 1 << 30
+	return maxi(capacity - result.total_items(), 0)
+
+
+func is_bag_full() -> bool:
+	return free_space() <= 0
 
 
 ## Applique un choix de rencontre (échange, recrutement...) au butin de la sortie.
 ## Renvoie null si la sortie est finie ou si le joueur ne peut pas payer.
 func resolve_choice(choice: EncounterChoice, rng: RandomNumberGenerator, taken_names: Array[String] = []) -> EncounterResolver.Outcome:
-	if state == State.ENDED or not EncounterResolver.can_afford(choice, result):
+	if state == State.ENDED or not EncounterResolver.can_afford(choice, result, capacity):
 		return null
 	var names: Array[String] = taken_names.duplicate()
 	for member: CrewMember in result.recruits:

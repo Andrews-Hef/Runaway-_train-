@@ -121,7 +121,14 @@ func _setup_camera() -> void:
 # --- Branchement des systèmes ----------------------------------------------------
 
 func _wire_systems() -> void:
+	var loadout: Loadout = GameState.loadout
 	_player.exposure.ground = _ground
+	_player.exposure.protection = loadout.protection()
+	_player.interactor.speed_for = func(target: Interactable) -> float:
+		return loadout.harvest_speed_for((target as Harvestable).harvest_tag) if target is Harvestable else 1.0
+	_player.interactor.block_reason_for = func(target: Interactable) -> String:
+		return "Sac plein !" if target is Harvestable and _session.is_bag_full() else ""
+	_session.capacity = loadout.capacity()
 	_session.exposure_source = _player.exposure
 	_train.boarding_requested.connect(_session.board)
 	_session.whistle_blown.connect(_train.whistle)
@@ -148,7 +155,7 @@ func _open_encounter(spot: EncounterSpot) -> void:
 		return
 	_active_spot = spot
 	_player.set_controls_enabled(false)
-	_dialog.call(&"open", spot.encounter, _session.result)
+	_dialog.call(&"open", spot.encounter, _session.result, _session.capacity)
 
 
 func _on_choice_selected(choice: EncounterChoice) -> void:
@@ -164,7 +171,7 @@ func _on_choice_selected(choice: EncounterChoice) -> void:
 	var repeatable: bool = _active_spot.encounter.repeatable
 	if not repeatable:
 		_active_spot.mark_resolved(outcome.recruit != null)
-	_dialog.call(&"show_outcome", outcome.text, outcome.gained, repeatable)
+	_dialog.call(&"show_outcome", outcome.text, outcome.gained, repeatable, outcome.item)
 
 
 func _on_dialog_closed() -> void:

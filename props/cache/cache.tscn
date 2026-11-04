@@ -6,6 +6,7 @@
 [ext_resource type="Resource" path="res://data/loot/herb.tres" id="4_herb"]
 [ext_resource type="Texture2D" path="res://assets/sprites/props/cache.png" id="5_sprite"]
 [ext_resource type="Script" path="res://core/loot_data.gd" id="6_loot_script"]
+[ext_resource type="Resource" path="res://data/loot/cloth.tres" id="7_cloth"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_reach"]
 radius = 14.0
@@ -15,7 +16,8 @@ size = Vector2(12, 8)
 
 [node name="Cache" type="Area2D"]
 script = ExtResource("1_harvest")
-loot_pool = Array[ExtResource("6_loot_script")]([ExtResource("2_scrap"), ExtResource("3_wood"), ExtResource("4_herb")])
+harvest_tag = &"cache"
+loot_pool = Array[ExtResource("6_loot_script")]([ExtResource("2_scrap"), ExtResource("3_wood"), ExtResource("4_herb"), ExtResource("7_cloth"), ExtResource("7_cloth")])
 amount_min = 2
 amount_max = 3
 remove_when_depleted = false

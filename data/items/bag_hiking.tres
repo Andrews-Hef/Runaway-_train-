@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://core/item_data.gd" id="1_5hfn2"]
+
+[resource]
+script = ExtResource("1_5hfn2")
+id = &"bag_hiking"
+display_name = "Sac de randonnée"
+description = "Grand, solide, avec des poches partout."
+slot = 2
+capacity = 20
+recipe = Dictionary[StringName, int]({
+&"cloth": 4,
+&"wood": 1
+})

@@ -17,6 +17,7 @@ signal closed
 
 var _encounter: EncounterData
 var _carrying: ExpeditionResult
+var _capacity: int = -1
 var _return_to_choices: bool = false
 
 
@@ -29,10 +30,12 @@ func is_open() -> bool:
 	return _root.visible
 
 
-## Affiche une rencontre. `carrying` : ce que le joueur porte, pour griser ce qu'il ne peut pas payer.
-func open(encounter: EncounterData, carrying: ExpeditionResult) -> void:
+## Affiche une rencontre. `carrying` : ce que le joueur porte, pour griser ce qu'il ne peut
+## pas payer ; `capacity` : taille du sac (-1 = illimité).
+func open(encounter: EncounterData, carrying: ExpeditionResult, capacity: int = -1) -> void:
 	_encounter = encounter
 	_carrying = carrying
+	_capacity = capacity
 	_title.text = encounter.title
 	_text.text = encounter.text
 	_outcome.visible = false
@@ -42,10 +45,12 @@ func open(encounter: EncounterData, carrying: ExpeditionResult) -> void:
 
 
 ## Affiche le résultat d'un choix. `return_to_choices` : revenir aux choix ensuite (marchand).
-func show_outcome(text: String, gained: Dictionary[StringName, int], return_to_choices: bool) -> void:
+func show_outcome(text: String, gained: Dictionary[StringName, int], return_to_choices: bool, item: ItemData = null) -> void:
 	var lines: PackedStringArray = [text]
 	for id: StringName in gained:
 		lines.append("+%d %s" % [gained[id], loot_name(id)])
+	if item:
+		lines.append("Obtenu : %s (%s)" % [item.display_name, item.describe_effects()])
 	_outcome.text = "\n".join(lines)
 	_outcome.visible = true
 	_choices.visible = false
@@ -71,7 +76,7 @@ func _build_choices() -> void:
 		var button := Button.new()
 		button.custom_minimum_size = Vector2(0.0, 18.0)
 		button.text = choice.label
-		var lacking := EncounterResolver.missing(choice, _carrying)
+		var lacking := EncounterResolver.missing(choice, _carrying, _capacity)
 		if not lacking.is_empty():
 			button.disabled = true
 			button.text += "  (il te manque %s)" % _describe(lacking)
@@ -85,12 +90,14 @@ func _build_choices() -> void:
 
 func _on_continue_pressed() -> void:
 	if _return_to_choices:
-		open(_encounter, _carrying)
+		open(_encounter, _carrying, _capacity)
 	else:
 		close()
 
 
 static func _describe(amounts: Dictionary[StringName, int]) -> String:
+	if amounts.has(EncounterResolver.NO_SPACE):
+		return "de la place dans ton sac"
 	var parts: PackedStringArray = []
 	for id: StringName in amounts:
 		parts.append("%d %s" % [amounts[id], loot_name(id).to_lower()])

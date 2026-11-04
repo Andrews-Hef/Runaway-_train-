@@ -47,7 +47,7 @@ func show_result(result: ExpeditionResult, loot_types: Array[LootData]) -> void:
 	if result.boarded:
 		_title.text = "De retour à bord"
 		_subtitle.text = "Le capitaine attend ton rapport."
-		if result.total_items() == 0 and result.recruits.is_empty():
+		if result.total_items() == 0 and result.recruits.is_empty() and result.items.is_empty():
 			_add_line("Tu reviens les mains vides.", Color(0.7, 0.7, 0.7))
 		for loot: LootData in loot_types:
 			var amount: int = result.get_amount(loot.id)
@@ -55,6 +55,8 @@ func show_result(result: ExpeditionResult, loot_types: Array[LootData]) -> void:
 				_add_line("%s : %d" % [loot.display_name, amount], loot.color)
 		for member: CrewMember in result.recruits:
 			_add_line("Recrue : " + member.describe(), Color(1.0, 0.82, 0.35))
+		for item: ItemData in result.items:
+			_add_line("Trouvé : " + item.display_name, Color(0.55, 0.85, 0.45))
 		var risk: float = result.infection_risk()
 		_risk.text = "Risque d'infection : %d %%" % roundi(risk * 100.0)
 		_risk.add_theme_color_override(&"font_color", _risk_color(risk))

@@ -9,6 +9,7 @@ extends Node
 
 signal storage_changed
 signal crew_changed
+signal equipment_changed
 
 const FIXED_SEED_SETTING: String = "game/debug/fixed_seed"
 ## Le premier arrêt est toujours celui-ci : une zone simple pour commencer.
@@ -27,6 +28,8 @@ const LOOT_TYPES: Array[LootData] = [
 	preload("res://data/loot/wood.tres"),
 	preload("res://data/loot/herb.tres"),
 	preload("res://data/loot/infected_herb.tres"),
+	preload("res://data/loot/cloth.tres"),
+	preload("res://data/loot/parts.tres"),
 ]
 
 ## Numéro de l'arrêt en cours ou à venir (1 = premier arrêt).
@@ -37,6 +40,10 @@ var current_seed: int = 0
 var storage: Dictionary[StringName, int] = {}
 ## Équipage recruté pendant les sorties.
 var crew: Array[CrewMember] = []
+## Équipements possédés (rangés dans le train ou portés).
+var owned_items: Array[ItemData] = []
+## Ce que le joueur porte.
+var loadout: Loadout = Loadout.new()
 
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
@@ -58,8 +65,13 @@ func new_run(run_seed: int = 0) -> void:
 	current_zone = null
 	storage.clear()
 	crew.clear()
+	owned_items = ItemCatalog.starters()
+	loadout = Loadout.new()
+	for item: ItemData in owned_items:
+		loadout.equip(item)
 	storage_changed.emit()
 	crew_changed.emit()
+	equipment_changed.emit()
 	prepare_next_stop()
 
 
@@ -80,6 +92,36 @@ func record_expedition(result: ExpeditionResult) -> void:
 	if not result.recruits.is_empty():
 		crew.append_array(result.recruits)
 		crew_changed.emit()
+	for item: ItemData in result.items:
+		if not item in owned_items:
+			owned_items.append(item)
+	if not result.items.is_empty():
+		equipment_changed.emit()
+
+
+## Fabrique un équipement à l'atelier avec les matériaux du stock.
+func craft(item: ItemData) -> bool:
+	if not Crafting.craft(item, storage, owned_items):
+		return false
+	storage_changed.emit()
+	equipment_changed.emit()
+	return true
+
+
+## Porte un équipement possédé (remplace celui du même emplacement).
+func equip(item: ItemData) -> void:
+	if not item in owned_items:
+		return
+	loadout.equip(item)
+	equipment_changed.emit()
+
+
+func owned_for_slot(slot: ItemData.Slot) -> Array[ItemData]:
+	var list: Array[ItemData] = []
+	for item: ItemData in owned_items:
+		if item.slot == slot:
+			list.append(item)
+	return list
 
 
 ## Prénoms déjà pris dans l'équipage (pour ne pas recruter deux « Léa »).

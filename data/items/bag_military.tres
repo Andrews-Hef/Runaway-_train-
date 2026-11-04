@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://core/item_data.gd" id="1_cx21p"]
+
+[resource]
+script = ExtResource("1_cx21p")
+id = &"bag_military"
+display_name = "Sac militaire"
+description = "Armature métallique, sangles renforcées."
+slot = 2
+capacity = 30
+recipe = Dictionary[StringName, int]({
+&"cloth": 5,
+&"parts": 1,
+&"scrap": 3
+})

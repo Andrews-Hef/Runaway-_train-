@@ -18,11 +18,16 @@ const WHISTLE_TIME_COLOR: Color = Color(1.0, 0.45, 0.35)
 var _loot_labels: Dictionary[StringName, Label] = {}
 var _loot_types: Array[LootData] = []
 var _target: Interactable
+var _interactor: Interactor
+var _session: StopSession
+var _bag_label: Label
 var _banner_tween: Tween
 
 
 func bind(session: StopSession, player: Player, loot_types: Array[LootData]) -> void:
 	_loot_types = loot_types
+	_session = session
+	_interactor = player.interactor
 	_build_loot_list()
 	session.time_changed.connect(_on_time_changed)
 	session.whistle_blown.connect(_on_whistle_blown)
@@ -58,6 +63,8 @@ func _build_loot_list() -> void:
 	for child: Node in _loot_list.get_children():
 		child.queue_free()
 	_loot_labels.clear()
+	_bag_label = Label.new()
+	_loot_list.add_child(_bag_label)
 	for loot: LootData in _loot_types:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override(&"separation", 3)
@@ -86,7 +93,14 @@ func _on_whistle_blown() -> void:
 
 func _on_loot_changed(result: ExpeditionResult) -> void:
 	for loot: LootData in _loot_types:
-		_loot_labels[loot.id].text = "%s %d" % [loot.display_name, result.get_amount(loot.id)]
+		var amount: int = result.get_amount(loot.id)
+		_loot_labels[loot.id].text = "%s %d" % [loot.display_name, amount]
+		# Les matériaux rares n'apparaissent qu'une fois trouvés, pour garder le HUD lisible.
+		_loot_labels[loot.id].get_parent().visible = amount > 0 or not loot.id in [&"cloth", &"parts"]
+	if _session and _session.capacity >= 0:
+		_bag_label.text = "Sac %d/%d" % [result.total_items(), _session.capacity]
+		_bag_label.add_theme_color_override(&"font_color", Color(1.0, 0.45, 0.35) if _session.is_bag_full() else Color(0.85, 0.85, 0.88))
+	_refresh_prompt()
 
 
 func _on_recruited(member: CrewMember) -> void:
@@ -112,5 +126,12 @@ func _on_target_changed(target: Interactable) -> void:
 
 func _refresh_prompt() -> void:
 	_prompt.visible = is_instance_valid(_target)
-	if _prompt.visible:
+	if not _prompt.visible:
+		return
+	var blocked: String = _interactor.block_reason() if _interactor else ""
+	if blocked.is_empty():
 		_prompt.text = "Maintenir %s : %s" % [InputMode.label_for(&"interact"), _target.prompt]
+		_prompt.remove_theme_color_override(&"font_color")
+	else:
+		_prompt.text = blocked
+		_prompt.add_theme_color_override(&"font_color", Color(1.0, 0.45, 0.35))

@@ -6,7 +6,7 @@
 [sub_resource type="Resource" id="Resource_8piq5"]
 script = ExtResource("1_fadp2")
 label = "Fouiller le sac"
-random_reward_pool = Array[StringName]([&"scrap", &"wood", &"herb"])
+random_reward_pool = Array[StringName]([&"scrap", &"wood", &"herb", &"cloth"])
 random_reward_amount = Vector2i(2, 4)
 exposure = 0.12
 outcome_text = "Tu vides le sac en retenant ton souffle."

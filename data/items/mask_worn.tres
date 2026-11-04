@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://core/item_data.gd" id="1_t7q8w"]
+
+[resource]
+script = ExtResource("1_t7q8w")
+id = &"mask_worn"
+display_name = "Masque à gaz usé"
+description = "Les filtres ont connu des jours meilleurs."
+slot = 1
+protection = 0.1
+starter = true

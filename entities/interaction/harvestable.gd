@@ -12,6 +12,11 @@ signal harvested(loot: LootData, amount: int, exposure: float)
 @export var loot_pool: Array[LootData] = []
 @export var amount_min: int = 1
 @export var amount_max: int = 2
+## Type d'objet, pour les outils qui récoltent plus vite : &"scrap", &"wood", &"plant", &"cache".
+@export var harvest_tag: StringName
+## Ressource bonus possible en plus (ex. une pièce mécanique dans une épave).
+@export var bonus_loot: LootData
+@export_range(0.0, 1.0) var bonus_chance: float = 0.0
 ## Exposition ajoutée au joueur à la récolte (ressources infectées).
 @export var exposure_on_harvest: float = 0.0
 ## true : l'objet disparaît une fois récolté. false : il reste, grisé.
@@ -34,6 +39,8 @@ func interact(actor: Node2D) -> void:
 	if not loot_pool.is_empty():
 		found = loot_pool.pick_random()
 	harvested.emit(found, randi_range(amount_min, amount_max), exposure_on_harvest)
+	if bonus_loot and randf() < bonus_chance:
+		harvested.emit(bonus_loot, 1, 0.0)
 	super(actor)
 	_play_depleted()
 

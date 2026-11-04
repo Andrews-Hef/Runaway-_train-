@@ -10,10 +10,11 @@ cost = Dictionary[StringName, int]({
 &"scrap": 1
 })
 reward = Dictionary[StringName, int]({
+&"parts": 1,
 &"scrap": 1
 })
-random_reward_pool = Array[StringName]([&"herb", &"wood"])
-random_reward_amount = Vector2i(2, 3)
+random_reward_pool = Array[StringName]([&"herb", &"wood", &"cloth"])
+random_reward_amount = Vector2i(1, 2)
 outcome_text = "La porte cède dans un grincement."
 
 [sub_resource type="Resource" id="Resource_ta5qg"]

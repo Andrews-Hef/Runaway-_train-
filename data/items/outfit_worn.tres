@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://core/item_data.gd" id="1_m7w3d"]
+
+[resource]
+script = ExtResource("1_m7w3d")
+id = &"outfit_worn"
+display_name = "Vêtements usés"
+description = "Ce que tu portais en montant à bord."
+starter = true

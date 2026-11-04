@@ -12,6 +12,10 @@ signal interaction_completed(target: Interactable)
 ## Celui qui interagit (le joueur). Par défaut : le nœud parent.
 var actor: Node2D
 var target: Interactable = null
+## Multiplicateur de vitesse pour une cible (outils). Injecté par la zone.
+var speed_for: Callable = func(_target: Interactable) -> float: return 1.0
+## Raison pour laquelle on ne peut pas utiliser la cible (« Sac plein ! »), vide sinon.
+var block_reason_for: Callable = func(_target: Interactable) -> String: return ""
 
 var _candidates: Array[Interactable] = []
 var _hold: float = 0.0
@@ -26,6 +30,13 @@ func _ready() -> void:
 		actor = get_parent() as Node2D
 	area_entered.connect(add_candidate)
 	area_exited.connect(remove_candidate)
+
+
+## Pourquoi la cible actuelle est inutilisable (vide si elle l'est).
+func block_reason() -> String:
+	if not is_instance_valid(target):
+		return ""
+	return block_reason_for.call(target)
 
 
 ## true pendant qu'Agir est maintenu sur une cible (le joueur est occupé).
@@ -49,8 +60,13 @@ func _physics_process(delta: float) -> void:
 		_hold = 0.0
 		return
 
+	if not block_reason().is_empty():
+		_hold = 0.0
+		target.set_progress(0.0)
+		return
+
 	if Input.is_action_pressed(&"interact"):
-		_hold += delta
+		_hold += delta * float(speed_for.call(target))
 		target.set_progress(_hold / maxf(target.hold_time, 0.01))
 		if _hold >= target.hold_time:
 			var done: Interactable = target

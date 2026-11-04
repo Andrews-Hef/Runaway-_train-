@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="LootData" format=3]
+
+[ext_resource type="Script" path="res://core/loot_data.gd" id="1_r35bo"]
+
+[resource]
+script = ExtResource("1_r35bo")
+id = &"parts"
+display_name = "Pièces mécaniques"
+color = Color(0.56078434, 0.6901961, 0.78431374, 1)

@@ -12,6 +12,7 @@ size = Vector2(8, 5)
 
 [node name="DeadTree" type="Area2D"]
 script = ExtResource("1_harvest")
+harvest_tag = &"wood"
 loot = ExtResource("2_loot")
 amount_min = 2
 amount_max = 3

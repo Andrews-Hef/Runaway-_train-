@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://core/item_data.gd" id="1_0h15p"]
+
+[resource]
+script = ExtResource("1_0h15p")
+id = &"mask_filter"
+display_name = "Masque à filtres neufs"
+description = "Filtres refaits au charbon de plantes."
+slot = 1
+protection = 0.25
+recipe = Dictionary[StringName, int]({
+&"herb": 3,
+&"parts": 1,
+&"scrap": 2
+})

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://core/item_data.gd" id="1_bfar5"]
+
+[resource]
+script = ExtResource("1_bfar5")
+id = &"outfit_padded"
+display_name = "Veste rembourrée"
+description = "Plusieurs couches de tissu cousues ensemble. Arrête un peu les spores."
+protection = 0.15
+recipe = Dictionary[StringName, int]({
+&"cloth": 3,
+&"scrap": 1
+})

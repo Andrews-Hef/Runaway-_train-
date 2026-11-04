@@ -16,6 +16,8 @@ extends Resource
 @export var random_reward_pool: Array[StringName] = []
 ## Quantité du gain aléatoire (min, max).
 @export var random_reward_amount: Vector2i = Vector2i.ZERO
+## Équipement obtenu (achat chez un marchand, trouvaille...).
+@export var reward_item: ItemData
 ## Exposition à l'infection ajoutée au joueur.
 @export_range(0.0, 1.0) var exposure: float = 0.0
 

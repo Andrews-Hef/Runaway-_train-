@@ -16,28 +16,55 @@ class Outcome:
 	var text: String
 	var gained: Dictionary[StringName, int] = {}
 	var recruit: CrewMember
+	var item: ItemData
 	var exposure: float = 0.0
 
 
-## Le joueur porte-t-il de quoi payer ce choix ?
-static func can_afford(choice: EncounterChoice, result: ExpeditionResult) -> bool:
-	return missing(choice, result).is_empty()
+## Clé spéciale de missing() : le sac est trop plein pour ce que le choix rapporte.
+const NO_SPACE: StringName = &"_space"
 
 
-## Ce qui manque pour payer : id -> quantité manquante (vide si tout va bien).
-static func missing(choice: EncounterChoice, result: ExpeditionResult) -> Dictionary[StringName, int]:
+## Le joueur porte-t-il de quoi payer ce choix (et la place pour ce qu'il rapporte) ?
+## capacity < 0 : pas de limite de sac.
+static func can_afford(choice: EncounterChoice, result: ExpeditionResult, capacity: int = -1) -> bool:
+	return missing(choice, result, capacity).is_empty()
+
+
+## Ce qui manque : id -> quantité manquante, ou NO_SPACE -> place manquante dans le sac.
+static func missing(choice: EncounterChoice, result: ExpeditionResult, capacity: int = -1) -> Dictionary[StringName, int]:
 	var lacking: Dictionary[StringName, int] = {}
 	for id: StringName in choice.cost:
 		var short: int = choice.cost[id] - result.get_amount(id)
 		if short > 0:
 			lacking[id] = short
+	if capacity >= 0 and lacking.is_empty():
+		var overflow: int = result.total_items() + max_gain(choice) - _cost_total(choice) - capacity
+		if overflow > 0:
+			lacking[NO_SPACE] = overflow
 	return lacking
+
+
+## Ressources gagnées au maximum (gain fixe + gain aléatoire au plus haut).
+static func max_gain(choice: EncounterChoice) -> int:
+	var total: int = 0
+	for amount: int in choice.reward.values():
+		total += amount
+	if not choice.random_reward_pool.is_empty():
+		total += choice.random_reward_amount.y
+	return total
+
+
+static func _cost_total(choice: EncounterChoice) -> int:
+	var total: int = 0
+	for amount: int in choice.cost.values():
+		total += amount
+	return total
 
 
 ## Applique le choix. `taken_names` évite de recruter deux personnes du même nom.
 static func apply(choice: EncounterChoice, result: ExpeditionResult, rng: RandomNumberGenerator,
 		taken_names: Array[String] = []) -> Outcome:
-	assert(can_afford(choice, result), "Choix appliqué sans pouvoir le payer")
+	assert(missing(choice, result).is_empty(), "Choix appliqué sans pouvoir le payer")
 	var outcome := Outcome.new()
 	outcome.text = choice.outcome_text
 
@@ -54,6 +81,10 @@ static func apply(choice: EncounterChoice, result: ExpeditionResult, rng: Random
 		outcome.recruit = CrewMember.create(_pick_name(rng, taken_names), choice.recruit_role, choice.recruit_role_label, infected)
 		result.recruits.append(outcome.recruit)
 		outcome.text = outcome.text.replace("{nom}", outcome.recruit.display_name)
+
+	if choice.reward_item and not choice.reward_item in result.items:
+		outcome.item = choice.reward_item
+		result.items.append(choice.reward_item)
 
 	outcome.exposure = choice.exposure
 	return outcome

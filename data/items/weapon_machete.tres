@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://core/item_data.gd" id="1_3a1mc"]
+
+[resource]
+script = ExtResource("1_3a1mc")
+id = &"weapon_machete"
+display_name = "Machette"
+description = "Une lame affûtée sur un rail."
+slot = 4
+damage = 2
+recipe = Dictionary[StringName, int]({
+&"parts": 1,
+&"scrap": 3,
+&"wood": 1
+})

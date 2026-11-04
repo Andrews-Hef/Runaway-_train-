@@ -14,6 +14,8 @@ var exposure: float = 0.0
 var boarded: bool = false
 ## Personnes recrutées pendant la sortie : elles montent à bord avec le joueur.
 var recruits: Array[CrewMember] = []
+## Équipements trouvés ou achetés pendant la sortie (rangés dans le train au retour).
+var items: Array[ItemData] = []
 
 
 func add_loot(id: StringName, amount: int) -> void:

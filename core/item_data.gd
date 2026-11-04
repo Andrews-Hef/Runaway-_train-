@@ -1,0 +1,56 @@
+class_name ItemData
+extends Resource
+## Un équipement : tenue, masque, sac, outil ou arme.
+##
+## Un équipement = un fichier .tres dans data/items/. Il se fabrique à
+## l'atelier du train (si `recipe` n'est pas vide) ou se trouve en sortie.
+
+enum Slot { OUTFIT, MASK, BAG, TOOL, WEAPON }
+
+## Nom de chaque emplacement, pour l'interface.
+const SLOT_NAMES: Array[String] = ["Tenue", "Masque", "Sac", "Outil", "Arme"]
+
+@export var id: StringName
+@export var display_name: String
+@export_multiline var description: String
+@export var slot: Slot = Slot.OUTFIT
+
+@export_group("Effets")
+## Réduit l'exposition reçue (0 à 1). Tenue et masque s'additionnent.
+@export_range(0.0, 1.0) var protection: float = 0.0
+## Nombre de ressources qu'on peut porter pendant une sortie (sacs).
+@export var capacity: int = 0
+## Types d'objets récoltés plus vite avec cet outil : &"scrap", &"wood", &"plant", &"cache".
+@export var harvest_tags: Array[StringName] = []
+## Multiplicateur de vitesse de récolte sur ces objets (1.8 = 80 % plus vite).
+@export var harvest_speed: float = 1.0
+## Dégâts au combat (armes).
+@export var damage: int = 0
+
+@export_group("Fabrication")
+## Matériaux à prendre dans le stock du train. Vide = ne se fabrique pas.
+@export var recipe: Dictionary[StringName, int] = {}
+## Équipement de départ, porté dès le début de la partie.
+@export var starter: bool = false
+
+
+func slot_name() -> String:
+	return SLOT_NAMES[slot]
+
+
+func is_craftable() -> bool:
+	return not recipe.is_empty()
+
+
+## Résumé des effets, ex. « Protection 15 % » ou « Sac 20 ».
+func describe_effects() -> String:
+	var parts: PackedStringArray = []
+	if protection > 0.0:
+		parts.append("Protection %d %%" % roundi(protection * 100.0))
+	if capacity > 0:
+		parts.append("Sac %d" % capacity)
+	if not harvest_tags.is_empty() and harvest_speed > 1.0:
+		parts.append("Récolte +%d %%" % roundi((harvest_speed - 1.0) * 100.0))
+	if damage > 0:
+		parts.append("Dégâts %d" % damage)
+	return " · ".join(parts) if not parts.is_empty() else "Aucun effet"

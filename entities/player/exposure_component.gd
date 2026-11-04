@@ -11,6 +11,8 @@ signal zone_changed(inside: bool)
 
 ## Exposition gagnée par seconde sur un sol infecté à 100 %.
 @export var ground_rate: float = 0.04
+## Protection de l'équipement (0 à 1) : réduit toute l'exposition reçue.
+var protection: float = 0.0
 
 var value: float = 0.0
 var in_infected_zone: bool = false
@@ -36,8 +38,9 @@ func _physics_process(delta: float) -> void:
 		add(infection * ground_rate * delta)
 
 
+## Ajoute de l'exposition, réduite par la protection.
 func add(amount: float) -> void:
 	if amount <= 0.0 or value >= 1.0:
 		return
-	value = minf(value + amount, 1.0)
+	value = minf(value + amount * (1.0 - protection), 1.0)
 	changed.emit(value)

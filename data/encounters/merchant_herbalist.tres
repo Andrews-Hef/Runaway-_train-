@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://core/encounter_choice.gd" id="1_wf7sd"]
 [ext_resource type="Script" path="res://core/encounter_data.gd" id="2_6jr0v"]
+[ext_resource type="Resource" path="res://data/items/mask_filter.tres" id="2_tsecm"]
 
 [sub_resource type="Resource" id="Resource_tsecm"]
 script = ExtResource("1_wf7sd")
@@ -36,6 +37,15 @@ reward = Dictionary[StringName, int]({
 })
 outcome_text = "Il range les plantes violettes avec précaution. « Il y a des gens qui paient cher pour ça... »"
 
+[sub_resource type="Resource" id="Resource_iisdn"]
+script = ExtResource("1_wf7sd")
+label = "6 ferrailles contre un masque à filtres neufs"
+cost = Dictionary[StringName, int]({
+&"scrap": 6
+})
+reward_item = ExtResource("2_tsecm")
+outcome_text = "Il sort un masque presque neuf de sous sa bâche. « Prends-en soin. »"
+
 [sub_resource type="Resource" id="Resource_87cg6"]
 script = ExtResource("1_wf7sd")
 label = "Partir"
@@ -47,5 +57,5 @@ script = ExtResource("2_6jr0v")
 id = &"merchant_herbalist"
 title = "Un marchand ambulant"
 text = "Un marchand masqué attend près de sa charrette. « Des plantes contre de la ferraille ? J'ai ce qu'il te faut. »"
-choices = Array[ExtResource("1_wf7sd")]([SubResource("Resource_tsecm"), SubResource("Resource_wshjt"), SubResource("Resource_lqya8"), SubResource("Resource_87cg6")])
+choices = Array[ExtResource("1_wf7sd")]([SubResource("Resource_tsecm"), SubResource("Resource_wshjt"), SubResource("Resource_lqya8"), SubResource("Resource_iisdn"), SubResource("Resource_87cg6")])
 repeatable = true

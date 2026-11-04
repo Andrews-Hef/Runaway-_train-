@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://core/item_data.gd" id="1_2seko"]
+
+[resource]
+script = ExtResource("1_2seko")
+id = &"weapon_axe"
+display_name = "Hache de pompier"
+description = "Lourde, lente, redoutable."
+slot = 4
+damage = 3
+recipe = Dictionary[StringName, int]({
+&"parts": 2,
+&"scrap": 4,
+&"wood": 2
+})
