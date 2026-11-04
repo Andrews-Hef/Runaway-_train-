@@ -19,6 +19,7 @@ const SUITES: Array[String] = [
 	"res://tests/test_train_interior.gd",
 	"res://tests/test_train_rules.gd",
 	"res://tests/test_refuge.gd",
+	"res://tests/test_save.gd",
 ]
 
 
@@ -43,6 +44,8 @@ func _initialize() -> void:
 
 
 func _run_all() -> void:
+	# Les tests n'écrivent jamais dans les vraies sauvegardes du joueur.
+	SaveStore.directory = "user://test_saves"
 	var catcher := ErrorCatcher.new()
 	OS.add_logger(catcher)
 	var passed: int = 0

@@ -45,6 +45,8 @@ var _leaving: bool = false
 
 func _ready() -> void:
 	refuge = GameState.current_refuge if GameState.current_refuge else GameState.REFUGES[0]
+	# Point de reprise : rater le train plus loin ramènera ici.
+	Campaign.reach_refuge()
 	_paint_ground()
 	_build_bounds()
 	_build_town()
@@ -61,7 +63,7 @@ func _ready() -> void:
 	_menu.connect(&"closed", _on_menu_closed)
 	InputMode.changed.connect(func(_device: int) -> void: _refresh_prompt())
 	_title.text = "Arrêt n°%d : %s" % [GameState.stop_number, refuge.display_name]
-	_subtitle.text = "Zone sûre : pas d'infection, le train attend. Remonte à bord pour repartir."
+	_subtitle.text = "Partie sauvegardée · Zone sûre, le train attend. Remonte à bord pour repartir."
 	_fade.color.a = 1.0
 	create_tween().tween_property(_fade, "color:a", 0.0, 0.4)
 

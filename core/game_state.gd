@@ -48,6 +48,15 @@ const START_TRAIN: Array[WagonData] = [
 	preload("res://data/wagons/stock.tres"),
 	preload("res://data/wagons/cabin.tres"),
 ]
+## Tous les types de voitures (pour relire une sauvegarde).
+const WAGON_TYPES: Array[WagonData] = [
+	preload("res://data/wagons/cabin.tres"),
+	preload("res://data/wagons/workshop.tres"),
+	preload("res://data/wagons/stock.tres"),
+	preload("res://data/wagons/dormitory.tres"),
+]
+## Version du format de sauvegarde (à augmenter si le format change).
+const SAVE_VERSION: int = 1
 ## Voitures qu'on peut construire, dans l'ordre d'affichage.
 const BUILDABLE_WAGONS: Array[WagonData] = [
 	preload("res://data/wagons/dormitory.tres"),
@@ -265,6 +274,89 @@ func storage_total() -> int:
 	for amount: int in storage.values():
 		total += amount
 	return total
+
+
+# --- Sauvegarde -------------------------------------------------------------------
+
+## Toute la partie en dictionnaire simple (JSON). Les données de jeu (.tres) sont
+## enregistrées par leur id.
+func to_save() -> Dictionary:
+	var crew_data: Array[Dictionary] = []
+	for member: CrewMember in crew:
+		crew_data.append({"name": member.display_name, "role": member.role, "role_label": member.role_label, "infected": member.infected})
+	var equipped: Array[String] = []
+	for item: ItemData in loadout.equipped.values():
+		equipped.append(String(item.id))
+	return {
+		"version": SAVE_VERSION,
+		"label": "Arrêt n°%d : %s" % [stop_number, stop_name()],
+		"stop_number": stop_number,
+		"zone": String(current_zone.id) if current_zone else "",
+		"refuge": String(current_refuge.id) if current_refuge else "",
+		# Entiers 64 bits en texte : le JSON les arrondirait.
+		"seed": str(current_seed),
+		"rng_seed": str(_rng.seed),
+		"rng_state": str(_rng.state),
+		"storage": storage,
+		"crew": crew_data,
+		"items": owned_items.map(func(item: ItemData) -> String: return String(item.id)),
+		"equipped": equipped,
+		"train": train.map(func(wagon: WagonData) -> String: return String(wagon.id)),
+		"locomotive_level": locomotive_level,
+	}
+
+
+## Recharge une partie. Renvoie false (et ne change rien) si la sauvegarde est illisible.
+func load_save(data: Dictionary) -> bool:
+	if int(data.get("version", 0)) != SAVE_VERSION or not data.has("stop_number"):
+		return false
+	var zone: ZoneProfile = _find_by_id(ZONES, data.get("zone", ""))
+	var refuge: RefugeData = _find_by_id(REFUGES, data.get("refuge", ""))
+	if zone == null and refuge == null:
+		return false
+	stop_number = int(data["stop_number"])
+	current_zone = zone
+	current_refuge = refuge
+	current_seed = str(data.get("seed", "0")).to_int()
+	_rng.seed = str(data.get("rng_seed", "0")).to_int()
+	_rng.state = str(data.get("rng_state", "0")).to_int()
+	storage.clear()
+	var saved_storage: Dictionary = data.get("storage", {})
+	for id: String in saved_storage:
+		storage[StringName(id)] = int(saved_storage[id])
+	crew.clear()
+	for entry: Dictionary in data.get("crew", []):
+		crew.append(CrewMember.create(entry["name"], StringName(entry["role"]), entry["role_label"], bool(entry["infected"])))
+	owned_items.clear()
+	for id: String in data.get("items", []):
+		var item: ItemData = ItemCatalog.get_item(StringName(id))
+		if item:
+			owned_items.append(item)
+	loadout = Loadout.new()
+	for id: String in data.get("equipped", []):
+		var item: ItemData = ItemCatalog.get_item(StringName(id))
+		if item:
+			loadout.equip(item)
+	train.clear()
+	for id: String in data.get("train", []):
+		var wagon: WagonData = _find_by_id(WAGON_TYPES, id)
+		if wagon:
+			train.append(wagon)
+	if train.is_empty():
+		train = START_TRAIN.duplicate()
+	locomotive_level = clampi(int(data.get("locomotive_level", 1)), 1, TrainRules.max_level())
+	storage_changed.emit()
+	crew_changed.emit()
+	equipment_changed.emit()
+	train_changed.emit()
+	return true
+
+
+static func _find_by_id(list: Array, id: String) -> Resource:
+	for entry: Resource in list:
+		if String(entry.get(&"id")) == id:
+			return entry
+	return null
 
 
 ## Tirage pondéré, en évitant si possible de reprendre la même zone deux fois de suite.

@@ -140,7 +140,7 @@ func _wire_systems() -> void:
 	_dialog.connect(&"choice_selected", _on_choice_selected)
 	_dialog.connect(&"closed", _on_dialog_closed)
 	_result_screen.connect(&"continue_requested", _continue_journey)
-	_result_screen.connect(&"new_run_requested", _new_run)
+	_result_screen.connect(&"retry_requested", _retry)
 
 
 func _connect_harvestable(harvestable: Harvestable) -> void:
@@ -188,6 +188,8 @@ func _on_session_ended(result: ExpeditionResult) -> void:
 	_dialog.call(&"close")
 	_player.set_controls_enabled(false)
 	GameState.record_expedition(result)
+	if not result.boarded:
+		Campaign.train_missed()
 	if result.boarded:
 		_player.visible = false
 		_train.depart()
@@ -204,7 +206,7 @@ func _continue_journey() -> void:
 	get_tree().change_scene_to_file(JOURNEY_SCENE)
 
 
-func _new_run() -> void:
+## Train raté : on reprend à la dernière gare refuge (ou au départ du train).
+func _retry() -> void:
 	get_tree().paused = false
-	GameState.new_run()
-	get_tree().change_scene_to_file(JOURNEY_SCENE)
+	Campaign.retry(get_tree())

@@ -13,7 +13,8 @@ Un **voyage** d'arrêt en arrêt :
 - **Arrêt** : chaque zone est **générée au hasard** à partir d'un type de zone (plaine, forêt morte, casse automobile, terres contaminées). Le premier arrêt est toujours une plaine.
 - **Points d'intérêt** dans les zones : **village abandonné** (maisons en ruine, caisses à fouiller), **refuge** avec un survivant à **recruter**, **marchand ambulant** pour **échanger**, et petites rencontres (sac abandonné, armoire à forcer).
 - **Gare refuge** (arrêts n°5, 10, 15…) : une ville fortifiée sur la ligne, **zone sûre** sans infection ni chrono. **Comptoir** pour échanger le surplus du stock, **bureau de quarantaine** pour recruter des survivants sains, **dépôt** pour renforcer la locomotive. On repart en remontant à bord.
-- **Retour à bord** : le butin et les recrues rejoignent le train et on repart vers l'arrêt suivant. **Train raté** : la partie est finie, recrues comprises.
+- **Retour à bord** : le butin et les recrues rejoignent le train et on repart vers l'arrêt suivant.
+- **Campagne continue et sauvegarde** : chaque gare refuge est un **point de reprise**. **Train raté** : on reprend à la dernière gare (ou au départ du train), tout ce qui s'est passé depuis est perdu. La session est aussi sauvegardée à chaque trajet (`user://saves/`), pour reprendre après avoir fermé le jeu.
 
 **Le train** : la locomotive tire un nombre limité de voitures, cabine comprise. On part avec 4 voitures (dortoir, atelier, stock, cabine) et une locomotive qui en tire 5 ; chaque renfort, fait au **dépôt d'une gare refuge**, en ajoute une, **jusqu'à 8**. Les voitures se construisent à bord avec le stock et s'attellent en queue.
 
@@ -47,7 +48,7 @@ Pendant un arrêt :
 
 ## Lancer le jeu
 
-Ouvrir `project.godot` dans Godot puis **F5**. Le jeu démarre sur le trajet (`levels/journey/`), entre dans le train (`levels/train_interior/`), puis descend au premier arrêt (`levels/stop_zone/`) par le levier de la cabine. Pour aller directement à une scène, l'ouvrir et la lancer avec **F6**.
+Ouvrir `project.godot` dans Godot puis **F5**. Le jeu démarre sur l'écran titre (`levels/title/`) : **Continuer** ou **Nouvelle partie**. Ensuite : trajet (`levels/journey/`), intérieur du train (`levels/train_interior/`), puis arrêt (`levels/stop_zone/`) ou gare refuge (`levels/refuge/`) par le levier de la cabine. Pour aller directement à une scène, l'ouvrir et la lancer avec **F6**.
 
 ## Contrôles
 
@@ -103,6 +104,8 @@ Le forçage est ignoré dans un build release.
 | `TrainRules` | `core/train_rules.gd` | Règles du train : traction, construction, couchettes, places (pur, testable) |
 | `RefugeData` / `RefugeOffer` | `core/` | Une gare refuge et ses offres (échanges, recrues), en `.tres` dans `data/refuges/` |
 | `RefugeRules` | `core/refuge_rules.gd` | Règles des offres d'une gare, payées avec le stock (pur, testable) |
+| `SaveStore` | `core/save_store.gd` | Sauvegardes JSON sur le disque (`user://saves/`), une par emplacement |
+| `Campaign` | `levels/campaign.gd` | Le fil de la campagne : nouvelle partie, continuer, quand sauvegarder, où reprendre |
 | `MenuKit` | `ui/common/menu_kit.gd` | Morceaux d'interface partagés par les menus (lignes, coûts, couleurs) |
 
 **Ajouter une rencontre** : créer un `EncounterData` dans `data/encounters/` (titre, texte, choix réglés dans l'inspecteur), puis l'ajouter à `BY_ID` et à un pool dans `core/encounter_library.gd`. Chaque rencontre doit proposer un choix « Partir » (vérifié par les tests).

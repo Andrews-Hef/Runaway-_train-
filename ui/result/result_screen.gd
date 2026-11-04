@@ -4,8 +4,8 @@ extends CanvasLayer
 
 ## Sortie réussie : on continue vers le prochain arrêt.
 signal continue_requested
-## Train raté : la partie est finie, on recommence.
-signal new_run_requested
+## Train raté : on reprend à la dernière gare refuge.
+signal retry_requested
 
 const RISK_LOW: Color = Color(0.55, 0.85, 0.45)
 const RISK_MEDIUM: Color = Color(1.0, 0.8, 0.35)
@@ -33,7 +33,7 @@ func _on_button_pressed() -> void:
 	if _boarded:
 		continue_requested.emit()
 	else:
-		new_run_requested.emit()
+		retry_requested.emit()
 
 
 func show_result(result: ExpeditionResult, loot_types: Array[LootData]) -> void:
@@ -72,14 +72,14 @@ func show_result(result: ExpeditionResult, loot_types: Array[LootData]) -> void:
 		_button.text = "Continuer le voyage"
 	else:
 		_title.text = "Le train est parti sans toi"
-		_subtitle.text = "Seul dans la zone infectée... La sortie est perdue."
+		_subtitle.text = "Seul dans la zone infectée... Tout ce qui s'est passé depuis la dernière gare est perdu."
 		_add_line("Butin perdu", RISK_HIGH)
 		if not result.recruits.is_empty():
 			_add_line("%d recrue(s) perdue(s) avec toi" % result.recruits.size(), RISK_HIGH)
 		_risk.visible = false
-		_storage.text = "Tu as tenu %d arrêt(s)." % (GameState.stop_number - 1)
+		_storage.text = "Reprise : %s" % Campaign.retry_place()
 		_storage.visible = true
-		_button.text = "Nouvelle partie"
+		_button.text = "Reprendre"
 
 	_root.visible = true
 	_button.grab_focus()
