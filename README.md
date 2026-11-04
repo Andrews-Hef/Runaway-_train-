@@ -38,16 +38,22 @@ Pendant un arrêt :
 1. Le train s'arrête. Tu as **60 à 110 secondes** selon la zone avant le départ.
 2. Tu récoltes en **maintenant Agir** près d'un objet : **ferraille** (épaves), **bois** (arbres morts), **plantes**, et **plantes infectées** dans les zones violettes.
 3. Marcher sur le sol violet ou cueillir une plante infectée fait monter ta **jauge d'exposition**.
-4. **Combat** : des **infectés** rôdent dans les zones violettes, des **pilleurs** dans les zones saines. Frappe avec **Coup** (dégâts de l'arme portée). Tu as **10 points de vie**, rendus à chaque arrêt.
+4. **Combat** : des **infectés** rôdent dans les zones violettes, des **pilleurs** dans les zones saines. Frappe avec **Coup** (dégâts de l'arme portée). Tu as **10 points de vie**, rendus à chaque arrêt. Plaqué au sol par un rampant : **martèle Coup** pour te dégager.
 5. À 15 secondes du départ, **le train siffle**. Remonte à bord en maintenant Agir devant la porte du wagon.
 6. **Bilan** : butin, exposition et risque d'infection. Si tu rates le train ou si tu tombes, tu reprends à la dernière gare refuge.
 
-| Ennemi | Vie | Coup | Particularité |
-|---|---|---|---|
-| Infecté | 3 | 1 dégât + 8 % d'exposition | Lent, voûté, dans les zones violettes |
-| Pilleur | 4 | 2 dégâts + vole 1 ressource du sac | Rapide ; tué, il rend ce qu'il a volé et 2 ferrailles |
+Chaque faction a quatre profils :
 
-Les ennemis prennent leur élan avant de frapper : s'éloigner à temps esquive le coup. Ils ne bougent pas pendant un dialogue.
+| Profil | Infectés (exposition) | Pilleurs (vol dans le sac) | Comportement |
+|---|---|---|---|
+| Infanterie | **Infecté** — 3 PV, 1 dégât + 8 % | **Pilleur** — 4 PV, 2 dégâts + vole 1 | Poursuit et frappe |
+| Rampant | **Rampant** — 2 PV, 1 dégât + 5 % par morsure | **Embusqué** — 3 PV, 1 dégât + vole 1 par seconde | Plaque au sol : martèle Coup pour te dégager |
+| Tireur | **Cracheur** — 2 PV, crachat lent 1 dégât + 12 % | **Tireur** — 2 PV, balle 3 dégâts (ligne de visée) | Garde ses distances, fuit si on approche |
+| Lourd | **Boursouflé** — 8 PV, 3 dégâts + 15 % | **Brute** — 9 PV, 4 dégâts | Lent, ne recule pas, coup large (zone rouge) |
+
+- Tous prennent leur élan avant d'agir : s'éloigner à temps esquive le coup. La ligne du Tireur se fige juste avant le tir : c'est le moment de bouger.
+- Les plus dangereux arrivent plus tard : rampants dès l'arrêt 2, tireurs dès le 3, lourds dès le 4. Au premier arrêt, seulement des infectés.
+- Les pilleurs rendent ce qu'ils ont volé quand ils tombent, avec un peu de butin. Les ennemis ne bougent pas pendant un dialogue.
 
 ## Prérequis
 
@@ -115,7 +121,8 @@ Le forçage est ignoré dans un build release.
 | `SaveStore` | `core/save_store.gd` | Sauvegardes JSON sur le disque (`user://saves/`), une par emplacement |
 | `Campaign` | `levels/campaign.gd` | Le fil de la campagne : nouvelle partie, continuer, quand sauvegarder, où reprendre |
 | `HealthComponent` | `entities/combat/health_component.gd` | Points de vie (joueur et ennemis), invincibilité après un coup |
-| `Enemy` / `EnemyData` | `entities/enemy/`, `core/enemy_data.gd` | Ennemi à états (errance, poursuite, élan, recul) réglé par un `.tres` de `data/enemies/` |
+| `Enemy` / `EnemyData` / `EnemyCatalog` | `entities/enemy/`, `core/` | Ennemi à états (errance, poursuite, élan, tir, prise, recul) réglé par un `.tres` de `data/enemies/` (faction + profil) |
+| `Projectile` | `entities/enemy/projectile.gd` | Balle ou crachat : file tout droit, arrêté par le décor |
 | `MenuKit` | `ui/common/menu_kit.gd` | Morceaux d'interface partagés par les menus (lignes, coûts, couleurs) |
 
 **Ajouter une rencontre** : créer un `EncounterData` dans `data/encounters/` (titre, texte, choix réglés dans l'inspecteur), puis l'ajouter à `BY_ID` et à un pool dans `core/encounter_library.gd`. Chaque rencontre doit proposer un choix « Partir » (vérifié par les tests).
@@ -126,7 +133,7 @@ Le forçage est ignoré dans un build release.
 
 **Régler la traction** : `max_cars` et le coût de chaque niveau dans `data/locomotive/level_*.tres`.
 
-**Ajouter un type d'ennemi** : créer un `EnemyData` dans `data/enemies/` (vie, vitesses, portée, dégâts, exposition, vol, butin), l'ajouter à `ENEMIES` dans `levels/stop_zone/stop_zone.gd` et à `ENEMY_RULES` dans `levels/zone_generator.gd`, puis régler son nombre dans les types de zones.
+**Ajouter un type d'ennemi** : créer un `EnemyData` dans `data/enemies/` (faction, profil, vie, vitesses, portée, dégâts, exposition, vol, butin, premier arrêt), l'ajouter à `ALL` dans `core/enemy_catalog.gd`, puis régler son nombre dans `enemies` des types de zones.
 
 **Ajouter une gare refuge** : créer un `RefugeData` dans `data/refuges/` (nom, texte, échanges, recrues), puis l'ajouter à `REFUGES` dans `core/game_state.gd`. Les gares se succèdent dans l'ordre de la liste, puis on recommence. Le rythme (une gare tous les 5 arrêts) est `REFUGE_EVERY`.
 

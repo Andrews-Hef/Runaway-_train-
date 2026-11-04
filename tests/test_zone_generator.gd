@@ -58,7 +58,8 @@ func test_chaque_objet_respecte_son_sol() -> void:
 			var layout := ZoneGenerator.generate(zone, zone_seed)
 			for spawn: ZoneGenerator.Spawn in layout.spawns:
 				var infected: bool = layout.is_infected_at(spawn.position)
-				if spawn.kind in [&"infected_herb", &"infected"]:
+				var enemy: EnemyData = EnemyCatalog.get_enemy(spawn.kind)
+				if spawn.kind == &"infected_herb" or (enemy and enemy.faction == EnemyData.Faction.INFECTED):
 					assert_true(infected, "%s : %s hors du violet en %s" % [zone.id, spawn.kind, spawn.position])
 				elif spawn.kind != &"rock":
 					assert_false(infected, "%s : %s sur le violet en %s" % [zone.id, spawn.kind, spawn.position])
@@ -82,8 +83,7 @@ func test_les_objets_sont_espaces() -> void:
 		for j: int in range(i + 1, layout.spawns.size()):
 			var a: ZoneGenerator.Spawn = layout.spawns[i]
 			var b: ZoneGenerator.Spawn = layout.spawns[j]
-			var rule: Array = ZoneGenerator.RULES.get(b.kind, ZoneGenerator.ENEMY_RULES.get(b.kind, []))
-			var spacing: float = rule[1]
+			var spacing: float = ZoneGenerator.rule_for(b.kind)[1]
 			assert_true(a.position.distance_to(b.position) >= spacing - 0.01, "%s et %s trop proches" % [a.kind, b.kind])
 
 

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://core/enemy_data.gd" id="1_enemy"]
+[ext_resource type="SpriteFrames" path="res://assets/sprites/infected_bloated/infected-bloated.tres" id="2_frames"]
+
+[resource]
+script = ExtResource("1_enemy")
+frames = ExtResource("2_frames")
+id = &"infected_bloated"
+display_name = "Boursouflé"
+archetype = 1
+sprite_offset = Vector2(-26, -47)
+min_stop = 4
+max_health = 8
+wander_speed = 8.0
+chase_speed = 26.0
+sight_range = 80.0
+leash_range = 160.0
+stagger_immune = true
+attack_range = 20.0
+windup = 1.0
+cooldown = 1.4
+damage = 3
+exposure_on_hit = 0.15
+hit_knockback = 260.0

@@ -33,7 +33,10 @@ Le train est **noir** (`iron-black`) avec des liserés rouges (`train-red`) et d
 | `props/backpack`, `props/locker` | 1 | — | Petites rencontres : sac abandonné, armoire métallique |
 | `props/station-house`, `props/palisade` | 1 | — | Gare refuge : bâtiment de la gare, palissade de pieux |
 | `characters/refugee`, `characters/merchant` | 1 (s) | `idle` | PNJ : réfugié à recruter, marchand |
-| `characters/infected`, `characters/raider` | 4 (s, e, n, w) | `idle`, `walk`, `attack` | Ennemis : infecté (membre de la ruche), pilleur |
+| `characters/infected`, `characters/raider` | 4 (s, e, n, w) | `idle`, `walk`, `attack` | Ennemis d'infanterie : infecté (membre de la ruche), pilleur |
+| `characters/infected-crawler`, `characters/raider-lurker` | 4 | `idle`, `walk` (rampe), `attack` (bond) | Rampants : couchés au sol |
+| `characters/infected-spitter`, `characters/raider-marksman` | 4 | `idle`, `walk`, `attack` (crache / vise) | Tireurs |
+| `characters/infected-bloated`, `characters/raider-brute` | 4 | `idle`, `walk`, `attack` (frappe à deux mains) | Lourds (cadre 52×52) |
 | `train/locomotive`, `train/wagon` | 1 | `idle`, `run` (roues qui tournent, léger tangage) | Le train, à quai et en marche |
 
 ### Intérieur du train (vue de dessus)

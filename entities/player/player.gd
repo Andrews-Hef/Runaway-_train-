@@ -12,6 +12,15 @@ extends CharacterBody2D
 signal attacked(direction: Vector2)
 ## Le coup a touché des ennemis.
 signal struck(hits: int)
+## Plaqué au sol par un rampant (true), ou dégagé (false).
+signal pinned_changed(pinned: bool)
+## Progression pour se dégager (appuis sur Coup).
+signal mash_changed(progress: float, needed: int)
+## Dégagé : `by` est le rampant qui le tenait.
+signal freed(by: Node2D)
+
+## Perte de progression par seconde quand on arrête de marteler.
+const MASH_DECAY: float = 1.0
 
 ## Vitesse de déplacement max, en pixels de jeu par seconde (16 px = 1 m).
 @export var move_speed: float = 72.0
@@ -40,14 +49,28 @@ var controls_enabled: bool = true
 @onready var _sprite: AnimatedSprite2D = $AnimatedSprite2D
 
 var _attacking: bool = false
+## Le rampant qui le tient au sol (null = libre).
+var pinned_by: Node2D
+var _base_offset_x: float = 0.0
+var _mash: float = 0.0
+var _mash_needed: int = 8
 
 
 func _ready() -> void:
+	_base_offset_x = _sprite.offset.x
 	_sprite.animation_finished.connect(_on_animation_finished)
 	health.damaged.connect(_on_damaged)
 
 
 func _physics_process(delta: float) -> void:
+	if is_pinned():
+		# Au sol : impossible de bouger, il faut marteler Coup.
+		velocity = Vector2.ZERO
+		if _mash > 0.0:
+			_mash = maxf(_mash - MASH_DECAY * delta, 0.0)
+			mash_changed.emit(_mash, _mash_needed)
+		_sprite.offset.x = _base_offset_x + (1.0 if Engine.get_physics_frames() % 6 < 3 else -1.0)
+		return
 	var input_dir: Vector2 = Vector2.ZERO
 	var harvesting: bool = interactor.is_holding()
 	# Pendant un coup ou une récolte, le personnage est occupé : il ne marche pas.
@@ -72,8 +95,66 @@ func set_controls_enabled(enabled: bool) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if is_pinned():
+		if event.is_action_pressed(&"attack") or event.is_action_pressed(&"interact"):
+			mash()
+			get_viewport().set_input_as_handled()
+		return
 	if controls_enabled and not _attacking and event.is_action_pressed(&"attack"):
 		_attack()
+
+
+# --- Plaqué au sol --------------------------------------------------------------------
+
+## Un rampant le plaque : il faut `mash_needed` appuis rapides pour se dégager.
+func pin(by: Node2D, mash_needed: int) -> void:
+	pinned_by = by
+	_mash = 0.0
+	_mash_needed = maxi(mash_needed, 1)
+	_attacking = false
+	velocity = Vector2.ZERO
+	interactor.set_physics_process(false)
+	_sprite.speed_scale = 1.0
+	_sprite.play(StringName("harvest_" + direction_name(facing)))
+	pinned_changed.emit(true)
+	mash_changed.emit(_mash, _mash_needed)
+
+
+func is_pinned() -> bool:
+	return pinned_by != null and is_instance_valid(pinned_by)
+
+
+## Un appui pour se dégager. Renvoie true si le joueur est libre.
+func mash() -> bool:
+	if not is_pinned():
+		return true
+	_mash += 1.0
+	mash_changed.emit(_mash, _mash_needed)
+	if _mash >= _mash_needed:
+		release()
+		return true
+	return false
+
+
+## Le joueur se relève (dégagé, ou le rampant est mort).
+func release() -> void:
+	if pinned_by == null:
+		return
+	var by: Node2D = pinned_by
+	pinned_by = null
+	_mash = 0.0
+	_sprite.offset.x = _base_offset_x
+	interactor.set_physics_process(controls_enabled)
+	pinned_changed.emit(false)
+	freed.emit(by)
+
+
+## Recul après un coup reçu (rien si on est plaqué au sol).
+func knock_back(from: Vector2, force: float) -> void:
+	if is_pinned():
+		return
+	var away: Vector2 = (global_position - from).normalized()
+	velocity = (away if away != Vector2.ZERO else Vector2.UP) * force
 
 
 func _attack() -> void:
@@ -105,10 +186,8 @@ func strike() -> int:
 	return hits
 
 
-## Coup reçu : recul et flash rouge.
-func _on_damaged(_amount: int, from: Vector2) -> void:
-	var away: Vector2 = (global_position - from).normalized()
-	velocity = (away if away != Vector2.ZERO else Vector2.UP) * 160.0
+## Coup reçu : flash rouge (le recul est donné par la zone, selon l'ennemi).
+func _on_damaged(_amount: int, _from: Vector2) -> void:
 	_sprite.modulate = Color(1.0, 0.45, 0.45)
 	create_tween().tween_property(_sprite, "modulate", Color.WHITE, 0.25)
 

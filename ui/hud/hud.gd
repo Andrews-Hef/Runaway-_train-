@@ -10,6 +10,9 @@ const WHISTLE_TIME_COLOR: Color = Color(1.0, 0.45, 0.35)
 @onready var _health_label: Label = %HealthLabel
 @onready var _health_bar: ProgressBar = %HealthBar
 @onready var _toast: Label = %Toast
+@onready var _mash: Control = %Mash
+@onready var _mash_label: Label = %MashLabel
+@onready var _mash_bar: ProgressBar = %MashBar
 @onready var _exposure_label: Label = %ExposureLabel
 @onready var _exposure_bar: ProgressBar = %ExposureBar
 @onready var _zone_warning: Label = %ZoneWarning
@@ -39,6 +42,10 @@ func bind(session: StopSession, player: Player, loot_types: Array[LootData]) -> 
 	session.recruited.connect(_on_recruited)
 	session.ended.connect(func(_result: ExpeditionResult) -> void: visible = false)
 	player.health.changed.connect(_on_health_changed)
+	player.pinned_changed.connect(_on_pinned_changed)
+	player.mash_changed.connect(func(progress: float, needed: int) -> void:
+		_mash_bar.max_value = needed
+		_mash_bar.value = progress)
 	player.exposure.changed.connect(_on_exposure_changed)
 	player.exposure.zone_changed.connect(_on_zone_changed)
 	player.interactor.target_changed.connect(_on_target_changed)
@@ -135,6 +142,16 @@ func _on_health_changed(health: int, max_health: int) -> void:
 	_health_bar.value = health
 	_health_label.text = "Vie %d/%d" % [health, max_health]
 	_health_label.add_theme_color_override(&"font_color", Color(1.0, 0.45, 0.35) if health * 3 <= max_health else Color.WHITE)
+
+
+## Plaqué au sol : « Martèle Coup pour te dégager ! » et la jauge.
+func _on_pinned_changed(pinned: bool) -> void:
+	_mash.visible = pinned
+	_mash_label.text = "Martèle %s pour te dégager !" % InputMode.label_for(&"attack")
+	if pinned:
+		_prompt.visible = false
+	else:
+		_refresh_prompt()
 
 
 func _on_exposure_changed(value: float) -> void:

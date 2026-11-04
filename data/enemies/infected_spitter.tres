@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://core/enemy_data.gd" id="1_enemy"]
+[ext_resource type="SpriteFrames" path="res://assets/sprites/infected_spitter/infected-spitter.tres" id="2_frames"]
+
+[resource]
+script = ExtResource("1_enemy")
+frames = ExtResource("2_frames")
+id = &"infected_spitter"
+display_name = "Cracheur"
+archetype = 2
+min_stop = 3
+max_health = 2
+wander_speed = 12.0
+chase_speed = 34.0
+sight_range = 120.0
+leash_range = 190.0
+attack_range = 100.0
+windup = 0.9
+cooldown = 1.6
+damage = 1
+exposure_on_hit = 0.12
+flee_range = 45.0
+projectile_speed = 110.0
+projectile_color = Color(0.75, 0.35, 1, 1)

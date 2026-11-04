@@ -143,13 +143,89 @@ func test_les_ennemis_apparaissent_selon_la_zone() -> void:
 	for zone: ZoneProfile in GameState.ZONES:
 		for zone_seed: int in [1, 2, 3]:
 			var layout := ZoneGenerator.generate(zone, zone_seed, [spawn])
-			var counts: Dictionary[StringName, int] = {&"infected": 0, &"raider": 0}
+			var counts: Dictionary[StringName, int] = {}
 			for entry: ZoneGenerator.Spawn in layout.spawns:
-				if counts.has(entry.kind):
-					counts[entry.kind] += 1
+				if EnemyCatalog.get_enemy(entry.kind):
+					counts[entry.kind] = counts.get(entry.kind, 0) + 1
 					assert_true(entry.position.distance_to(spawn) >= ZoneGenerator.ENEMY_SAFE_RADIUS, "%s trop près du joueur" % entry.kind)
-			assert_true(counts[&"infected"] <= zone.infected.y, "%s : trop d'infectés" % zone.id)
-			assert_true(counts[&"raider"] >= zone.raiders.x and counts[&"raider"] <= zone.raiders.y, "%s : pilleurs %d" % [zone.id, counts[&"raider"]])
+			for kind: StringName in counts:
+				assert_true(counts[kind] <= zone.count_range(kind).y, "%s : trop de %s" % [zone.id, kind])
+
+
+func test_au_premier_arret_seulement_des_infectes() -> void:
+	for zone: ZoneProfile in GameState.ZONES:
+		for zone_seed: int in [1, 2, 3, 4]:
+			for entry: ZoneGenerator.Spawn in ZoneGenerator.generate(zone, zone_seed, [], 1).spawns:
+				var enemy: EnemyData = EnemyCatalog.get_enemy(entry.kind)
+				if enemy:
+					assert_true(enemy.min_stop <= 1, "%s dès l'arrêt 1" % enemy.id)
+
+
+func test_chaque_faction_a_ses_quatre_profils() -> void:
+	for faction: int in EnemyData.Faction.values():
+		var archetypes: Array[int] = []
+		for enemy: EnemyData in EnemyCatalog.ALL:
+			if enemy.faction == faction:
+				archetypes.append(enemy.archetype)
+				assert_true(enemy.frames != null, "%s : sprites" % enemy.id)
+		for archetype: int in EnemyData.Archetype.values():
+			assert_true(archetype in archetypes, "faction %d : profil %d manquant" % [faction, archetype])
+
+
+func test_le_lourd_ne_recule_pas() -> void:
+	var heavy := _enemy(EnemyCatalog.get_enemy(&"raider_brute"), Vector2(100, 100))
+	heavy.state = Enemy.State.CHASE
+	heavy.take_hit(1, Vector2(90, 100))
+	assert_true(heavy.state == Enemy.State.CHASE, "il continue d'avancer")
+	assert_true(heavy.health.health == heavy.data.max_health - 1, "mais il prend le coup")
+
+
+func test_le_tireur_garde_ses_distances_et_tire() -> void:
+	var sniper_data: EnemyData = EnemyCatalog.get_enemy(&"raider_marksman")
+	var player := _player(Vector2(130, 100))
+	var sniper := _enemy(sniper_data, Vector2(100, 100))
+	sniper.target = player
+	sniper.state = Enemy.State.CHASE
+	_think(sniper, 0.05)
+	assert_true(sniper.velocity.x < 0.0, "trop près : il recule")
+	player.position = Vector2(200, 100)
+	_think(sniper, 0.05)
+	assert_true(sniper.state == Enemy.State.WINDUP, "à bonne distance : il vise")
+	var shots: Array[Projectile] = []
+	sniper.shot_fired.connect(func(_e: Enemy, p: Projectile) -> void: shots.append(p))
+	_think(sniper, sniper_data.windup + 0.05)
+	assert_true(shots.size() == 1, "il tire")
+	assert_true(shots[0].direction.x > 0.9, "vers le joueur")
+	for shot: Projectile in shots:
+		shot.free()
+
+
+func test_un_projectile_touche_ce_qui_est_sur_sa_route() -> void:
+	assert_true(Projectile.segment_hits(Vector2(0, 0), Vector2(20, 0), Vector2(10, 5), 7.0), "sur la route")
+	assert_false(Projectile.segment_hits(Vector2(0, 0), Vector2(20, 0), Vector2(10, 12), 7.0), "à côté")
+
+
+func test_le_rampant_plaque_et_il_faut_marteler() -> void:
+	var crawler_data: EnemyData = EnemyCatalog.get_enemy(&"infected_crawler")
+	var player := _player(Vector2(110, 100))
+	var crawler := _enemy(crawler_data, Vector2(100, 100))
+	crawler.target = player
+	crawler.state = Enemy.State.CHASE
+	var grabs: Array[int] = [0]
+	var bites: Array[int] = [0]
+	crawler.grabbed.connect(func(e: Enemy) -> void:
+		grabs[0] += 1
+		player.pin(e, e.data.mash_needed))
+	crawler.attack_landed.connect(func(_e: Enemy) -> void: bites[0] += 1)
+	_think(crawler, crawler_data.windup + 0.1)
+	assert_true(grabs[0] == 1 and crawler.is_grabbing() and player.is_pinned(), "plaqué au sol")
+	_think(crawler, crawler_data.grab_tick * 2.0 + 0.05)
+	assert_true(bites[0] >= 3, "il mord tant qu'il tient (%d)" % bites[0])
+	player.freed.connect(func(by: Node2D) -> void: (by as Enemy).release_grab())
+	for i: int in crawler_data.mash_needed:
+		player.mash()
+	assert_false(player.is_pinned(), "dégagé à force de marteler")
+	assert_true(crawler.state == Enemy.State.STUNNED, "le rampant est sonné")
 
 
 func test_la_zone_place_les_ennemis_et_les_branche() -> void:

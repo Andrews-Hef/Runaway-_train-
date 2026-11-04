@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://core/enemy_data.gd" id="1_enemy"]
+[ext_resource type="SpriteFrames" path="res://assets/sprites/raider_lurker/raider-lurker.tres" id="2_frames"]
+
+[resource]
+script = ExtResource("1_enemy")
+frames = ExtResource("2_frames")
+id = &"raider_lurker"
+display_name = "Embusqué"
+faction = 1
+archetype = 3
+sprite_offset = Vector2(-20, -23)
+min_stop = 2
+max_health = 3
+wander_speed = 14.0
+chase_speed = 56.0
+sight_range = 64.0
+leash_range = 180.0
+attack_range = 12.0
+windup = 0.3
+cooldown = 1.5
+damage = 1
+steal_amount = 1
+mash_needed = 7
+grab_tick = 1.0
+drop = Dictionary[StringName, int]({
+&"scrap": 1
+})

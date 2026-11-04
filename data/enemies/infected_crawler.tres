@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://core/enemy_data.gd" id="1_enemy"]
+[ext_resource type="SpriteFrames" path="res://assets/sprites/infected_crawler/infected-crawler.tres" id="2_frames"]
+
+[resource]
+script = ExtResource("1_enemy")
+frames = ExtResource("2_frames")
+id = &"infected_crawler"
+display_name = "Rampant"
+archetype = 3
+sprite_offset = Vector2(-20, -24)
+min_stop = 2
+max_health = 2
+wander_speed = 10.0
+chase_speed = 50.0
+sight_range = 70.0
+leash_range = 160.0
+attack_range = 12.0
+windup = 0.35
+cooldown = 1.5
+damage = 1
+exposure_on_hit = 0.05
+mash_needed = 8
+grab_tick = 1.0

@@ -23,6 +23,9 @@ offset = Vector2(-18, -35)
 position = Vector2(0, -3)
 shape = SubResource("RectangleShape2D_feet")
 
+[node name="Telegraph" type="Node2D" parent="."]
+z_index = 4
+
 [node name="Health" type="Node" parent="."]
 script = ExtResource("2_health")
 max_health = 3

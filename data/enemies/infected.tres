@@ -5,9 +5,9 @@
 
 [resource]
 script = ExtResource("1_enemy")
+frames = ExtResource("2_frames")
 id = &"infected"
 display_name = "Infecté"
-frames = ExtResource("2_frames")
 max_health = 3
 wander_speed = 14.0
 chase_speed = 38.0

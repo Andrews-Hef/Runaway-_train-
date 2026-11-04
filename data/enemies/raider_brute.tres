@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://core/enemy_data.gd" id="1_enemy"]
+[ext_resource type="SpriteFrames" path="res://assets/sprites/raider_brute/raider-brute.tres" id="2_frames"]
+
+[resource]
+script = ExtResource("1_enemy")
+frames = ExtResource("2_frames")
+id = &"raider_brute"
+display_name = "Brute"
+faction = 1
+archetype = 1
+sprite_offset = Vector2(-26, -47)
+min_stop = 4
+max_health = 9
+wander_speed = 12.0
+chase_speed = 32.0
+sight_range = 90.0
+leash_range = 200.0
+stagger_immune = true
+attack_range = 20.0
+windup = 0.95
+cooldown = 1.3
+damage = 4
+hit_knockback = 280.0
+drop = Dictionary[StringName, int]({
+&"scrap": 3,
+&"parts": 1
+})

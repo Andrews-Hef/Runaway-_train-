@@ -36,11 +36,9 @@ const RULES: Dictionary[StringName, Array] = {
 }
 
 
-## Ennemis : [placement, espacement minimal en px]. Placés après le décor.
-const ENEMY_RULES: Dictionary[StringName, Array] = {
-	&"infected": [Placement.INFECTED, 40.0],
-	&"raider": [Placement.HEALTHY, 64.0],
-}
+## Espacement minimal entre ennemis, en px. Les infectés naissent dans le violet,
+## les pilleurs sur le sol sain.
+const ENEMY_SPACING: float = 48.0
 
 
 ## Taille au sol de chaque point d'intérêt, en pixels.
@@ -130,7 +128,8 @@ class Layout:
 
 
 ## reserved : points à garder dégagés (ex. l'apparition du joueur), voir RESERVED_RADIUS.
-static func generate(profile: ZoneProfile, zone_seed: int, reserved: Array[Vector2] = []) -> Layout:
+## stop_number : les ennemis dont min_stop est plus grand n'apparaissent pas encore.
+static func generate(profile: ZoneProfile, zone_seed: int, reserved: Array[Vector2] = [], stop_number: int = 1000) -> Layout:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = zone_seed
 	var layout := Layout.new()
@@ -150,11 +149,24 @@ static func generate(profile: ZoneProfile, zone_seed: int, reserved: Array[Vecto
 		var wanted: int = rng.randi_range(range_.x, range_.y)
 		_scatter(layout, kind, wanted, rng, occupied, reserved)
 	# Les ennemis en dernier : le décor d'une graine ne change pas quand on règle les ennemis.
-	for kind: StringName in ENEMY_RULES:
-		var range_: Vector2i = profile.count_range(kind)
+	for enemy: EnemyData in EnemyCatalog.ALL:
+		var range_: Vector2i = profile.count_range(enemy.id)
+		if range_ == Vector2i.ZERO or stop_number < enemy.min_stop:
+			continue
 		var wanted: int = rng.randi_range(range_.x, range_.y)
-		_scatter(layout, kind, wanted, rng, occupied, reserved, ENEMY_RULES[kind], ENEMY_SAFE_RADIUS)
+		_scatter(layout, enemy.id, wanted, rng, occupied, reserved, rule_for(enemy.id), ENEMY_SAFE_RADIUS)
 	return layout
+
+
+## Règle de placement d'un type d'objet ou d'ennemi : [placement, espacement].
+static func rule_for(kind: StringName) -> Array:
+	if RULES.has(kind):
+		return RULES[kind]
+	var enemy: EnemyData = EnemyCatalog.get_enemy(kind)
+	if enemy:
+		var placement: Placement = Placement.INFECTED if enemy.faction == EnemyData.Faction.INFECTED else Placement.HEALTHY
+		return [placement, ENEMY_SPACING]
+	return [Placement.ANYWHERE, 0.0]
 
 
 # --- Points d'intérêt ------------------------------------------------------------

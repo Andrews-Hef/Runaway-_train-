@@ -1,0 +1,731 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "characters/infected-crawler",
+  "type": "character",
+  "description": "Infecté rampant : se traîne au sol, plaque sa proie et ne la lâche plus.",
+  "frame": {
+    "width": 40,
+    "height": 36
+  },
+  "directions": "d4",
+  "rig": "humanoid-basic",
+  "export": {
+    "formats": [
+      "manifest",
+      "godot-spriteframes"
+    ],
+    "godot": {
+      "directory": "res://assets/sprites/infected_crawler/"
+    }
+  },
+  "materials": {
+    "skin-sick": {
+      "color": "#8e9787",
+      "bands": 3,
+      "hueShift": 20
+    },
+    "rags": {
+      "color": "#4a4458",
+      "bands": 3,
+      "hueShift": 25
+    },
+    "hive-growth": {
+      "color": "#9b3fc4",
+      "emissive": "#3a0f50",
+      "bands": 3,
+      "hueShift": 30
+    },
+    "hive-eye": {
+      "color": "#e07cff",
+      "emissive": "#a020c0",
+      "bands": 2
+    }
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "pelvis",
+        "bone": "hips",
+        "material": "rags",
+        "size": [
+          0.34,
+          0.18,
+          0.22
+        ],
+        "position": [
+          0,
+          0.95,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "torso",
+        "bone": "chest",
+        "material": "rags",
+        "size": [
+          0.4,
+          0.5,
+          0.26
+        ],
+        "position": [
+          0,
+          1.22,
+          0.04
+        ],
+        "rotation": [
+          18,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "sphere",
+        "id": "head",
+        "bone": "head",
+        "material": "skin-sick",
+        "radius": 0.13,
+        "position": [
+          0,
+          1.52,
+          0.12
+        ]
+      },
+      {
+        "type": "sphere",
+        "id": "eye",
+        "bone": "head",
+        "material": "hive-eye",
+        "radius": 0.03,
+        "position": [
+          0.05,
+          1.54,
+          0.24
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "sphere",
+        "id": "growth-head",
+        "bone": "head",
+        "material": "hive-growth",
+        "radius": 0.08,
+        "position": [
+          -0.06,
+          1.63,
+          0.05
+        ]
+      },
+      {
+        "type": "sphere",
+        "id": "growth-back",
+        "bone": "chest",
+        "material": "hive-growth",
+        "radius": 0.09,
+        "position": [
+          -0.08,
+          1.3,
+          -0.16
+        ]
+      },
+      {
+        "type": "capsule",
+        "id": "upper-arm",
+        "bone": "leftUpperArm",
+        "material": "rags",
+        "radius": 0.065,
+        "length": 0.18,
+        "position": [
+          0.25,
+          1.3,
+          0
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "capsule",
+        "id": "lower-arm",
+        "bone": "leftLowerArm",
+        "material": "skin-sick",
+        "radius": 0.055,
+        "length": 0.18,
+        "position": [
+          0.25,
+          1.04,
+          0
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "sphere",
+        "id": "hand",
+        "bone": "leftLowerArm",
+        "material": "skin-sick",
+        "radius": 0.055,
+        "position": [
+          0.25,
+          0.86,
+          0.02
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "capsule",
+        "id": "thigh",
+        "bone": "leftUpperLeg",
+        "material": "rags",
+        "radius": 0.085,
+        "length": 0.24,
+        "position": [
+          0.1,
+          0.71,
+          0
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "capsule",
+        "id": "shin",
+        "bone": "leftLowerLeg",
+        "material": "skin-sick",
+        "radius": 0.075,
+        "length": 0.24,
+        "position": [
+          0.1,
+          0.31,
+          0
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "box",
+        "id": "foot",
+        "bone": "leftFoot",
+        "material": "skin-sick",
+        "size": [
+          0.12,
+          0.08,
+          0.22
+        ],
+        "position": [
+          0.1,
+          0.04,
+          0.03
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "sphere",
+        "id": "growth-spine",
+        "bone": "chest",
+        "material": "hive-growth",
+        "radius": 0.09,
+        "position": [
+          0,
+          1.35,
+          -0.15
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 1.2,
+        "loop": true,
+        "keys": [
+          {
+            "t": 0,
+            "pose": {
+              "hips": {
+                "translation": [
+                  0,
+                  -0.72,
+                  0
+                ],
+                "rotation": [
+                  82,
+                  0,
+                  0
+                ]
+              },
+              "leftUpperArm": {
+                "rotation": [
+                  -150,
+                  0,
+                  15
+                ]
+              },
+              "rightUpperArm": {
+                "rotation": [
+                  -60,
+                  0,
+                  -15
+                ]
+              },
+              "leftUpperLeg": {
+                "rotation": [
+                  -10,
+                  0,
+                  0
+                ]
+              },
+              "rightUpperLeg": {
+                "rotation": [
+                  15,
+                  0,
+                  0
+                ]
+              },
+              "head": {
+                "rotation": [
+                  -60,
+                  0,
+                  0
+                ]
+              }
+            }
+          },
+          {
+            "t": 0.6,
+            "pose": {
+              "hips": {
+                "translation": [
+                  0,
+                  -0.72,
+                  0
+                ],
+                "rotation": [
+                  82,
+                  0,
+                  0
+                ]
+              },
+              "leftUpperArm": {
+                "rotation": [
+                  -150,
+                  0,
+                  15
+                ]
+              },
+              "rightUpperArm": {
+                "rotation": [
+                  -60,
+                  0,
+                  -15
+                ]
+              },
+              "leftUpperLeg": {
+                "rotation": [
+                  -10,
+                  0,
+                  0
+                ]
+              },
+              "rightUpperLeg": {
+                "rotation": [
+                  15,
+                  0,
+                  0
+                ]
+              },
+              "head": {
+                "rotation": [
+                  -60,
+                  0,
+                  0
+                ]
+              },
+              "spine": {
+                "rotation": [
+                  6,
+                  0,
+                  0
+                ]
+              }
+            }
+          },
+          {
+            "t": 1.2,
+            "pose": {
+              "hips": {
+                "translation": [
+                  0,
+                  -0.72,
+                  0
+                ],
+                "rotation": [
+                  82,
+                  0,
+                  0
+                ]
+              },
+              "leftUpperArm": {
+                "rotation": [
+                  -150,
+                  0,
+                  15
+                ]
+              },
+              "rightUpperArm": {
+                "rotation": [
+                  -60,
+                  0,
+                  -15
+                ]
+              },
+              "leftUpperLeg": {
+                "rotation": [
+                  -10,
+                  0,
+                  0
+                ]
+              },
+              "rightUpperLeg": {
+                "rotation": [
+                  15,
+                  0,
+                  0
+                ]
+              },
+              "head": {
+                "rotation": [
+                  -60,
+                  0,
+                  0
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "walk": {
+        "duration": 1.0,
+        "loop": true,
+        "keys": [
+          {
+            "t": 0,
+            "pose": {
+              "hips": {
+                "translation": [
+                  0,
+                  -0.72,
+                  0
+                ],
+                "rotation": [
+                  82,
+                  0,
+                  0
+                ]
+              },
+              "leftUpperArm": {
+                "rotation": [
+                  -150,
+                  0,
+                  15
+                ]
+              },
+              "rightUpperArm": {
+                "rotation": [
+                  -60,
+                  0,
+                  -15
+                ]
+              },
+              "leftUpperLeg": {
+                "rotation": [
+                  -10,
+                  0,
+                  0
+                ]
+              },
+              "rightUpperLeg": {
+                "rotation": [
+                  15,
+                  0,
+                  0
+                ]
+              },
+              "head": {
+                "rotation": [
+                  -60,
+                  0,
+                  0
+                ]
+              }
+            }
+          },
+          {
+            "t": 0.5,
+            "pose": {
+              "hips": {
+                "translation": [
+                  0,
+                  -0.72,
+                  0
+                ],
+                "rotation": [
+                  82,
+                  0,
+                  0
+                ]
+              },
+              "leftUpperArm": {
+                "rotation": [
+                  -60,
+                  0,
+                  15
+                ]
+              },
+              "rightUpperArm": {
+                "rotation": [
+                  -150,
+                  0,
+                  -15
+                ]
+              },
+              "leftUpperLeg": {
+                "rotation": [
+                  15,
+                  0,
+                  0
+                ]
+              },
+              "rightUpperLeg": {
+                "rotation": [
+                  -10,
+                  0,
+                  0
+                ]
+              },
+              "head": {
+                "rotation": [
+                  -60,
+                  0,
+                  0
+                ]
+              }
+            }
+          },
+          {
+            "t": 1.0,
+            "pose": {
+              "hips": {
+                "translation": [
+                  0,
+                  -0.72,
+                  0
+                ],
+                "rotation": [
+                  82,
+                  0,
+                  0
+                ]
+              },
+              "leftUpperArm": {
+                "rotation": [
+                  -150,
+                  0,
+                  15
+                ]
+              },
+              "rightUpperArm": {
+                "rotation": [
+                  -60,
+                  0,
+                  -15
+                ]
+              },
+              "leftUpperLeg": {
+                "rotation": [
+                  -10,
+                  0,
+                  0
+                ]
+              },
+              "rightUpperLeg": {
+                "rotation": [
+                  15,
+                  0,
+                  0
+                ]
+              },
+              "head": {
+                "rotation": [
+                  -60,
+                  0,
+                  0
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "attack": {
+        "duration": 0.6,
+        "loop": false,
+        "keys": [
+          {
+            "t": 0,
+            "pose": {
+              "hips": {
+                "translation": [
+                  0,
+                  -0.72,
+                  0
+                ],
+                "rotation": [
+                  82,
+                  0,
+                  0
+                ]
+              },
+              "leftUpperArm": {
+                "rotation": [
+                  -150,
+                  0,
+                  15
+                ]
+              },
+              "rightUpperArm": {
+                "rotation": [
+                  -60,
+                  0,
+                  -15
+                ]
+              },
+              "leftUpperLeg": {
+                "rotation": [
+                  -10,
+                  0,
+                  0
+                ]
+              },
+              "rightUpperLeg": {
+                "rotation": [
+                  15,
+                  0,
+                  0
+                ]
+              },
+              "head": {
+                "rotation": [
+                  -60,
+                  0,
+                  0
+                ]
+              }
+            }
+          },
+          {
+            "t": 0.35,
+            "pose": {
+              "hips": {
+                "translation": [
+                  0,
+                  -0.6,
+                  0.25
+                ],
+                "rotation": [
+                  70,
+                  0,
+                  0
+                ]
+              },
+              "leftUpperArm": {
+                "rotation": [
+                  -170,
+                  0,
+                  10
+                ]
+              },
+              "rightUpperArm": {
+                "rotation": [
+                  -170,
+                  0,
+                  -10
+                ]
+              },
+              "leftUpperLeg": {
+                "rotation": [
+                  -10,
+                  0,
+                  0
+                ]
+              },
+              "rightUpperLeg": {
+                "rotation": [
+                  15,
+                  0,
+                  0
+                ]
+              },
+              "head": {
+                "rotation": [
+                  -60,
+                  0,
+                  0
+                ]
+              }
+            }
+          },
+          {
+            "t": 0.6,
+            "pose": {
+              "hips": {
+                "translation": [
+                  0,
+                  -0.72,
+                  0
+                ],
+                "rotation": [
+                  82,
+                  0,
+                  0
+                ]
+              },
+              "leftUpperArm": {
+                "rotation": [
+                  -150,
+                  0,
+                  15
+                ]
+              },
+              "rightUpperArm": {
+                "rotation": [
+                  -60,
+                  0,
+                  -15
+                ]
+              },
+              "leftUpperLeg": {
+                "rotation": [
+                  -10,
+                  0,
+                  0
+                ]
+              },
+              "rightUpperLeg": {
+                "rotation": [
+                  15,
+                  0,
+                  0
+                ]
+              },
+              "head": {
+                "rotation": [
+                  -60,
+                  0,
+                  0
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

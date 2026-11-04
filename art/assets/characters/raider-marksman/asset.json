@@ -1,0 +1,424 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "characters/raider-marksman",
+  "type": "character",
+  "description": "Pilleur sniper (Tireur) : capuche, long fusil à lunette.",
+  "frame": {
+    "width": 36,
+    "height": 40
+  },
+  "directions": "d4",
+  "rig": "humanoid-basic",
+  "export": {
+    "formats": [
+      "manifest",
+      "godot-spriteframes"
+    ],
+    "godot": {
+      "directory": "res://assets/sprites/raider_marksman/"
+    }
+  },
+  "materials": {
+    "skin": {
+      "color": "#b98563",
+      "bands": 3,
+      "hueShift": 25
+    },
+    "pants": {
+      "color": "#2f3238",
+      "bands": 3,
+      "hueShift": 20
+    },
+    "boots": {
+      "color": "#2b2522",
+      "bands": 2
+    },
+    "pack": {
+      "color": "#5b3e28",
+      "bands": 3,
+      "hueShift": 25
+    }
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "pelvis",
+        "bone": "hips",
+        "material": "pants",
+        "size": [
+          0.34,
+          0.18,
+          0.22
+        ],
+        "position": [
+          0,
+          0.95,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "torso",
+        "bone": "chest",
+        "material": "coat",
+        "size": [
+          0.4,
+          0.5,
+          0.26
+        ],
+        "position": [
+          0,
+          1.26,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "coat-tail",
+        "bone": "hips",
+        "material": "coat",
+        "size": [
+          0.38,
+          0.3,
+          0.26
+        ],
+        "position": [
+          0,
+          0.85,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "belt",
+        "bone": "hips",
+        "material": "pack",
+        "size": [
+          0.36,
+          0.06,
+          0.24
+        ],
+        "position": [
+          0,
+          1.03,
+          0
+        ]
+      },
+      {
+        "type": "sphere",
+        "id": "head",
+        "bone": "head",
+        "material": "skin",
+        "radius": 0.14,
+        "position": [
+          0,
+          1.62,
+          -0.01
+        ]
+      },
+      {
+        "type": "box",
+        "id": "bandana",
+        "bone": "head",
+        "material": "cloth-red",
+        "size": [
+          0.26,
+          0.1,
+          0.2
+        ],
+        "position": [
+          0,
+          1.56,
+          0.06
+        ]
+      },
+      {
+        "type": "sphere",
+        "id": "eye",
+        "bone": "head",
+        "material": "dark",
+        "radius": 0.025,
+        "position": [
+          0.05,
+          1.64,
+          0.13
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "capsule",
+        "id": "upper-arm",
+        "bone": "leftUpperArm",
+        "material": "coat",
+        "radius": 0.065,
+        "length": 0.18,
+        "position": [
+          0.25,
+          1.3,
+          0
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "capsule",
+        "id": "lower-arm",
+        "bone": "leftLowerArm",
+        "material": "coat",
+        "radius": 0.055,
+        "length": 0.18,
+        "position": [
+          0.25,
+          1.04,
+          0
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "sphere",
+        "id": "hand",
+        "bone": "leftLowerArm",
+        "material": "skin",
+        "radius": 0.05,
+        "position": [
+          0.25,
+          0.88,
+          0
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "capsule",
+        "id": "thigh",
+        "bone": "leftUpperLeg",
+        "material": "pants",
+        "radius": 0.085,
+        "length": 0.24,
+        "position": [
+          0.1,
+          0.71,
+          0
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "capsule",
+        "id": "shin",
+        "bone": "leftLowerLeg",
+        "material": "pants",
+        "radius": 0.075,
+        "length": 0.24,
+        "position": [
+          0.1,
+          0.31,
+          0
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "box",
+        "id": "boot",
+        "bone": "leftFoot",
+        "material": "boots",
+        "size": [
+          0.13,
+          0.1,
+          0.24
+        ],
+        "position": [
+          0.1,
+          0.05,
+          0.03
+        ],
+        "mirror": "x"
+      },
+      {
+        "type": "box",
+        "id": "hood",
+        "bone": "head",
+        "material": "hood-grey",
+        "size": [
+          0.3,
+          0.2,
+          0.32
+        ],
+        "position": [
+          0,
+          1.68,
+          -0.03
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "rifle",
+        "bone": "rightLowerArm",
+        "material": "iron-black",
+        "radius": 0.025,
+        "height": 0.85,
+        "position": [
+          -0.27,
+          0.68,
+          0.07
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "stock",
+        "bone": "rightLowerArm",
+        "material": "wood",
+        "size": [
+          0.07,
+          0.22,
+          0.1
+        ],
+        "position": [
+          -0.27,
+          1.0,
+          0.02
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "scope",
+        "bone": "rightLowerArm",
+        "material": "steel",
+        "radius": 0.03,
+        "height": 0.18,
+        "position": [
+          -0.27,
+          0.82,
+          0.12
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 1,
+        "generator": {
+          "type": "idle-breathe"
+        }
+      },
+      "walk": {
+        "duration": 0.7,
+        "generator": {
+          "type": "walk-cycle",
+          "stride": 26,
+          "bob": 0.03,
+          "ik": true
+        }
+      },
+      "attack": {
+        "duration": 1.2,
+        "loop": false,
+        "keys": [
+          {
+            "t": 0,
+            "pose": {},
+            "easing": "ease-out"
+          },
+          {
+            "t": 0.3,
+            "pose": {
+              "rightUpperArm": {
+                "rotation": [
+                  -85,
+                  0,
+                  -10
+                ]
+              },
+              "leftUpperArm": {
+                "rotation": [
+                  -80,
+                  0,
+                  25
+                ]
+              },
+              "leftLowerArm": {
+                "rotation": [
+                  -20,
+                  0,
+                  0
+                ]
+              }
+            }
+          },
+          {
+            "t": 1.0,
+            "pose": {
+              "rightUpperArm": {
+                "rotation": [
+                  -85,
+                  0,
+                  -10
+                ]
+              },
+              "leftUpperArm": {
+                "rotation": [
+                  -80,
+                  0,
+                  25
+                ]
+              },
+              "leftLowerArm": {
+                "rotation": [
+                  -20,
+                  0,
+                  0
+                ]
+              }
+            }
+          },
+          {
+            "t": 1.05,
+            "pose": {
+              "spine": {
+                "rotation": [
+                  -8,
+                  0,
+                  0
+                ]
+              },
+              "rightUpperArm": {
+                "rotation": [
+                  -100,
+                  0,
+                  -10
+                ]
+              },
+              "leftUpperArm": {
+                "rotation": [
+                  -95,
+                  0,
+                  25
+                ]
+              }
+            }
+          },
+          {
+            "t": 1.2,
+            "pose": {}
+          }
+        ]
+      }
+    }
+  }
+}

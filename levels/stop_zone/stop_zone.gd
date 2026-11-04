@@ -26,11 +26,6 @@ const SCENES: Dictionary[StringName, PackedScene] = {
 }
 
 const ENEMY_SCENE: PackedScene = preload("res://entities/enemy/enemy.tscn")
-## Types d'ennemis par type d'apparition du générateur.
-const ENEMIES: Dictionary[StringName, EnemyData] = {
-	&"infected": preload("res://data/enemies/infected.tres"),
-	&"raider": preload("res://data/enemies/raider.tres"),
-}
 const GROUND_SOURCE_ID: int = 0
 
 ## Pour tester un type de zone précis depuis l'éditeur (vide = celui de GameState).
@@ -63,7 +58,7 @@ func _ready() -> void:
 	zone = zone_override if zone_override else GameState.current_zone
 	var zone_seed: int = seed_override if seed_override != 0 else GameState.current_seed
 	var player_spawn: Vector2 = ZoneGenerator.TRAIN_POSITION + _train.door.position + Vector2(0.0, 40.0)
-	layout = ZoneGenerator.generate(zone, zone_seed, [player_spawn])
+	layout = ZoneGenerator.generate(zone, zone_seed, [player_spawn], GameState.stop_number)
 	_encounter_rng.seed = zone_seed + 1
 	_combat_rng.seed = zone_seed + 2
 	_apply_layout()
@@ -87,8 +82,9 @@ func _apply_layout() -> void:
 	_player.position = layout.train_position + _train.door.position + Vector2(0.0, 40.0)
 
 	for spawn: ZoneGenerator.Spawn in layout.spawns:
-		if ENEMIES.has(spawn.kind):
-			_spawn_enemy(ENEMIES[spawn.kind], spawn.position)
+		var enemy_data: EnemyData = EnemyCatalog.get_enemy(spawn.kind)
+		if enemy_data:
+			_spawn_enemy(enemy_data, spawn.position)
 			continue
 		var node := SCENES[spawn.kind].instantiate() as Node2D
 		node.position = spawn.position
@@ -105,10 +101,12 @@ func _spawn_enemy(enemy_data: EnemyData, at: Vector2) -> void:
 	var enemy := ENEMY_SCENE.instantiate() as Enemy
 	enemy.data = enemy_data
 	enemy.position = at
-	enemy.name = String(enemy_data.id).capitalize()
+	enemy.name = String(enemy_data.id).to_pascal_case()
 	_world.add_child(enemy, true)
 	enemy.target = _player
 	enemy.attack_landed.connect(_on_enemy_attack)
+	enemy.shot_fired.connect(_on_enemy_shot)
+	enemy.grabbed.connect(_on_enemy_grab)
 	enemy.died.connect(_on_enemy_died)
 
 
@@ -156,6 +154,9 @@ func _wire_systems() -> void:
 	_session.free_beds = GameState.free_beds()
 	_player.attack_damage = maxi(loadout.damage(), 1)
 	_player.health.died.connect(_session.fall)
+	_player.freed.connect(func(by: Node2D) -> void:
+		if by is Enemy:
+			(by as Enemy).release_grab())
 	_session.exposure_source = _player.exposure
 	_train.boarding_requested.connect(_session.board)
 	_session.whistle_blown.connect(_train.whistle)
@@ -170,14 +171,38 @@ func _wire_systems() -> void:
 
 # --- Combat ------------------------------------------------------------------------
 
-## Un ennemi a porté son coup : dégâts, puis exposition (infecté) ou vol (pilleur).
+## Un ennemi a porté son coup (ou mord en tenant le joueur) : dégâts, puis
+## exposition (infectés) ou vol (pilleurs).
 func _on_enemy_attack(enemy: Enemy) -> void:
 	if not _session.is_running():
 		return
-	var enemy_data: EnemyData = enemy.data
-	if _player.health.take_damage(enemy_data.damage, enemy.global_position) == 0:
+	_apply_hit(enemy.data, enemy.global_position, enemy)
+
+
+## Un tireur a tiré : le projectile part dans le monde.
+func _on_enemy_shot(_enemy: Enemy, projectile: Projectile) -> void:
+	_world.add_child(projectile)
+	projectile.hit.connect(func(shot: Projectile) -> void:
+		if _session.is_running():
+			_apply_hit(shot.source, shot.global_position, null))
+
+
+## Un rampant plaque le joueur au sol.
+func _on_enemy_grab(enemy: Enemy) -> void:
+	if not _session.is_running() or _player.is_pinned():
+		enemy.release_grab()
+		return
+	_player.pin(enemy, enemy.data.mash_needed)
+	_hud.call(&"toast", "%s t'a plaqué au sol !" % enemy.data.display_name, true)
+
+
+func _apply_hit(enemy_data: EnemyData, from: Vector2, enemy: Enemy) -> void:
+	if _player.health.take_damage(enemy_data.damage, from) == 0:
 		return # invincible juste après un coup
+	_player.knock_back(from, enemy_data.hit_knockback)
 	_player.exposure.add(enemy_data.exposure_on_hit)
+	if enemy == null:
+		return
 	if enemy_data.steal_amount > 0:
 		var stolen := _session.steal(enemy_data.steal_amount, _combat_rng)
 		for id: StringName in stolen:
@@ -188,6 +213,8 @@ func _on_enemy_attack(enemy: Enemy) -> void:
 
 ## Un ennemi est tombé : il lâche ce qu'il a volé et son butin (dans la limite du sac).
 func _on_enemy_died(enemy: Enemy) -> void:
+	if _player.pinned_by == enemy:
+		_player.release()
 	var dropped: Dictionary[StringName, int] = enemy.carried.duplicate()
 	for id: StringName in enemy.data.drop:
 		dropped[id] = dropped.get(id, 0) + enemy.data.drop[id]
@@ -204,6 +231,7 @@ func _on_enemy_died(enemy: Enemy) -> void:
 
 func _end_combat() -> void:
 	_set_enemies_active(false)
+	_player.release()
 
 
 func _set_enemies_active(value: bool) -> void:

@@ -21,5 +21,10 @@ infected_herbs = Vector2i(3, 6)
 village_chance = 0.15
 refuge_chance = 0.3
 merchant_chance = 0.7
-infected = Vector2i(1, 2)
-raiders = Vector2i(2, 3)
+enemies = Dictionary[StringName, Vector2i]({
+&"infected": Vector2i(1, 1),
+&"raider": Vector2i(2, 3),
+&"raider_lurker": Vector2i(0, 1),
+&"raider_marksman": Vector2i(1, 1),
+&"raider_brute": Vector2i(0, 1)
+})
