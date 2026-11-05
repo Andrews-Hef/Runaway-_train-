@@ -92,6 +92,12 @@ const CREW_SPOTS: Array[Vector2] = [
 	Vector2(-22, 6), Vector2(14, 4), Vector2(-50, 10), Vector2(-2, 13),
 	Vector2(48, 6), Vector2(30, 13), Vector2(-36, 14), Vector2(56, 14),
 ]
+## Équipiers en quarantaine : à l'infirmerie, autour de la couchette.
+const QUARANTINE_OFFSET: float = 20.0
+const QUARANTINE_SPOTS: int = 2
+## Allure des équipiers : malade (verdâtre), épuisé (grisé).
+const SICK_TINT: Color = Color(0.78, 0.95, 0.72)
+const TIRED_TINT: Color = Color(0.72, 0.72, 0.78)
 ## Voiture où l'on apparaît (le stock : on range son butin en rentrant).
 const START_WAGON_ID: StringName = &"stock"
 const STATION_TABS: Dictionary[StringName, int] = {
@@ -156,6 +162,7 @@ func _ready() -> void:
 			&"infection_changed", &"condition_changed"]:
 		GameState.connect(signal_name, _refresh_texts)
 	GameState.train_changed.connect(_build_train)
+	GameState.crew_changed.connect(_place_crew)
 	InputMode.changed.connect(func(_device: int) -> void: _refresh_prompt())
 	# Équipement porté, en haut à gauche.
 	_fade.get_parent().add_child(EquipmentBar.make_panel())
@@ -261,14 +268,29 @@ func _build_train() -> void:
 				_add_furniture(x, entry)
 		if i < GameState.train.size() - 1:
 			_floors.add_child(_gangway(x + WAGON_LENGTH / 2.0))
-	# L'équipage remplit les dortoirs en partant de la tête : un dortoir construit
-	# en queue reste vide jusqu'aux prochaines recrues.
+	_place_crew()
+	_build_walls()
+
+
+## L'équipage remplit les dortoirs en partant de la tête : un dortoir construit
+## en queue reste vide jusqu'aux prochaines recrues. Les équipiers en quarantaine
+## sont à l'infirmerie. Refait à chaque changement de l'équipage (soins, repos...).
+func _place_crew() -> void:
+	for child: Node in _world.get_children():
+		if child.name.begins_with("Crew_"):
+			_world.remove_child(child)
+			child.queue_free()
+	var in_dorms: Array[CrewMember] = []
+	var isolated: Array[CrewMember] = []
+	for member: CrewMember in GameState.crew:
+		(isolated if member.quarantined else in_dorms).append(member)
 	var crew_index: int = 0
 	for i: int in range(GameState.train.size() - 1, -1, -1):
 		var beds: int = GameState.train[i].beds_at(GameState.wagon_level(GameState.train[i].id))
 		if beds > 0:
-			crew_index = _add_crew(_wagon_x(i), crew_index, mini(beds, CREW_SPOTS.size()))
-	_build_walls()
+			crew_index = _add_crew(_wagon_x(i), in_dorms, crew_index, mini(beds, CREW_SPOTS.size()))
+		elif GameState.train[i].id == &"infirmary" and not isolated.is_empty():
+			_add_crew(_wagon_x(i) + QUARANTINE_OFFSET, isolated, 0, QUARANTINE_SPOTS)
 
 
 func _add_furniture(wagon_x: float, entry: Array) -> void:
@@ -307,11 +329,12 @@ func _add_furniture(wagon_x: float, entry: Array) -> void:
 	_world.add_child(spot, true) # noms lisibles : Station_stock, Station_stock2...
 
 
-## Place les équipiers n° first à first + places - 1 dans ce dortoir. Renvoie le suivant.
-func _add_crew(wagon_x: float, first: int, places: int) -> int:
-	var last: int = mini(first + places, GameState.crew.size())
+## Place les équipiers n° first à first + places - 1 de `members` dans cette voiture.
+## Renvoie le suivant. Leur allure dit leur état : malade, épuisé, au repos.
+func _add_crew(wagon_x: float, members: Array[CrewMember], first: int, places: int) -> int:
+	var last: int = mini(first + places, members.size())
 	for i: int in range(first, last):
-		var member: CrewMember = GameState.crew[i]
+		var member: CrewMember = members[i]
 		var sprite := AnimatedSprite2D.new()
 		sprite.name = "Crew_" + member.display_name
 		sprite.sprite_frames = CREW_FRAMES
@@ -321,8 +344,15 @@ func _add_crew(wagon_x: float, first: int, places: int) -> int:
 		sprite.play(&"idle_s")
 		sprite.frame = i * 3 % 10 # pas tous la même respiration
 		_world.add_child(sprite)
-		sprite.add_child(_world_label(member.display_name, Vector2(0.0, -44.0), 60.0,
-				Color(1.0, 0.82, 0.35)))
+		if member.infection_known and member.infection >= CrewLife.SYMPTOMS:
+			sprite.self_modulate = SICK_TINT
+		elif member.fatigue >= CrewLife.EXHAUSTED:
+			sprite.self_modulate = TIRED_TINT
+		var name_color: Color = Color(1.0, 0.82, 0.35)
+		if CrewLife.is_suspicious(member):
+			name_color = Color(1.0, 0.5, 0.4)
+		sprite.add_child(_world_label(member.display_name + (" (Zz)" if member.resting else ""),
+				Vector2(0.0, -44.0), 60.0, name_color))
 	return last
 
 

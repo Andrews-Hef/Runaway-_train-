@@ -89,7 +89,8 @@ static func apply(choice: EncounterChoice, result: ExpeditionResult, rng: Random
 
 	if choice.recruits():
 		var infected: bool = rng.randf() < choice.recruit_infection_chance
-		outcome.recruit = CrewMember.create(pick_name(rng, taken_names), choice.recruit_role, choice.recruit_role_label, infected)
+		outcome.recruit = CrewMember.create(pick_name(rng, taken_names), choice.recruit_role, choice.recruit_role_label, infected,
+			GameState.FIELD_RECRUIT_TRUST)
 		result.recruits.append(outcome.recruit)
 		outcome.text = outcome.text.replace("{nom}", outcome.recruit.display_name)
 

@@ -72,9 +72,19 @@ const REPAIR_STEP: float = 0.25
 const REPAIR_COST: Dictionary[StringName, int] = {&"scrap": 3, &"wood": 2}
 ## Réparation complète au dépôt d'une gare refuge.
 const DEPOT_REPAIR_COST: Dictionary[StringName, int] = {&"scrap": 5}
-## Réparation par mécanicien de l'équipage, à chaque trajet (au plus 2 mécaniciens comptent).
-const MECHANIC_REPAIR: float = 0.1
-const MAX_MECHANICS: int = 2
+## Réparation par mécanicien de l'équipage, à chaque trajet (voir CrewLife).
+const MECHANIC_REPAIR: float = CrewLife.MECHANIC_REPAIR
+const MAX_MECHANICS: int = CrewLife.MAX_MECHANICS
+## Soins de l'équipage par le capitaine : panser (1 tissu) et confiance gagnée.
+const BANDAGE_COST: Dictionary[StringName, int] = {&"cloth": 1}
+const BANDAGE_HEAL: int = 30
+const BANDAGE_TRUST: int = 5
+const MEDICINE_TRUST: int = 10
+## Places de quarantaine à l'infirmerie.
+const QUARANTINE_BEDS: int = 2
+## Confiance de départ : recrue de gare (sortie de quarantaine) ou trouvée en route.
+const REFUGE_RECRUIT_TRUST: int = 60
+const FIELD_RECRUIT_TRUST: int = 40
 ## Mérite pour une horde repoussée (tous ses membres éliminés).
 const HORDE_MERIT: int = 15
 ## La nuit, les hordes sont plus fréquentes (multiplie leur chance).
@@ -142,6 +152,9 @@ class StopOption:
 	var order: CaptainOrders.Order
 	## Événement prévu à cet arrêt (pluie infectée...), null s'il n'y en a pas.
 	var event: EventData
+	## Un éclaireur a guetté la voie : on sait si une horde y attend (horde_spotted).
+	var scouted: bool = false
+	var horde_spotted: bool = false
 
 	func _init(option_zone: ZoneProfile, option_seed: int, option_order: CaptainOrders.Order, option_event: EventData = null) -> void:
 		zone = option_zone
@@ -189,6 +202,10 @@ var clock_minutes: int = DayClock.START_MINUTES
 var train_condition: float = 1.0
 ## Réparé par les mécaniciens pendant le dernier trajet.
 var last_repair: float = 0.0
+## Récit du dernier trajet pour l'équipage (travail, maladie, demandes, pertes).
+var last_crew_events: Array[String] = []
+## Dégâts de la horde depuis le dernier trajet : l'équipage à bord est blessé.
+var _horde_damage: float = 0.0
 ## Plans trouvés (pas encore étudiés) et plans étudiés (ids de BlueprintData).
 var found_plans: Array[StringName] = []
 var researched_plans: Array[StringName] = []
@@ -229,6 +246,8 @@ func new_run(run_seed: int = 0) -> void:
 	infection = 0.0
 	train_condition = 1.0
 	last_repair = 0.0
+	last_crew_events.clear()
+	_horde_damage = 0.0
 	clock_minutes = DayClock.START_MINUTES
 	found_plans.clear()
 	researched_plans.clear()
@@ -249,9 +268,11 @@ func prepare_next_stop() -> void:
 	# On quitte un arrêt : les machines travaillent et les mécaniciens réparent pendant le trajet.
 	last_production.clear()
 	last_repair = 0.0
+	last_crew_events.clear()
+	var scouted: bool = false
 	if stop_number >= 1:
 		last_production = run_machines()
-		last_repair = _mechanics_repair()
+		scouted = _crew_trajet((stop_number + 1) % REFUGE_EVERY == 0)
 	# Le temps passe : une heure en gare refuge si on en repart, puis le trajet.
 	if current_refuge != null and stop_number >= 1:
 		clock_minutes += DayClock.REFUGE_MINUTES
@@ -270,6 +291,12 @@ func prepare_next_stop() -> void:
 			zones = _pick_zones(region(), current_zone, ROUTE_CHOICES)
 		for zone: ZoneProfile in zones:
 			route_options.append(_make_option(zone, _rng.randi()))
+		# Un éclaireur a guetté : on sait quelles voies cachent une horde.
+		if scouted:
+			for option: StopOption in route_options:
+				option.scouted = true
+				option.horde_spotted = roll_surprise(option.zone.biome, stop_number, option.seed,
+					DayClock.is_night(clock_minutes)) != null
 		_apply_option(route_options[0])
 	career_changed.emit()
 
@@ -371,6 +398,11 @@ func record_expedition(result: ExpeditionResult) -> void:
 	result.merit_gained = result.kill_merit() + (current_order.data.merit if result.order_completed else 0) \
 		+ (HORDE_MERIT if result.horde_repelled else 0)
 	result.promotions = add_merit(result.merit_gained)
+	for member: CrewMember in crew:
+		if CrewRequests.met_by(member, result):
+			result.crew_thanks.append(CrewRequests.complete(member))
+	if not result.crew_thanks.is_empty():
+		crew_changed.emit()
 	infection = clampf(result.exposure, 0.0, 1.0)
 	infection_changed.emit()
 	for plan_id: StringName in result.plans:
@@ -587,6 +619,7 @@ func describe_condition() -> String:
 func damage_train(amount: float) -> float:
 	if amount <= 0.0 or train_condition <= 0.0:
 		return train_condition
+	_horde_damage += minf(amount, train_condition)
 	train_condition = maxf(train_condition - amount, 0.0)
 	condition_changed.emit()
 	return train_condition
@@ -623,17 +656,112 @@ func repair_train_at_depot() -> bool:
 	return true
 
 
-## Les mécaniciens de l'équipage réparent pendant le trajet. Renvoie le gain.
-func _mechanics_repair() -> float:
-	var mechanics: int = 0
-	for member: CrewMember in crew:
-		if member.role == &"mechanic":
-			mechanics += 1
+## L'équipage pendant le trajet (CrewLife) : travail, repos, maladie, pertes, demandes.
+## Renvoie true si un éclaireur a guetté la voie.
+func _crew_trajet(to_refuge: bool) -> bool:
+	if crew.is_empty():
+		_horde_damage = 0.0
+		return false
+	var context := CrewLife.Context.new()
+	context.dorm_level = wagon_level(&"dormitory")
+	context.horde_damage = _horde_damage
+	context.to_refuge = to_refuge
+	context.rng = RandomNumberGenerator.new()
+	context.rng.seed = _rng.seed + stop_number * 101
+	_horde_damage = 0.0
+	var report: CrewLife.Report = CrewLife.run_trajet(crew, context)
 	var before: float = train_condition
-	train_condition = minf(train_condition + MECHANIC_REPAIR * mini(mechanics, MAX_MECHANICS), 1.0)
+	train_condition = clampf(train_condition + report.repair - report.train_damage, 0.0, 1.0)
+	last_repair = maxf(train_condition - before, 0.0) if report.train_damage == 0.0 else 0.0
+	last_crew_events = report.events
+	crew_changed.emit()
 	if train_condition != before:
 		condition_changed.emit()
-	return train_condition - before
+	return report.scouted
+
+
+# --- Soins et ordres à l'équipage ---------------------------------------------------
+
+func can_bandage(member: CrewMember) -> bool:
+	return member.health < 100 and TrainRules.missing(BANDAGE_COST, storage).is_empty()
+
+
+## Panser un équipier : 1 tissu, +30 PV, un peu de confiance.
+func bandage(member: CrewMember) -> bool:
+	if not can_bandage(member):
+		return false
+	TrainRules.pay(BANDAGE_COST, storage)
+	member.health = mini(member.health + BANDAGE_HEAL, 100)
+	member.trust = mini(member.trust + BANDAGE_TRUST, 100)
+	storage_changed.emit()
+	crew_changed.emit()
+	return true
+
+
+## Le médicament qu'on donnerait (le plus faible disponible), null s'il n'y en a pas.
+func medicine_for_crew() -> LootData:
+	for loot: LootData in LOOT_TYPES:
+		if loot.is_medicine() and storage_amount(loot.id) > 0:
+			return loot
+	return null
+
+
+## Donner un médicament : l'infection baisse et on sait enfin où il en est.
+func medicate(member: CrewMember) -> bool:
+	var medicine: LootData = medicine_for_crew()
+	if medicine == null or (member.infection_known and member.infection == 0):
+		return false
+	storage[medicine.id] -= 1
+	member.infection = maxi(member.infection - roundi(medicine.cure * 100.0), 0)
+	member.infection_known = true
+	member.infected = member.infection > 0
+	member.trust = mini(member.trust + MEDICINE_TRUST, 100)
+	storage_changed.emit()
+	crew_changed.emit()
+	return true
+
+
+func toggle_rest(member: CrewMember) -> void:
+	member.resting = not member.resting
+	crew_changed.emit()
+
+
+func quarantined_count() -> int:
+	return crew.filter(func(m: CrewMember) -> bool: return m.quarantined).size()
+
+
+func can_quarantine(member: CrewMember) -> bool:
+	return member.quarantined or (has_wagon(&"infirmary") and quarantined_count() < QUARANTINE_BEDS)
+
+
+## Isoler à l'infirmerie (ou l'en sortir) : il ne contamine plus personne.
+func toggle_quarantine(member: CrewMember) -> bool:
+	if not can_quarantine(member):
+		return false
+	member.quarantined = not member.quarantined
+	crew_changed.emit()
+	return true
+
+
+## Le faire descendre du train (au prochain arrêt).
+func dismiss(member: CrewMember) -> void:
+	crew.erase(member)
+	crew_changed.emit()
+
+
+func can_fulfil_request(member: CrewMember) -> bool:
+	return member.request_kind == &"deliver" and TrainRules.missing(CrewRequests.cost(member), storage).is_empty()
+
+
+## Remplir une demande « donner » avec le stock. Renvoie false si impossible.
+func fulfil_request(member: CrewMember) -> bool:
+	if not can_fulfil_request(member):
+		return false
+	TrainRules.pay(CrewRequests.cost(member), storage)
+	CrewRequests.complete(member)
+	storage_changed.emit()
+	crew_changed.emit()
+	return true
 
 
 # --- Carrière ----------------------------------------------------------------------
@@ -806,7 +934,7 @@ func storage_total() -> int:
 func to_save() -> Dictionary:
 	var crew_data: Array[Dictionary] = []
 	for member: CrewMember in crew:
-		crew_data.append({"name": member.display_name, "role": member.role, "role_label": member.role_label, "infected": member.infected})
+		crew_data.append(member.to_dict())
 	var equipped: Array[String] = []
 	for item: ItemData in loadout.equipped.values():
 		equipped.append(String(item.id))
@@ -844,6 +972,8 @@ func to_save() -> Dictionary:
 			"order": String(option.order.data.id) if option.order else "",
 			"order_amount": option.order.amount if option.order else 0,
 			"event": String(option.event.id) if option.event else "",
+			"scouted": option.scouted,
+			"horde_spotted": option.horde_spotted,
 		}),
 		"event": String(current_event.id) if current_event else "",
 	}
@@ -869,7 +999,7 @@ func load_save(data: Dictionary) -> bool:
 		storage[StringName(id)] = int(saved_storage[id])
 	crew.clear()
 	for entry: Dictionary in data.get("crew", []):
-		crew.append(CrewMember.create(entry["name"], StringName(entry["role"]), entry["role_label"], bool(entry["infected"])))
+		crew.append(CrewMember.from_dict(entry))
 	owned_items.clear()
 	for id: String in data.get("items", []):
 		var item: ItemData = ItemCatalog.get_item(StringName(id))
@@ -923,9 +1053,12 @@ func load_save(data: Dictionary) -> bool:
 		if option_zone == null:
 			continue
 		var option_order_data: OrderData = CaptainOrders.find(StringName(entry.get("order", "")))
-		route_options.append(StopOption.new(option_zone, str(entry.get("seed", "0")).to_int(),
+		var option := StopOption.new(option_zone, str(entry.get("seed", "0")).to_int(),
 			CaptainOrders.Order.new(option_order_data, int(entry.get("order_amount", 0))) if option_order_data else null,
-			_find_by_id(EVENTS, entry.get("event", ""))))
+			_find_by_id(EVENTS, entry.get("event", "")))
+		option.scouted = bool(entry.get("scouted", false))
+		option.horde_spotted = bool(entry.get("horde_spotted", false))
+		route_options.append(option)
 	current_event = _find_by_id(EVENTS, data.get("event", ""))
 	if route_options.is_empty() and current_zone and current_refuge == null:
 		route_options.append(StopOption.new(current_zone, current_seed, current_order, current_event))

@@ -33,6 +33,8 @@ var kills: Dictionary[StringName, int] = {}
 var order_completed: bool = false
 ## Une horde a attaqué pendant l'arrêt, et tous ses membres ont été éliminés.
 var horde_repelled: bool = false
+## Demandes de l'équipage remplies pendant l'arrêt (une ligne de remerciement chacune).
+var crew_thanks: Array[String] = []
 var merit_gained: int = 0
 var promotions: Array[GradeData] = []
 

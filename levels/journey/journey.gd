@@ -125,8 +125,12 @@ func _fill_texts() -> void:
 			_description.text += "\nOrdre du capitaine : %s." % GameState.current_order.text()
 		if GameState.current_event:
 			_description.text += "\n%s." % GameState.current_event.forecast_text
-	if GameState.last_repair > 0.0:
-		_description.text += "\nLes mécaniciens ont réparé le train : +%d %%." % roundi(GameState.last_repair * 100.0)
+	# Le récit de l'équipage pendant le trajet (réparations comprises), 4 lignes au plus.
+	var events: Array[String] = GameState.last_crew_events
+	for i: int in mini(events.size(), 4):
+		_description.text += "\n" + events[i]
+	if events.size() > 4:
+		_description.text += "\n… et %d autre(s) chose(s) : voir l'onglet Équipage." % (events.size() - 4)
 	if GameState.condition() != GameState.Condition.GOOD:
 		_description.text += "\nTrain %s. Répare-le à la cabine." % GameState.describe_condition()
 	if not GameState.last_production.is_empty():

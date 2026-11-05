@@ -119,6 +119,9 @@ func _add_card(option: GameStateScript.StopOption, index: int) -> Button:
 		lines.add_child(_wrapped("Ordre : %s (+%d mérite)" % [option.order.text(), option.order.data.merit], Color.WHITE))
 	if option.event:
 		lines.add_child(_wrapped("Météo : %s" % option.event.forecast_text.to_lower(), RAIN_COLOR))
+	if option.scouted:
+		lines.add_child(_wrapped("Éclaireur : horde repérée !" if option.horde_spotted else "Éclaireur : pas de horde en vue.",
+			DANGER_COLORS[2] if option.horde_spotted else DANGER_COLORS[0]))
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	lines.add_child(spacer)

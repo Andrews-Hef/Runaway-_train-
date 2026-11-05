@@ -27,3 +27,13 @@ static func fill(list: VBoxContainer) -> void:
 		list.add_child(MenuKit.label("Pas encore de talent : remplis les ordres du capitaine et élimine des ennemis pour monter en grade.", MenuKit.MUTED))
 	for perk: PerkData in GameState.perks:
 		list.add_child(MenuKit.label("%s : %s" % [perk.display_name, perk.describe_effects()], Color.WHITE))
+	var requests: Array[CrewMember] = []
+	for member: CrewMember in GameState.crew:
+		if member.has_request():
+			requests.append(member)
+	if not requests.is_empty():
+		list.add_child(MenuKit.label("Demandes de l'équipage", MenuKit.GOLD))
+		for member: CrewMember in requests:
+			var line := MenuKit.label("%s : %s" % [member.display_name, CrewRequests.text(member)], Color(0.95, 0.88, 0.65))
+			line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			list.add_child(line)

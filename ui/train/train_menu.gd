@@ -200,8 +200,79 @@ func _fill_crew() -> void:
 		_crew_list.add_child(MenuKit.label("Personne à bord pour l'instant.", MUTED))
 		_crew_list.add_child(MenuKit.label("Recrute des survivants dans les refuges pendant les sorties.", MUTED))
 		return
+	_crew_list.add_child(MenuKit.label("Pendant les trajets, chacun travaille selon son rôle et se fatigue ; au repos, on récupère.", MUTED))
 	for member: CrewMember in GameState.crew:
-		_crew_list.add_child(MenuKit.label("%s — %s" % [member.display_name, member.role_label]))
+		_crew_list.add_child(_crew_card(member))
+
+
+## Un équipier : nom, rôle, état, quatre jauges, sa demande, et ce qu'on peut faire pour lui.
+func _crew_card(member: CrewMember) -> PanelContainer:
+	var card := PanelContainer.new()
+	card.theme_type_variation = &"InsetPanel"
+	var lines := VBoxContainer.new()
+	lines.add_theme_constant_override(&"separation", 2)
+	card.add_child(lines)
+	var tags: PackedStringArray = CrewLife.status(member)
+	var title := MenuKit.label("%s — %s%s" % [member.display_name, member.role_label,
+		("  ·  " + ", ".join(tags)) if not tags.is_empty() else ""], GOLD)
+	lines.add_child(title)
+	var gauges := HBoxContainer.new()
+	gauges.add_theme_constant_override(&"separation", 8)
+	gauges.add_child(_gauge("Vie %d" % member.health, member.health / 100.0, Color(0.86, 0.27, 0.24)))
+	gauges.add_child(_gauge("Infection " + member.infection_text(), member.visible_infection() / 100.0, Color(0.75, 0.42, 1.0)))
+	gauges.add_child(_gauge("Fatigue %d" % member.fatigue, member.fatigue / 100.0, Color(0.85, 0.68, 0.3)))
+	gauges.add_child(_gauge("Confiance %d" % member.trust, member.trust / 100.0, Color(0.45, 0.7, 0.95)))
+	lines.add_child(gauges)
+	if member.has_request():
+		var request := MenuKit.label("Demande : " + CrewRequests.text(member) + " (%d trajet(s))" % member.request_left, Color(0.95, 0.88, 0.65))
+		request.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		lines.add_child(request)
+	var actions := HFlowContainer.new()
+	actions.add_theme_constant_override(&"h_separation", 3)
+	actions.add_theme_constant_override(&"v_separation", 3)
+	lines.add_child(actions)
+	if member.request_kind == &"deliver":
+		actions.add_child(_crew_button("Donner %s" % MenuKit.describe_amounts(CrewRequests.cost(member)),
+			not GameState.can_fulfil_request(member), func() -> void: GameState.fulfil_request(member)))
+	actions.add_child(_crew_button("Panser (1 tissu)", not GameState.can_bandage(member), func() -> void: GameState.bandage(member)))
+	var medicine: LootData = GameState.medicine_for_crew()
+	var medicine_text: String = ("Donner : " + medicine.display_name.to_lower()) if medicine else "Pas de médicament"
+	actions.add_child(_crew_button(medicine_text, medicine == null or (member.infection_known and member.infection == 0),
+		func() -> void: GameState.medicate(member)))
+	actions.add_child(_crew_button("Travailler" if member.resting else "Repos", false, func() -> void: GameState.toggle_rest(member)))
+	actions.add_child(_crew_button("Sortir de quarantaine" if member.quarantined else "Quarantaine", not GameState.can_quarantine(member),
+		func() -> void: GameState.toggle_quarantine(member)))
+	# Renvoyer : on confirme d'un second clic (pas de renvoi par erreur).
+	var confirm: bool = member.get_meta(&"confirm_dismiss", false)
+	actions.add_child(_crew_button("Confirmer le renvoi" if confirm else "Renvoyer", false, func() -> void:
+		if member.get_meta(&"confirm_dismiss", false):
+			member.remove_meta(&"confirm_dismiss")
+			GameState.dismiss(member)
+		else:
+			member.set_meta(&"confirm_dismiss", true)
+			_fill_crew.call_deferred()))
+	return card
+
+
+static func _gauge(text: String, value: float, color: Color) -> VBoxContainer:
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override(&"separation", 1)
+	box.add_child(MenuKit.label(text, MUTED))
+	var bar := StageBar.new()
+	bar.custom_minimum_size = Vector2(80.0, 4.0)
+	bar.fill_color = color
+	bar.value = value
+	box.add_child(bar)
+	return box
+
+
+static func _crew_button(text: String, disabled: bool, action: Callable) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.disabled = disabled
+	button.custom_minimum_size = Vector2(0.0, 16.0)
+	button.pressed.connect(action)
+	return button
 
 
 ## Une recette de transformation : coût → produit, avec la raison si c'est impossible.
