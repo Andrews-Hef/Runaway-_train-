@@ -18,6 +18,8 @@ signal infection_changed
 ## Un plan a été trouvé ou étudié.
 signal plans_changed
 
+## Plan qui relie les postes du train (voir stations_linked()).
+const INTERCOM_PLAN: StringName = &"intercom"
 const FIXED_SEED_SETTING: String = "game/debug/fixed_seed"
 ## Le premier arrêt est toujours celui-ci : une zone simple pour commencer.
 const FIRST_ZONE: ZoneProfile = preload("res://data/zones/plains.tres")
@@ -313,6 +315,12 @@ func is_known(plan_id: StringName) -> bool:
 	return plan_id == &"" or plan_id in researched_plans
 
 
+## Postes du train reliés (plan Interphone étudié) : chaque meuble ouvre tous les
+## menus. Sinon, chaque poste n'ouvre que le sien (l'établi, l'atelier...).
+func stations_linked() -> bool:
+	return INTERCOM_PLAN in researched_plans
+
+
 ## Plans qu'on peut encore trouver par hasard à cet arrêt.
 func unfound_plans() -> Array[StringName]:
 	var list: Array[StringName] = []
@@ -348,7 +356,7 @@ func recipe_problem(recipe: RecipeData) -> String:
 	if not is_known(recipe.plan):
 		return "Plan à étudier."
 	if recipe.station == RecipeData.Station.INFIRMARY and not has_wagon(&"infirmary"):
-		return "Il faut une infirmerie (onglet Train)."
+		return "Il faut une infirmerie (à construire dans la cabine)."
 	if not TrainRules.missing(recipe.cost, storage).is_empty():
 		return "Il manque des matériaux dans le stock."
 	var gained: int = 0
@@ -434,6 +442,16 @@ func perk_bonus(stat: StringName) -> float:
 
 
 ## PV max : base + talents − palier d'infection.
+## Armure totale : équipement porté + talents.
+func armor() -> int:
+	return loadout.armor() + int(perk_bonus(&"armor"))
+
+
+## Protection contre l'exposition : équipement porté + talents (plafonnée).
+func protection() -> float:
+	return minf(loadout.protection() + perk_bonus(&"protection"), Loadout.MAX_PROTECTION)
+
+
 func max_health() -> int:
 	return maxi(BASE_HEALTH + int(perk_bonus(&"max_health")) - Infection.health_malus(infection), 1)
 

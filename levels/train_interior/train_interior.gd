@@ -4,6 +4,7 @@ extends Node2D
 ## Même vue, même personnage et mêmes commandes que dehors. Le joueur passe de
 ## wagon en wagon par les portes : coffre (stock), établi (fabrication), casier
 ## (équipement), couchettes (équipage), levier de la cabine (arrêt suivant).
+## Chaque meuble n'ouvre que son menu, tant que le plan Interphone n'est pas étudié.
 ## La voie et le sol défilent sous le train : on les voit entre les wagons et
 ## sur les bords de l'écran.
 ##
@@ -72,8 +73,8 @@ const LAYOUTS: Dictionary[StringName, Array] = {
 	&"workshop": [[&"workbench", -36.0, &"workshop", "Fabriquer"], [&"plan_table", 4.0, &"plans", "Étudier les plans"],
 		[&"locker", 40.0, &"equipment", "S'équiper"]],
 	&"infirmary": [[&"med_cabinet", -20.0, &"infirmary", "Infirmerie : se soigner"], [&"bunk", 30.0, &"", ""]],
-	&"greenhouse": [[&"planter", -30.0, &"", ""], [&"planter", 22.0, &"", ""]],
-	&"laboratory": [[&"still", -26.0, &"workshop", "Laboratoire : transformer"], [&"planter", 28.0, &"", ""]],
+	&"greenhouse": [[&"planter", -30.0, &"machines", "Serre : voir la production"], [&"planter", 22.0, &"", ""]],
+	&"laboratory": [[&"still", -26.0, &"machines", "Laboratoire : voir la production"], [&"planter", 28.0, &"", ""]],
 	&"stock": [[&"chest", 0.0, &"stock", "Ouvrir le stock"]],
 	&"cabin": [[&"plan_table", -30.0, &"train", "Plans du train"], [&"engine", 24.0, &"lever", "Descendre au prochain arrêt"]],
 }
@@ -98,6 +99,13 @@ const STATION_TABS: Dictionary[StringName, int] = {
 	&"train": TrainMenu.Tab.TRAIN,
 	&"plans": TrainMenu.Tab.PLANS,
 	&"infirmary": TrainMenu.Tab.INFIRMARY,
+	&"machines": TrainMenu.Tab.MACHINES,
+}
+## Animation du joueur à chaque poste : debout au travail (&"work") par défaut ;
+## il fouille le coffre du stock et reste simplement debout devant les couchettes.
+const STATION_ANIMATIONS: Dictionary[StringName, StringName] = {
+	&"stock": &"harvest",
+	&"crew": &"idle",
 }
 
 @onready var _ground: Parallax2D = $Ground
@@ -132,6 +140,9 @@ func _ready() -> void:
 		GameState.connect(signal_name, _refresh_texts)
 	GameState.train_changed.connect(_build_train)
 	InputMode.changed.connect(func(_device: int) -> void: _refresh_prompt())
+	# Équipement porté, en haut à gauche.
+	_fade.get_parent().add_child(EquipmentBar.make_panel())
+	_fade.get_parent().move_child(_fade, -1)
 	_refresh_texts()
 	_fade.color.a = 1.0
 	create_tween().tween_property(_fade, "color:a", 0.0, 0.4)
@@ -269,10 +280,11 @@ func _add_furniture(wagon_x: float, entry: Array) -> void:
 	if station == &"lever" and GameState.is_refuge_stop():
 		spot.prompt = "Descendre à la gare refuge"
 	spot.hold_time = 0.7 if station == &"lever" else 0.25
+	spot.animation = STATION_ANIMATIONS.get(station, &"work")
 	spot.indicator_offset = Vector2(0.0, -40.0)
 	spot.position = position_ + Vector2(0.0, 8.0)
 	spot.add_child(_box_collision(Rect2(-footprint.x / 2.0 - 4.0, -6.0, footprint.x + 8.0, 14.0)))
-	spot.interacted.connect(func(_actor: Node2D) -> void: _use_station(station))
+	spot.interacted.connect(func(_actor: Node2D) -> void: _use_station(station, spot))
 	_world.add_child(spot, true) # noms lisibles : Station_stock, Station_stock2...
 
 
@@ -374,18 +386,22 @@ func _world_label(text: String, top_center: Vector2, width: float, color: Color)
 
 # --- Postes ---------------------------------------------------------------------------
 
-func _use_station(station: StringName) -> void:
+func _use_station(station: StringName, spot: Interactable = null) -> void:
 	if _leaving:
 		return
 	if station == &"lever":
 		_leave_for_stop()
 		return
 	_player.set_controls_enabled(false)
+	if spot:
+		# Il reste au poste, au travail, tant que le menu est ouvert.
+		_player.hold_pose(spot.animation, spot.global_position)
 	_prompt.visible = false
 	_menu.call(&"open", STATION_TABS[station])
 
 
 func _on_menu_closed() -> void:
+	_player.hold_pose(&"")
 	_player.set_controls_enabled(true)
 	_refresh_prompt()
 
@@ -413,7 +429,7 @@ func _refresh_texts() -> void:
 	_order.text = "%s · %s" % [GameState.grade().display_name,
 		("Ordre du capitaine : " + order.text()) if order else "Pas d'ordre en gare"]
 	if not GameState.pending_promotions.is_empty():
-		_order.text += " · Talent à choisir (onglet Grade)"
+		_order.text += " · Talent à choisir (%s : inventaire)" % InputMode.label_for(&"inventory")
 	_summary.text = "Infection %d %% · Stock %d/%d · Équipage %d/%d · Voitures %d/%d" % [
 		roundi(GameState.infection * 100.0), GameState.storage_total(), GameState.storage_capacity(),
 		GameState.crew.size(), GameState.beds(), GameState.train.size(), GameState.max_cars()]

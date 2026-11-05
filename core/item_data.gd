@@ -12,6 +12,8 @@ const SLOT_NAMES: Array[String] = ["Tenue", "Masque", "Sac", "Outil", "Arme"]
 
 @export var id: StringName
 @export var display_name: String
+## Icône 12x12 (atelier, inventaire, barre du HUD). Générées par tools/gen_icons.py.
+@export var icon: Texture2D
 @export_multiline var description: String
 @export var slot: Slot = Slot.OUTFIT
 

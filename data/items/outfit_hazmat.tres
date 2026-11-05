@@ -1,11 +1,13 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
+[ext_resource type="Texture2D" path="res://assets/ui/icons/items/outfit_hazmat.png" id="9_icon"]
 [ext_resource type="Script" path="res://core/item_data.gd" id="1_gh102"]
 
 [resource]
 script = ExtResource("1_gh102")
 id = &"outfit_hazmat"
 display_name = "Combinaison étanche"
+icon = ExtResource("9_icon")
 description = "Bâches et joints de caoutchouc. Chaude, mais rien ne passe."
 protection = 0.35
 recipe = Dictionary[StringName, int]({

@@ -1,11 +1,13 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
+[ext_resource type="Texture2D" path="res://assets/ui/icons/items/bag_small.png" id="9_icon"]
 [ext_resource type="Script" path="res://core/item_data.gd" id="1_l67nc"]
 
 [resource]
 script = ExtResource("1_l67nc")
 id = &"bag_small"
 display_name = "Petit sac"
+icon = ExtResource("9_icon")
 description = "Un sac d'écolier rapiécé."
 slot = 2
 capacity = 12

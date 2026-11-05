@@ -378,7 +378,7 @@ func _on_session_ended(result: ExpeditionResult) -> void:
 	if result.boarded:
 		_player.visible = false
 		_train.depart()
-		await get_tree().create_timer(1.5).timeout
+		await get_tree().create_timer(1.5, false).timeout
 	else:
 		await _train.depart().finished
 	_result_screen.call(&"show_result", result, GameState.LOOT_TYPES)

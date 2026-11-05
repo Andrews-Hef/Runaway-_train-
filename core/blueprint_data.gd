@@ -16,3 +16,6 @@ extends Resource
 @export var requires: Array[StringName] = []
 ## Premier arrêt où on peut le trouver par hasard.
 @export var min_stop: int = 1
+## Effet propre au plan, qui n'est ni une recette ni une voiture
+## (ex. l'interphone relie les postes du train). Affiché dans « Débloque ».
+@export var effect_text: String

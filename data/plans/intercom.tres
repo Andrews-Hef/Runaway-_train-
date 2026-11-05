@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="BlueprintData" format=3]
+
+[ext_resource type="Script" path="res://core/blueprint_data.gd" id="1_plan"]
+
+[resource]
+script = ExtResource("1_plan")
+id = &"intercom"
+display_name = "Interphone de bord"
+description = "Des fils tirés d'une voiture à l'autre : depuis n'importe quel poste, on gère tout le train."
+research_cost = Dictionary[StringName, int]({
+&"scrap": 4,
+&"parts": 1
+})
+effect_text = "tous les postes du train reliés"

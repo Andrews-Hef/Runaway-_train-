@@ -361,6 +361,270 @@ def syringe() -> Image.Image:
     ], {"n": "#c8ced6", "g": "#c8dde0", "y": "#f2c94c", "p": "#8f969e"}))
 
 
+
+# --- Équipement -----------------------------------------------------------------------
+# Tenues : même silhouette (veste à manches), couleur et détails propres.
+
+def jacket(main: str, dark: str, cuff: str, detail: str = "", detail_rows: tuple = ()) -> Image.Image:
+    rows = [
+        "............",
+        "...mm..mm...",
+        "..mmmmmmmm..",
+        ".mmmmmmmmmm.",
+        ".mmdmmmmdmm.",
+        ".mmdmmmmdmm.",
+        ".mmdmmmmdmm.",
+        ".ccdmmmmdcc.",
+        "...dmmmmd...",
+        "...dmmmmd...",
+        "...dddddd...",
+        "............",
+    ]
+    for r in detail_rows:
+        rows[r] = rows[r][:4] + "xxxx" + rows[r][8:]
+    palette = {"m": main, "d": dark, "c": cuff}
+    if detail:
+        palette["x"] = detail
+    return outline(from_map(rows, palette))
+
+
+def worn_clothes() -> Image.Image:
+    img = jacket("#7d7468", "#4f4840", "#5f574d")
+    px(img, [(5, 5), (6, 5), (5, 6), (6, 6)], "#a0814f")  # pièce cousue
+    return img
+
+
+def hazmat() -> Image.Image:
+    return outline(from_map([
+        "....mmmm....",
+        "...mvvvvm...",
+        "..mmvvvvmm..",
+        ".mmmmmmmmmm.",
+        ".mmdmmmmdmm.",
+        ".mmdmmmmdmm.",
+        ".mmdmmmmdmm.",
+        ".kkdmmmmdkk.",
+        "...dmmmmd...",
+        "...dmddmd...",
+        "...kk..kk...",
+        "............",
+    ], {"m": "#e0c23a", "d": "#9c8420", "v": "#6fb6e8", "k": "#2c2c30"}))
+
+
+def vest(main: str, dark: str, accent: str, rows_mid: tuple) -> Image.Image:
+    return outline(from_map([
+        "............",
+        "..dd....dd..",
+        "..dmd..dmd..",
+        "..dmmddmmd..",
+        rows_mid[0],
+        rows_mid[1],
+        "..dmmmmmmd..",
+        "..dmmmmmmd..",
+        rows_mid[2],
+        "..dmmmmmmd..",
+        "...dddddd...",
+        "............",
+    ], {"m": main, "d": dark, "a": accent}))
+
+
+def plate_vest() -> Image.Image:
+    return vest("#9aa3ab", "#5d646b", "#3e4449", ("..dmammamd..", "..dmmmmmmd..", "..dmammamd.."))
+
+
+def kevlar_vest() -> Image.Image:
+    return vest("#4f5a34", "#2f361e", "#6f7d48", ("..daammaad..", "..daammaad..", "..d333333d..".replace("3", "a")))
+
+
+# Masques à gaz : vue de face.
+def gas_mask(main: str, lens: str, filt: str, filt_light: str) -> Image.Image:
+    return outline(from_map([
+        "............",
+        "...mmmmmm...",
+        "..mmmmmmmm..",
+        "..meemmeem..",
+        "..meemmeem..",
+        "..mmmmmmmm..",
+        "...mmffmm...",
+        "....ffff....",
+        "....fFFf....",
+        "....ffff....",
+        "............",
+        "............",
+    ], {"m": main, "e": lens, "f": filt, "F": filt_light}))
+
+
+def cartridge_mask() -> Image.Image:
+    return outline(from_map([
+        "............",
+        "...mmmmmm...",
+        "..mmmmmmmm..",
+        "..meemmeem..",
+        "..meemmeem..",
+        "..mmmmmmmm..",
+        ".cc.mmmm.cc.",
+        ".cCc.mm.cCc.",
+        ".ccc....ccc.",
+        "............",
+        "............",
+        "............",
+    ], {"m": "#3d3f45", "e": "#9fd0ff", "c": "#b45c3a", "C": "#e08a5a"}))
+
+
+# Sacs.
+def small_bag() -> Image.Image:
+    return outline(from_map([
+        "............",
+        "............",
+        "....bbbb....",
+        "...b....b...",
+        "..BBBBBBBB..",
+        "..BbbbbbbB..",
+        "..BbyybbbB..",
+        "..BbbbbbbB..",
+        "..BBBBBBBB..",
+        "............",
+        "............",
+        "............",
+    ], {"b": "#9a6b3f", "B": "#6b4a2f", "y": "#d9b25a"}))
+
+
+def backpack(main: str, dark: str, flap: str, buckle: str, pocket: str, side: bool = False) -> Image.Image:
+    rows = [
+        "....dddd....",
+        "...dmmmmd...",
+        "..dmmmmmmd..",
+        "..dffffffd..",
+        "..dffyyffd..",
+        "..dmmmmmmd..",
+        "..dmmmmmmd..",
+        "..dmppppmd..",
+        "..dmppppmd..",
+        "..dmmmmmmd..",
+        "...dddddd...",
+        "............",
+    ]
+    if side:  # poches latérales du sac militaire
+        for r in (5, 6, 7, 8):
+            rows[r] = ".p" + rows[r][2:10] + "p."
+    return outline(from_map(rows, {"m": main, "d": dark, "f": flap, "y": buckle, "p": pocket}))
+
+
+# Outils et armes : tracés en diagonale (manche en bas à gauche).
+def line(d: ImageDraw.ImageDraw, a: tuple, b: tuple, color: str, width: int = 2) -> None:
+    d.line([a, b], fill=rgb(color), width=width)
+
+
+def crowbar() -> Image.Image:
+    img, d = canvas()
+    line(d, (2, 10), (6, 5), "#c0392b")
+    # crochet en haut : la barre remonte puis se recourbe
+    px(img, [(6, 4), (7, 4), (6, 3), (7, 3), (7, 2), (8, 1), (9, 1), (10, 2), (10, 3), (8, 2)], "#c0392b")
+    px(img, [(1, 10), (2, 11)], "#8e2a20")
+    return outline(img)
+
+
+def hatchet() -> Image.Image:
+    img, d = canvas()
+    line(d, (2, 10), (7, 4), "#8a5a2b")
+    d.polygon([(5, 2), (9, 1), (10, 5), (8, 6)], fill=rgb("#9aa3ab"))
+    px(img, [(9, 1), (10, 2), (10, 3), (10, 4)], "#d8dde2")
+    return outline(img)
+
+
+def shears() -> Image.Image:
+    img, d = canvas()
+    line(d, (6, 6), (10, 1), "#c8ced6")
+    line(d, (6, 5), (10, 2), "#9aa3ab", 1)
+    d.ellipse((1, 6, 4, 9), outline=rgb("#c0392b"), width=1)
+    d.ellipse((4, 8, 7, 11), outline=rgb("#c0392b"), width=1)
+    px(img, [(4, 7), (5, 7), (6, 7)], "#c0392b")
+    return outline(img)
+
+
+def torch() -> Image.Image:
+    img, d = canvas()
+    line(d, (2, 10), (6, 6), "#4a4f57", 3)
+    line(d, (6, 6), (8, 4), "#c9962a", 1)
+    px(img, [(9, 3), (10, 2), (9, 2), (10, 3)], "#6fb6e8")
+    px(img, [(10, 1), (11, 1), (11, 2)], "#c9e8ff")
+    px(img, [(3, 8), (4, 9)], "#d8433a")
+    return outline(img)
+
+
+def chem_kit() -> Image.Image:
+    return outline(from_map([
+        "............",
+        "....kkkk....",
+        "....k..k....",
+        ".bbbbbbbbbb.",
+        ".bwwwwwwwwb.",
+        ".bwwwggwwwb.",
+        ".bwwgggwwwb.",
+        ".bwgGGGgwwb.",
+        ".bwgGGGgwwb.",
+        ".bwwwwwwwwb.",
+        ".bbbbbbbbbb.",
+        "............",
+    ], {"k": "#4a4f57", "b": "#55622d", "w": "#e8e2cf", "g": "#9aa3ab", "G": "#7ad85a"}))
+
+
+def iron_bar() -> Image.Image:
+    img, d = canvas()
+    line(d, (2, 10), (9, 2), "#8f969e", 2)
+    px(img, [(9, 1), (10, 1), (10, 2)], "#5d646b")
+    px(img, [(1, 10), (1, 11), (2, 11)], "#5d646b")
+    px(img, [(5, 6), (6, 5)], "#c8ced6")
+    return outline(img)
+
+
+def machete() -> Image.Image:
+    img, d = canvas()
+    line(d, (2, 10), (4, 8), "#2c2c30", 2)
+    d.polygon([(4, 7), (9, 1), (11, 1), (11, 2), (6, 8)], fill=rgb("#c8ced6"))
+    px(img, [(10, 2), (9, 3), (8, 4), (7, 5)], "#eef2f5")
+    return outline(img)
+
+
+def fire_axe() -> Image.Image:
+    img, d = canvas()
+    line(d, (2, 10), (8, 3), "#a0703a", 2)
+    d.polygon([(6, 1), (9, 0), (11, 3), (10, 6), (8, 4)], fill=rgb("#c0392b"))
+    px(img, [(10, 3), (10, 4), (11, 3)], "#d8dde2")
+    return outline(img)
+
+
+def sledgehammer() -> Image.Image:
+    img, d = canvas()
+    line(d, (2, 10), (7, 5), "#a0703a", 2)
+    d.polygon([(5, 2), (8, 0), (11, 3), (8, 6)], fill=rgb("#5d646b"))
+    px(img, [(8, 1), (9, 1), (9, 2)], "#9aa3ab")
+    return outline(img)
+
+
+EQUIPMENT_ICONS = {
+    "outfit_worn": worn_clothes,
+    "outfit_padded": lambda: jacket("#c9913f", "#8a5f28", "#8a5f28", "#a87530", (4, 6, 8)),
+    "outfit_hazmat": hazmat,
+    "outfit_plate": plate_vest,
+    "outfit_kevlar": kevlar_vest,
+    "mask_worn": lambda: gas_mask("#6f6a5f", "#8fb0a8", "#4a4640", "#7a7468"),
+    "mask_filter": lambda: gas_mask("#556b4a", "#b8e0e8", "#d8d0b0", "#a59d7a"),
+    "mask_cartridge": cartridge_mask,
+    "bag_small": small_bag,
+    "bag_hiking": lambda: backpack("#3f7fbf", "#24486e", "#2f5f90", "#f2c94c", "#5596d6"),
+    "bag_military": lambda: backpack("#6b7a3a", "#3f4a22", "#55622d", "#a59d7a", "#7f8f4a", side=True),
+    "tool_crowbar": crowbar,
+    "tool_hatchet": hatchet,
+    "tool_shears": shears,
+    "tool_torch": torch,
+    "tool_chem_kit": chem_kit,
+    "weapon_pipe": iron_bar,
+    "weapon_machete": machete,
+    "weapon_axe": fire_axe,
+    "weapon_sledge": sledgehammer,
+}
+
 ICONS = {
     "health": heart, "infection": spore, "timer": clock, "bag": bag, "order": star, "recruit": person, "plan": plan,
     "scrap": scrap, "wood": wood,
@@ -376,7 +640,11 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     for name, draw in ICONS.items():
         draw().save(OUT / f"{name}.png")
-    print(f"{len(ICONS)} icônes dans {OUT.relative_to(ROOT)}")
+    items_dir = OUT / "items"
+    items_dir.mkdir(exist_ok=True)
+    for name, draw in EQUIPMENT_ICONS.items():
+        draw().save(items_dir / f"{name}.png")
+    print(f"{len(ICONS)} icônes dans {OUT.relative_to(ROOT)}, {len(EQUIPMENT_ICONS)} dans items/")
 
 
 if __name__ == "__main__":

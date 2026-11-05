@@ -1,11 +1,13 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
+[ext_resource type="Texture2D" path="res://assets/ui/icons/items/tool_hatchet.png" id="9_icon"]
 [ext_resource type="Script" path="res://core/item_data.gd" id="1_mc0cr"]
 
 [resource]
 script = ExtResource("1_mc0cr")
 id = &"tool_hatchet"
 display_name = "Hachette"
+icon = ExtResource("9_icon")
 description = "Le bois mort ne résiste pas longtemps."
 slot = 3
 harvest_tags = Array[StringName]([&"wood"])

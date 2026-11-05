@@ -14,6 +14,9 @@ signal interacted(actor: Node2D)
 @export var hold_time: float = 0.5
 ## Position de l'indicateur, relative à l'objet.
 @export var indicator_offset: Vector2 = Vector2(0.0, -24.0)
+## Animation du joueur pendant l'appui : &"harvest" (accroupi, fouille) ou
+## &"work" (debout, les mains sur un plan de travail : établis du train).
+@export var animation: StringName = &"harvest"
 
 var focused: bool = false
 var progress: float = 0.0

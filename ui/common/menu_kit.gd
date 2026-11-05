@@ -17,10 +17,24 @@ static func label(text: String, color: Color = Color.WHITE) -> Label:
 	return node
 
 
+## Icône pixel art (12 px de base) affichée à `size` px, sans flou.
+static func icon(texture: Texture2D, size: float = 12.0) -> TextureRect:
+	var node := TextureRect.new()
+	node.texture = texture
+	node.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	node.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	node.custom_minimum_size = Vector2(size, size)
+	node.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	return node
+
+
 ## Une ligne « titre + détail » avec un bouton à droite (action vide = pas de bouton actif).
+## `picture` : icône à gauche (équipement, ressource), facultative.
 static func row(title: String, detail: String, detail_color: Color, button_text: String, disabled: bool,
-		action: Callable) -> HBoxContainer:
+		action: Callable, picture: Texture2D = null) -> HBoxContainer:
 	var line := HBoxContainer.new()
+	if picture:
+		line.add_child(icon(picture, 24.0))
 	var info := VBoxContainer.new()
 	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	info.add_theme_constant_override(&"separation", 0)

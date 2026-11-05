@@ -1,12 +1,15 @@
 extends CanvasLayer
-## Menu du train : stock, atelier (fabrication), équipement, équipage, train (construction).
+## Menu du train : stock, atelier (fabrication), équipement, équipage, train (construction),
+## machines, plans, infirmerie.
 ##
-## Un seul panneau à onglets ; chaque meuble du train l'ouvre sur son onglet.
+## Un seul panneau à onglets. Chaque meuble du train l'ouvre sur SON onglet, seul :
+## l'établi ne donne que l'atelier. Une fois le plan Interphone étudié, les postes
+## sont reliés et tous les onglets s'affichent depuis n'importe quel meuble.
 ## Il lit et modifie GameState, rien d'autre.
 
 signal closed
 
-enum Tab { STOCK, WORKSHOP, EQUIPMENT, CREW, TRAIN, GRADE, PLANS, INFIRMARY }
+enum Tab { STOCK, WORKSHOP, EQUIPMENT, CREW, TRAIN, MACHINES, PLANS, INFIRMARY }
 
 const GOOD: Color = MenuKit.GOOD
 const BAD: Color = MenuKit.BAD
@@ -20,10 +23,11 @@ const GOLD: Color = MenuKit.GOLD
 @onready var _equipment_list: VBoxContainer = %EquipmentList
 @onready var _crew_list: VBoxContainer = %CrewList
 @onready var _train_list: VBoxContainer = %TrainList
-@onready var _grade_list: VBoxContainer = %GradeList
+@onready var _machines_list: VBoxContainer = %MachinesList
 @onready var _plans_list: VBoxContainer = %PlansList
 @onready var _infirmary_list: VBoxContainer = %InfirmaryList
 @onready var _close: Button = %Close
+@onready var _hint: Label = %Hint
 
 
 func _ready() -> void:
@@ -38,7 +42,7 @@ func _ready() -> void:
 	_tabs.set_tab_title(Tab.EQUIPMENT, "Équiper")
 	_tabs.set_tab_title(Tab.CREW, "Équipage")
 	_tabs.set_tab_title(Tab.TRAIN, "Train")
-	_tabs.set_tab_title(Tab.GRADE, "Grade")
+	_tabs.set_tab_title(Tab.MACHINES, "Machines")
 	_tabs.set_tab_title(Tab.PLANS, "Plans")
 	_tabs.set_tab_title(Tab.INFIRMARY, "Infirmerie")
 
@@ -55,7 +59,11 @@ func is_open() -> bool:
 
 func open(tab: Tab) -> void:
 	_refresh()
+	var linked: bool = GameState.stations_linked()
 	_tabs.current_tab = tab
+	for i: int in _tabs.get_tab_count():
+		_tabs.set_tab_hidden(i, not linked and i != tab)
+	_hint.visible = not linked
 	_root.visible = true
 	_close.grab_focus.call_deferred()
 
@@ -73,7 +81,7 @@ func _refresh() -> void:
 	_fill_equipment()
 	_fill_crew()
 	_fill_train()
-	_fill_grade()
+	_fill_machines()
 	_fill_plans()
 	_fill_infirmary()
 
@@ -85,7 +93,7 @@ func _fill_stock() -> void:
 	var full: bool = GameState.storage_free() == 0
 	_stock_list.add_child(MenuKit.label("Places : %d/%d" % [GameState.storage_total(), GameState.storage_capacity()], BAD if full else GOLD))
 	if full:
-		_stock_list.add_child(MenuKit.label("Stock plein : construis un wagon de stock (onglet Train).", BAD))
+		_stock_list.add_child(MenuKit.label("Stock plein : construis un wagon de stock (plans du train, dans la cabine).", BAD))
 	for loot: LootData in GameState.LOOT_TYPES:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override(&"separation", 4)
@@ -113,6 +121,7 @@ func _fill_workshop() -> void:
 		var owned: bool = item in GameState.owned_items
 		var lacking := Crafting.missing(item, GameState.storage)
 		var row := HBoxContainer.new()
+		row.add_child(MenuKit.icon(item.icon, 24.0))
 		var info := VBoxContainer.new()
 		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		info.add_theme_constant_override(&"separation", 0)
@@ -139,7 +148,7 @@ func _fill_workshop() -> void:
 			continue
 		_workshop_list.add_child(_recipe_row(recipe, "Transformer"))
 	if hidden > 0:
-		_workshop_list.add_child(MenuKit.label("%d recette(s) encore inconnue(s) : trouve et étudie des plans (onglet Plans)." % hidden, MUTED))
+		_workshop_list.add_child(MenuKit.label("%d recette(s) encore inconnue(s) : trouve des plans et étudie-les (table des plans)." % hidden, MUTED))
 
 
 # --- Équipement -------------------------------------------------------------------
@@ -152,6 +161,8 @@ func _fill_equipment() -> void:
 		var options: Array[ItemData] = GameState.owned_for_slot(slot)
 		var current: ItemData = loadout.get_item(slot)
 		var row := HBoxContainer.new()
+		var picture := MenuKit.icon(current.icon if current else null, 24.0)
+		row.add_child(picture)
 		var info := VBoxContainer.new()
 		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		info.add_theme_constant_override(&"separation", 0)
@@ -184,7 +195,7 @@ func _fill_crew() -> void:
 	var full: bool = GameState.free_beds() == 0
 	_crew_list.add_child(MenuKit.label("Couchettes : %d/%d" % [GameState.crew.size(), GameState.beds()], BAD if full else GOLD))
 	if full:
-		_crew_list.add_child(MenuKit.label("Plus de place : construis un dortoir (onglet Train) pour recruter.", BAD))
+		_crew_list.add_child(MenuKit.label("Plus de place : construis un dortoir (plans du train, dans la cabine) pour recruter.", BAD))
 	if GameState.crew.is_empty():
 		_crew_list.add_child(MenuKit.label("Personne à bord pour l'instant.", MUTED))
 		_crew_list.add_child(MenuKit.label("Recrute des survivants dans les refuges pendant les sorties.", MUTED))
@@ -248,7 +259,7 @@ func _fill_infirmary() -> void:
 		_infirmary_list.add_child(MenuKit.label("Aucun médicament à bord : fouille les caisses et les armoires, ou achète-en en gare.", MUTED))
 	_infirmary_list.add_child(MenuKit.label("Médicaments spéciaux", GOLD))
 	if not GameState.has_wagon(&"infirmary"):
-		_infirmary_list.add_child(MenuKit.label("Construis une infirmerie (onglet Train) pour les préparer.", MUTED))
+		_infirmary_list.add_child(MenuKit.label("Construis une infirmerie (plans du train, dans la cabine) pour les préparer.", MUTED))
 	var hidden: int = 0
 	for recipe: RecipeData in RecipeCatalog.for_station(RecipeData.Station.INFIRMARY):
 		if not GameState.is_known(recipe.plan):
@@ -259,31 +270,39 @@ func _fill_infirmary() -> void:
 		_infirmary_list.add_child(MenuKit.label("%d préparation(s) encore inconnue(s) : il faut des plans (Pharmacie…)." % hidden, MUTED))
 
 
-# --- Grade ------------------------------------------------------------------------
+# --- Machines ---------------------------------------------------------------------
 
-func _fill_grade() -> void:
-	MenuKit.clear(_grade_list)
-	var grade: GradeData = GameState.grade()
-	var next: GradeData = Career.next_grade(GameState.grade_index())
-	_grade_list.add_child(MenuKit.label("%s — %s" % [grade.display_name, grade.description], GOLD))
-	if next:
-		_grade_list.add_child(MenuKit.label("Mérite : %d/%d avant %s" % [GameState.merit, next.merit_needed, next.display_name], MUTED))
-	else:
-		_grade_list.add_child(MenuKit.label("Mérite : %d (grade le plus haut)" % GameState.merit, MUTED))
-	var order: CaptainOrders.Order = GameState.current_order
-	_grade_list.add_child(MenuKit.label("Ordre pour l'arrêt n°%d : %s (+%d mérite)" % [GameState.stop_number, order.text(), order.data.merit] if order \
-		else "Pas d'ordre : le prochain arrêt est une gare refuge.", Color.WHITE))
-	# Promotion en attente : on peut choisir son talent ici aussi.
-	if not GameState.pending_promotions.is_empty():
-		var promotion: GradeData = GameState.pending_promotions[0]
-		_grade_list.add_child(MenuKit.label("Promu %s : choisis un talent." % promotion.display_name, GOOD))
-		for perk: PerkData in promotion.perks:
-			_grade_list.add_child(MenuKit.row(perk.display_name, "%s — %s" % [perk.describe_effects(), perk.description], GOOD,
-				"Choisir", false, func() -> void: GameState.choose_perk(perk)))
-	if GameState.perks.is_empty():
-		_grade_list.add_child(MenuKit.label("Pas encore de talent : remplis les ordres du capitaine et élimine des ennemis pour monter en grade.", MUTED))
-	for perk: PerkData in GameState.perks:
-		_grade_list.add_child(MenuKit.label("%s : %s" % [perk.display_name, perk.describe_effects()], Color.WHITE))
+## Serre et laboratoire : ce qu'ils produisent à chaque trajet, et le dernier bilan.
+func _fill_machines() -> void:
+	MenuKit.clear(_machines_list)
+	_machines_list.add_child(MenuKit.label("Les machines tournent pendant chaque trajet, avec ce qu'il y a dans le stock.", MUTED))
+	var shown: Array[StringName] = []
+	for wagon: WagonData in GameState.train:
+		if wagon.id in shown:
+			continue
+		var level: int = GameState.wagon_level(wagon.id)
+		var production: Dictionary[StringName, int] = wagon.production_at(level)
+		if production.is_empty():
+			continue
+		shown.append(wagon.id)
+		var count: int = GameState.wagon_count(wagon.id)
+		var title: String = "%s niv. %d" % [wagon.display_name, level] + (" (×%d voitures)" % count if count > 1 else "")
+		var detail: String = "Chaque trajet : %s" % MenuKit.describe_amounts(production)
+		var ready: bool = true
+		if not wagon.production_cost.is_empty():
+			detail += " · consomme %s" % MenuKit.describe_amounts(wagon.production_cost)
+			ready = TrainRules.missing(wagon.production_cost, GameState.storage).is_empty()
+			if not ready:
+				detail += " · il en manque dans le stock"
+		var info := VBoxContainer.new()
+		info.add_theme_constant_override(&"separation", 0)
+		info.add_child(MenuKit.label(title))
+		info.add_child(MenuKit.label(detail, GOOD if ready else BAD))
+		_machines_list.add_child(info)
+	if shown.is_empty():
+		_machines_list.add_child(MenuKit.label("Aucune machine à bord : une serre (plan Horticulture) ou un laboratoire (plan Distillerie) se construisent dans la cabine.", MUTED))
+	if not GameState.last_production.is_empty():
+		_machines_list.add_child(MenuKit.label("Dernier trajet : +" + MenuKit.describe_amounts(GameState.last_production), GOLD))
 
 
 # --- Train ------------------------------------------------------------------------

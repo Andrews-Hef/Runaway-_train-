@@ -32,8 +32,13 @@ var free_beds: int = -1
 var plan_pool: Array[StringName] = []
 
 
+## Groupe : l'inventaire (touche I) y trouve le sac de l'arrêt en cours.
+const GROUP: StringName = &"stop_session"
+
+
 func _ready() -> void:
 	remaining = duration
+	add_to_group(GROUP)
 
 
 ## (Re)lance l'arrêt avec une durée donnée (tirée par le générateur de zone).

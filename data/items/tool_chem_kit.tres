@@ -1,11 +1,13 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
+[ext_resource type="Texture2D" path="res://assets/ui/icons/items/tool_chem_kit.png" id="9_icon"]
 [ext_resource type="Script" path="res://core/item_data.gd" id="1_item"]
 
 [resource]
 script = ExtResource("1_item")
 id = &"tool_chem_kit"
 display_name = "Kit de chimie"
+icon = ExtResource("9_icon")
 description = "Fioles et filtres : chaque plante infectée cueillie donne aussi des produits chimiques."
 slot = 3
 extra_from = &"infected_herb"

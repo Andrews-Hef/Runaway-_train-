@@ -11,6 +11,7 @@ const ALL: Array[BlueprintData] = [
 	preload("res://data/plans/distillery.tres"),
 	preload("res://data/plans/outfitting.tres"),
 	preload("res://data/plans/vaccine.tres"),
+	preload("res://data/plans/intercom.tres"),
 ]
 
 
@@ -42,6 +43,9 @@ static func research_problem(plan: BlueprintData, found: Array[StringName], rese
 ## Noms de ce que le plan débloque (équipements, recettes, voitures).
 static func unlocks(plan_id: StringName) -> PackedStringArray:
 	var names: PackedStringArray = []
+	var plan: BlueprintData = get_plan(plan_id)
+	if plan and not plan.effect_text.is_empty():
+		names.append(plan.effect_text)
 	for item: ItemData in ItemCatalog.ALL:
 		if item.plan == plan_id:
 			names.append(item.display_name)

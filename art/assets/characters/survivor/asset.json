@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "id": "characters/survivor",
   "type": "character",
-  "description": "Le joueur : survivant recrue, masque a gaz avec verres, veste ocre, sac a dos, pantalon sombre, bottes, barre de fer dans la main droite. Clips : idle, walk, harvest (accroupi, fouille), attack (coup de barre).",
+  "description": "Le joueur : survivant recrue, masque a gaz avec verres, veste ocre, sac a dos, pantalon sombre, bottes, barre de fer dans la main droite. Clips : idle, walk, harvest (accroupi, fouille), attack (coup de barre), work (debout a un etabli, les mains qui bricolent).",
   "frame": {
     "width": 36,
     "height": 40
@@ -544,6 +544,285 @@
           {
             "t": 0.6,
             "pose": {}
+          }
+        ]
+      },
+      "work": {
+        "duration": 1.0,
+        "keys": [
+          {
+            "t": 0,
+            "pose": {
+              "spine": {
+                "rotation": [
+                  10,
+                  0,
+                  0
+                ]
+              },
+              "chest": {
+                "rotation": [
+                  4,
+                  0,
+                  0
+                ]
+              },
+              "neck": {
+                "rotation": [
+                  14,
+                  0,
+                  0
+                ]
+              },
+              "leftUpperArm": {
+                "rotation": [
+                  -25,
+                  0,
+                  6
+                ]
+              },
+              "leftLowerArm": {
+                "rotation": [
+                  -60,
+                  0,
+                  0
+                ]
+              },
+              "rightUpperArm": {
+                "rotation": [
+                  -20,
+                  0,
+                  -6
+                ]
+              },
+              "rightLowerArm": {
+                "rotation": [
+                  -70,
+                  0,
+                  0
+                ]
+              }
+            },
+            "easing": "ease-in-out"
+          },
+          {
+            "t": 0.25,
+            "pose": {
+              "spine": {
+                "rotation": [
+                  10,
+                  0,
+                  0
+                ]
+              },
+              "chest": {
+                "rotation": [
+                  4,
+                  0,
+                  0
+                ]
+              },
+              "neck": {
+                "rotation": [
+                  14,
+                  0,
+                  0
+                ]
+              },
+              "leftUpperArm": {
+                "rotation": [
+                  -25,
+                  0,
+                  6
+                ]
+              },
+              "leftLowerArm": {
+                "rotation": [
+                  -60,
+                  0,
+                  0
+                ]
+              },
+              "rightUpperArm": {
+                "rotation": [
+                  -34,
+                  0,
+                  -6
+                ]
+              },
+              "rightLowerArm": {
+                "rotation": [
+                  -48,
+                  0,
+                  0
+                ]
+              }
+            },
+            "easing": "ease-in-out"
+          },
+          {
+            "t": 0.5,
+            "pose": {
+              "spine": {
+                "rotation": [
+                  10,
+                  0,
+                  0
+                ]
+              },
+              "chest": {
+                "rotation": [
+                  4,
+                  0,
+                  0
+                ]
+              },
+              "neck": {
+                "rotation": [
+                  14,
+                  0,
+                  0
+                ]
+              },
+              "leftUpperArm": {
+                "rotation": [
+                  -20,
+                  0,
+                  6
+                ]
+              },
+              "leftLowerArm": {
+                "rotation": [
+                  -70,
+                  0,
+                  0
+                ]
+              },
+              "rightUpperArm": {
+                "rotation": [
+                  -25,
+                  0,
+                  -6
+                ]
+              },
+              "rightLowerArm": {
+                "rotation": [
+                  -60,
+                  0,
+                  0
+                ]
+              }
+            },
+            "easing": "ease-in-out"
+          },
+          {
+            "t": 0.75,
+            "pose": {
+              "spine": {
+                "rotation": [
+                  10,
+                  0,
+                  0
+                ]
+              },
+              "chest": {
+                "rotation": [
+                  4,
+                  0,
+                  0
+                ]
+              },
+              "neck": {
+                "rotation": [
+                  14,
+                  0,
+                  0
+                ]
+              },
+              "leftUpperArm": {
+                "rotation": [
+                  -34,
+                  0,
+                  6
+                ]
+              },
+              "leftLowerArm": {
+                "rotation": [
+                  -48,
+                  0,
+                  0
+                ]
+              },
+              "rightUpperArm": {
+                "rotation": [
+                  -25,
+                  0,
+                  -6
+                ]
+              },
+              "rightLowerArm": {
+                "rotation": [
+                  -60,
+                  0,
+                  0
+                ]
+              }
+            },
+            "easing": "ease-in-out"
+          },
+          {
+            "t": 1.0,
+            "pose": {
+              "spine": {
+                "rotation": [
+                  10,
+                  0,
+                  0
+                ]
+              },
+              "chest": {
+                "rotation": [
+                  4,
+                  0,
+                  0
+                ]
+              },
+              "neck": {
+                "rotation": [
+                  14,
+                  0,
+                  0
+                ]
+              },
+              "leftUpperArm": {
+                "rotation": [
+                  -25,
+                  0,
+                  6
+                ]
+              },
+              "leftLowerArm": {
+                "rotation": [
+                  -60,
+                  0,
+                  0
+                ]
+              },
+              "rightUpperArm": {
+                "rotation": [
+                  -20,
+                  0,
+                  -6
+                ]
+              },
+              "rightLowerArm": {
+                "rotation": [
+                  -70,
+                  0,
+                  0
+                ]
+              }
+            }
           }
         ]
       }

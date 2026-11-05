@@ -120,13 +120,13 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 5
 
-[node name="Grade" type="ScrollContainer" parent="Root/Center/Panel/VBox/Tabs"]
+[node name="Machines" type="ScrollContainer" parent="Root/Center/Panel/VBox/Tabs"]
 visible = false
 layout_mode = 2
 horizontal_scroll_mode = 0
 metadata/_tab_index = 5
 
-[node name="GradeList" type="VBoxContainer" parent="Root/Center/Panel/VBox/Tabs/Grade"]
+[node name="MachinesList" type="VBoxContainer" parent="Root/Center/Panel/VBox/Tabs/Machines"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -155,6 +155,13 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 4
+
+[node name="Hint" type="Label" parent="Root/Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.74, 1)
+text = "Chaque poste a son menu. Le plan Interphone les relie tous."
+horizontal_alignment = 1
 
 [node name="Close" type="Button" parent="Root/Center/Panel/VBox"]
 unique_name_in_owner = true

@@ -48,7 +48,8 @@ func _ready() -> void:
 	var blink := create_tween().set_loops()
 	blink.tween_property(_hint, "modulate:a", 0.35, 0.6)
 	blink.tween_property(_hint, "modulate:a", 1.0, 0.6)
-	get_tree().create_timer(auto_continue_after).timeout.connect(_continue)
+	# process_always = false : le menu pause arrête aussi le compte à rebours.
+	get_tree().create_timer(auto_continue_after, false).timeout.connect(_continue)
 
 
 func _unhandled_input(event: InputEvent) -> void:

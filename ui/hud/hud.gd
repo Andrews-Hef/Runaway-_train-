@@ -51,6 +51,10 @@ var _exposure_value: float = 0.0
 
 func _ready() -> void:
 	_outline_labels($Root)
+	# Équipement porté, sous la vie et l'infection.
+	var bar := EquipmentBar.new()
+	bar.name = "EquipmentBar"
+	%HealthBar.get_parent().add_child(bar)
 
 
 ## Une ombre portée noire sous tous les textes : lisibles sur n'importe quel décor,

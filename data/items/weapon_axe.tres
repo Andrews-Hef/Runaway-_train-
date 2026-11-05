@@ -1,11 +1,13 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
+[ext_resource type="Texture2D" path="res://assets/ui/icons/items/weapon_axe.png" id="9_icon"]
 [ext_resource type="Script" path="res://core/item_data.gd" id="1_2seko"]
 
 [resource]
 script = ExtResource("1_2seko")
 id = &"weapon_axe"
 display_name = "Hache de pompier"
+icon = ExtResource("9_icon")
 description = "Lourde, lente, redoutable."
 slot = 4
 damage = 3

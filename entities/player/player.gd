@@ -6,7 +6,7 @@ extends CharacterBody2D
 ## Clavier, manette et contrôles tactiles passent tous par ces actions :
 ## le joueur ne sait pas (et n'a pas à savoir) quel périphérique est utilisé.
 ##
-## Animations td2d (voir art/) : idle, walk, harvest, attack, chacune en
+## Animations td2d (voir art/) : idle, walk, harvest, attack, work, chacune en
 ## 4 directions (suffixes _s, _e, _n, _w).
 
 signal attacked(direction: Vector2)
@@ -56,6 +56,8 @@ var pinned_by: Node2D
 var _base_offset_x: float = 0.0
 var _mash: float = 0.0
 var _mash_needed: int = 8
+## Pose tenue tant qu'un menu de poste est ouvert (vide = aucune).
+var _held_pose: StringName = &""
 
 
 func _ready() -> void:
@@ -91,18 +93,27 @@ func _physics_process(delta: float) -> void:
 	_update_animation(input_dir != Vector2.ZERO, harvesting)
 
 
+## Tient une pose (ex. &"work" devant un établi) tournée vers `target`, jusqu'à
+## hold_pose(&"") : le personnage travaille pendant que le menu du poste est ouvert.
+func hold_pose(pose: StringName, target: Vector2 = Vector2.ZERO) -> void:
+	_held_pose = pose
+	if pose != &"" and target != global_position:
+		facing = (target - global_position).normalized()
+
+
 func set_controls_enabled(enabled: bool) -> void:
 	controls_enabled = enabled
 	interactor.set_physics_process(enabled)
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	var attack_pressed: bool = InputMode.is_attack_pressed(event)
 	if is_pinned():
-		if event.is_action_pressed(&"attack") or event.is_action_pressed(&"interact"):
+		if attack_pressed or event.is_action_pressed(&"interact"):
 			mash()
 			get_viewport().set_input_as_handled()
 		return
-	if controls_enabled and not _attacking and event.is_action_pressed(&"attack"):
+	if controls_enabled and not _attacking and attack_pressed:
 		_attack()
 
 
@@ -164,7 +175,8 @@ func _attack() -> void:
 	_sprite.speed_scale = attack_speed
 	_sprite.play(StringName("attack_" + direction_name(facing)))
 	attacked.emit(facing)
-	get_tree().create_timer(strike_delay / attack_speed).timeout.connect(strike)
+	# process_always = false : l'impact attend si le jeu est mis en pause.
+	get_tree().create_timer(strike_delay / attack_speed, false).timeout.connect(strike)
 
 
 ## L'impact du coup : touche les ennemis devant soi (et ceux collés à soi).
@@ -205,7 +217,9 @@ func _update_animation(moving: bool, harvesting: bool) -> void:
 		return
 	var action: String = "walk" if moving else "idle"
 	if harvesting:
-		action = "harvest"
+		action = String(interactor.target.animation)
+	elif _held_pose != &"" and not moving:
+		action = String(_held_pose)
 	var animation_name := StringName(action + "_" + direction_name(facing))
 	if _sprite.animation != animation_name:
 		_sprite.play(animation_name)

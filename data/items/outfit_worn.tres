@@ -1,10 +1,12 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
+[ext_resource type="Texture2D" path="res://assets/ui/icons/items/outfit_worn.png" id="9_icon"]
 [ext_resource type="Script" path="res://core/item_data.gd" id="1_m7w3d"]
 
 [resource]
 script = ExtResource("1_m7w3d")
 id = &"outfit_worn"
 display_name = "Vêtements usés"
+icon = ExtResource("9_icon")
 description = "Ce que tu portais en montant à bord."
 starter = true

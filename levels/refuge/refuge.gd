@@ -64,6 +64,9 @@ func _ready() -> void:
 	InputMode.changed.connect(func(_device: int) -> void: _refresh_prompt())
 	_title.text = "Arrêt n°%d : %s" % [GameState.stop_number, refuge.display_name]
 	_subtitle.text = "Partie sauvegardée · Zone sûre, le train attend. Remonte à bord pour repartir."
+	# Équipement porté, en haut à gauche.
+	_fade.get_parent().add_child(EquipmentBar.make_panel())
+	_fade.get_parent().move_child(_fade, -1)
 	_fade.color.a = 1.0
 	create_tween().tween_property(_fade, "color:a", 0.0, 0.4)
 

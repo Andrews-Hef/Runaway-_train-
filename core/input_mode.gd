@@ -18,7 +18,9 @@ const FORCE_TOUCH_SETTING: String = "game/debug/force_touch_controls"
 ## Nom affiché de chaque action, par périphérique.
 const LABELS: Dictionary[StringName, Array] = {
 	&"interact": ["E", "A", "Agir"],
-	&"attack": ["Espace", "X", "Coup"],
+	&"attack": ["Espace ou clic", "X", "Coup"],
+	&"inventory": ["I", "Y", "Sac"],
+	&"pause": ["Échap", "Start", "II"],
 }
 
 var current: Device = Device.KEYBOARD
@@ -44,6 +46,8 @@ func _input(event: InputEvent) -> void:
 		set_device(Device.TOUCH)
 	elif event is InputEventKey:
 		set_device(Device.KEYBOARD)
+	elif event is InputEventMouseButton and event.device != InputEvent.DEVICE_ID_EMULATION:
+		set_device(Device.KEYBOARD)
 	elif event is InputEventJoypadButton:
 		set_device(Device.GAMEPAD)
 	elif event is InputEventJoypadMotion and absf((event as InputEventJoypadMotion).axis_value) > 0.5:
@@ -59,6 +63,18 @@ func set_device(device: Device) -> void:
 
 func is_touch() -> bool:
 	return current == Device.TOUCH
+
+
+## Coup : l'action « attack » (Espace, X, bouton tactile) ou un vrai clic gauche.
+## Le clic n'est pas dans l'InputMap : sur téléphone, chaque toucher produit aussi
+## un clic émulé (device = DEVICE_ID_EMULATION), et toucher le joystick frapperait.
+## Même chose en tactile forcé sur PC, où la souris imite le doigt.
+func is_attack_pressed(event: InputEvent) -> bool:
+	if event.is_action_pressed(&"attack"):
+		return true
+	var click := event as InputEventMouseButton
+	return click != null and click.pressed and click.button_index == MOUSE_BUTTON_LEFT \
+		and click.device != InputEvent.DEVICE_ID_EMULATION and not forced_touch
 
 
 ## Libellé de l'action pour le périphérique courant, ex. label_for(&"interact") -> "E".
