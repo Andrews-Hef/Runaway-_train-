@@ -26,6 +26,17 @@ const LOOT_SOURCES: Dictionary[StringName, StringName] = {
 
 
 ## Un ordre donné pour un arrêt : le type d'ordre et le nombre demandé.
+## Mots des ordres à mettre au singulier quand on n'en demande qu'un.
+const SINGULARS: Dictionary[String, String] = {
+	" pilleurs": " pilleur",
+	" infectés": " infecté",
+	" ferrailles": " ferraille",
+	" plantes saines": " plante saine",
+	" plantes infectées": " plante infectée",
+	" ressources": " ressource",
+}
+
+
 class Order:
 	var data: OrderData
 	var amount: int
@@ -35,7 +46,12 @@ class Order:
 		amount = order_amount
 
 	func text() -> String:
-		return data.title.replace("{n}", str(amount))
+		var result: String = data.title.replace("{n}", str(amount))
+		if amount == 1:
+			# Au singulier : « Élimine 1 pilleur », pas « 1 pilleurs ».
+			for plural: String in SINGULARS:
+				result = result.replace(plural, SINGULARS[plural])
+		return result
 
 	## Où on en est (pour le HUD) : quantité atteinte.
 	func progress(result: ExpeditionResult) -> int:

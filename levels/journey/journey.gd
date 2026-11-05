@@ -106,7 +106,9 @@ func _fill_texts() -> void:
 		var names: PackedStringArray = []
 		for option: Object in GameState.route_options:
 			var option_zone: ZoneProfile = option.get(&"zone")
-			names.append("%s (%s)" % [option_zone.display_name, option_zone.specialty])
+			var forecast: EventData = option.get(&"event")
+			names.append("%s (%s%s)" % [option_zone.display_name, option_zone.specialty,
+				" · " + forecast.forecast_text.to_lower() if forecast else ""])
 		_next_stop.text = "Arrêt n°%d : aiguillage en %s" % [GameState.stop_number, GameState.region().display_name]
 		_description.text = "Deux voies possibles : %s.\nChoisis la tienne au levier de la cabine." % " ou ".join(names)
 		if GameState.stop_number == GameState.region_stops().x and GameState.stop_number > 1:
@@ -116,6 +118,8 @@ func _fill_texts() -> void:
 		_description.text = GameState.stop_description()
 		if GameState.current_order:
 			_description.text += "\nOrdre du capitaine : %s." % GameState.current_order.text()
+		if GameState.current_event:
+			_description.text += "\n%s." % GameState.current_event.forecast_text
 	if not GameState.last_production.is_empty():
 		_description.text += "\nPendant le trajet, les machines du train ont produit : %s." % MenuKit.describe_amounts(GameState.last_production)
 	_storage.text = _storage_summary() + "\n" + _crew_summary()

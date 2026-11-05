@@ -12,6 +12,8 @@ signal closed
 const GAME_THEME: Theme = preload("res://ui/theme/game_theme.tres")
 const GameStateScript = preload("res://core/game_state.gd")
 const DANGER_NAMES: Array[String] = ["faible", "moyen", "élevé"]
+## Les événements liés à l'infection s'annoncent en violet (couleur réservée à l'infection).
+const RAIN_COLOR: Color = Color(0.8, 0.55, 1.0)
 const DANGER_COLORS: Array[Color] = [Color(0.55, 0.85, 0.45), Color(1.0, 0.8, 0.35), Color(1.0, 0.45, 0.35)]
 
 var _root: Control
@@ -113,6 +115,8 @@ func _add_card(option: GameStateScript.StopOption, index: int) -> Button:
 		lines.add_child(_wrapped(zone.biome.rule_text, MenuKit.MUTED))
 	if option.order:
 		lines.add_child(_wrapped("Ordre : %s (+%d mérite)" % [option.order.text(), option.order.data.merit], Color.WHITE))
+	if option.event:
+		lines.add_child(_wrapped("Météo : %s" % option.event.forecast_text.to_lower(), RAIN_COLOR))
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	lines.add_child(spacer)

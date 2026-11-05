@@ -268,3 +268,10 @@ func test_les_tenues_protegent_des_biomes() -> void:
 	var hazmat: ItemData = ItemCatalog.get_item(&"outfit_hazmat")
 	assert_true(&"cold" in padded.resists and "Tient chaud" in padded.describe_effects(), "veste rembourrée : chaude")
 	assert_true(&"toxic" in hazmat.resists and "toxiques" in hazmat.describe_effects(), "combinaison : étanche")
+
+
+func test_un_ordre_d_un_seul_ennemi_est_au_singulier() -> void:
+	var order := CaptainOrders.Order.new(CaptainOrders.find(&"eliminate_raiders"), 1)
+	assert_true(order.text() == "Élimine 1 pilleur", "obtenu « %s »" % order.text())
+	order.amount = 3
+	assert_true(order.text() == "Élimine 3 pilleurs", "pluriel gardé")

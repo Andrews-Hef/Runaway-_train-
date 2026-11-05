@@ -26,6 +26,7 @@ const SUITES: Array[String] = [
 	"res://tests/test_wagon_upgrades.gd",
 	"res://tests/test_menus.gd",
 	"res://tests/test_biomes.gd",
+	"res://tests/test_rain.gd",
 ]
 
 

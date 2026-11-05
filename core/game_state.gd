@@ -53,6 +53,10 @@ const REGIONS: Array[BiomeData] = [
 ]
 ## Nombre de voies proposées à chaque aiguillage.
 const ROUTE_CHOICES: int = 2
+## Événements d'arrêt possibles (tirés pour chaque voie de l'aiguillage).
+const EVENTS: Array[EventData] = [
+	preload("res://data/events/infected_rain.tres"),
+]
 
 ## Points de vie du joueur sans talent.
 const BASE_HEALTH: int = 10
@@ -114,11 +118,14 @@ class StopOption:
 	var zone: ZoneProfile
 	var seed: int
 	var order: CaptainOrders.Order
+	## Événement prévu à cet arrêt (pluie infectée...), null s'il n'y en a pas.
+	var event: EventData
 
-	func _init(option_zone: ZoneProfile, option_seed: int, option_order: CaptainOrders.Order) -> void:
+	func _init(option_zone: ZoneProfile, option_seed: int, option_order: CaptainOrders.Order, option_event: EventData = null) -> void:
 		zone = option_zone
 		seed = option_seed
 		order = option_order
+		event = option_event
 
 ## Numéro de l'arrêt en cours ou à venir (1 = premier arrêt).
 var stop_number: int = 0
@@ -127,6 +134,8 @@ var current_zone: ZoneProfile
 ## Voies proposées à l'aiguillage pour le prochain arrêt (vide pour une gare refuge).
 ## current_zone, current_seed et current_order valent la voie choisie (la 1re par défaut).
 var route_options: Array[StopOption] = []
+## Événement de l'arrêt à venir (celui de la voie choisie), null s'il n'y en a pas.
+var current_event: EventData
 ## Gare refuge de l'arrêt, ou null si c'est une zone à fouiller.
 var current_refuge: RefugeData
 var current_seed: int = 0
@@ -215,6 +224,7 @@ func prepare_next_stop() -> void:
 		current_refuge = REFUGES[(stop_number / REFUGE_EVERY - 1) % REFUGES.size()]
 		current_seed = _rng.randi()
 		current_order = null
+		current_event = null
 	else:
 		current_refuge = null
 		var zones: Array[ZoneProfile] = [FIRST_ZONE]
@@ -226,17 +236,29 @@ func prepare_next_stop() -> void:
 	career_changed.emit()
 
 
-## Une voie : l'ordre a son propre hasard, tiré de la graine de l'arrêt.
+## Une voie : l'ordre et l'événement ont leur propre hasard, tiré de la graine de l'arrêt.
 func _make_option(zone: ZoneProfile, option_seed: int) -> StopOption:
 	var order_rng := RandomNumberGenerator.new()
 	order_rng.seed = option_seed + 7
-	return StopOption.new(zone, option_seed, CaptainOrders.pick(zone, stop_number, order_rng, bag_capacity()))
+	var order: CaptainOrders.Order = CaptainOrders.pick(zone, stop_number, order_rng, bag_capacity())
+	return StopOption.new(zone, option_seed, order, roll_event(zone.biome, stop_number, option_seed))
+
+
+## Événement d'un arrêt, tiré de sa graine (null : rien de prévu).
+static func roll_event(biome: BiomeData, stop: int, option_seed: int) -> EventData:
+	var event_rng := RandomNumberGenerator.new()
+	event_rng.seed = option_seed + 13
+	for event: EventData in EVENTS:
+		if event_rng.randf() < event.chance_for(biome, stop):
+			return event
+	return null
 
 
 func _apply_option(option: StopOption) -> void:
 	current_zone = option.zone
 	current_seed = option.seed
 	current_order = option.order
+	current_event = option.event
 
 
 ## Faut-il choisir sa voie à l'aiguillage avant de descendre ?
@@ -689,7 +711,9 @@ func to_save() -> Dictionary:
 			"seed": str(option.seed),
 			"order": String(option.order.data.id) if option.order else "",
 			"order_amount": option.order.amount if option.order else 0,
+			"event": String(option.event.id) if option.event else "",
 		}),
+		"event": String(current_event.id) if current_event else "",
 	}
 
 
@@ -766,9 +790,11 @@ func load_save(data: Dictionary) -> bool:
 			continue
 		var option_order_data: OrderData = CaptainOrders.find(StringName(entry.get("order", "")))
 		route_options.append(StopOption.new(option_zone, str(entry.get("seed", "0")).to_int(),
-			CaptainOrders.Order.new(option_order_data, int(entry.get("order_amount", 0))) if option_order_data else null))
+			CaptainOrders.Order.new(option_order_data, int(entry.get("order_amount", 0))) if option_order_data else null,
+			_find_by_id(EVENTS, entry.get("event", ""))))
+	current_event = _find_by_id(EVENTS, data.get("event", ""))
 	if route_options.is_empty() and current_zone and current_refuge == null:
-		route_options.append(StopOption.new(current_zone, current_seed, current_order))
+		route_options.append(StopOption.new(current_zone, current_seed, current_order, current_event))
 	storage_changed.emit()
 	crew_changed.emit()
 	equipment_changed.emit()

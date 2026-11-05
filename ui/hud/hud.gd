@@ -47,6 +47,8 @@ var _interactor: Interactor
 var _session: StopSession
 var _bag_label: Label
 var _bag_bar: StageBar
+## Météo (pluie infectée) : compte à rebours et abri, sous l'infection.
+var _weather_label: Label
 var _loot_grid: GridContainer
 var _extras: VBoxContainer
 var _shown_plans: Array[StringName] = []
@@ -67,6 +69,12 @@ func _ready() -> void:
 	var bar := EquipmentBar.new()
 	bar.name = "EquipmentBar"
 	%HealthBar.get_parent().add_child(bar)
+	_weather_label = Label.new()
+	_weather_label.name = "WeatherLabel"
+	_weather_label.visible = false
+	_zone_warning.get_parent().add_child(_weather_label)
+	_zone_warning.get_parent().move_child(_weather_label, _zone_warning.get_index() + 1)
+	_outline_labels(_weather_label.get_parent())
 
 
 ## Une ombre portée noire sous tous les textes : lisibles sur n'importe quel décor,
@@ -157,6 +165,13 @@ func _refresh_order() -> void:
 	var color: Color = INK_DONE if done else INK
 	_order_text.add_theme_color_override(&"font_color", color)
 	_order_progress.add_theme_color_override(&"font_color", color)
+
+
+## Ligne météo (pluie infectée) : vide = cachée. `alarm` : en violet vif (à découvert).
+func set_weather(text: String, alarm: bool) -> void:
+	_weather_label.visible = not text.is_empty()
+	_weather_label.text = text
+	_weather_label.add_theme_color_override(&"font_color", Color(0.85, 0.55, 1.0) if alarm else Color(0.8, 0.8, 0.85))
 
 
 ## Message court au-dessus du jeu (vol, butin récupéré...). `bad` : en rouge.

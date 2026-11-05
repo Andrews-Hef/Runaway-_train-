@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EventData" format=3]
+
+[ext_resource type="Script" path="res://core/event_data.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"infected_rain"
+display_name = "Pluie infectée"
+forecast_text = "Pluie infectée annoncée"
+description = "Une pluie chargée de spores. À découvert, l'infection monte ; elle fait pousser la ruche et sortir les infectés. Abrite-toi contre un bâtiment, un conteneur ou le train."
+chances = Dictionary[StringName, float]({
+&"countryside": 0.15,
+&"marsh": 0.4,
+&"city": 0.2,
+&"industrial": 0.25
+})
+min_stop = 3

@@ -30,6 +30,17 @@ const SCENES: Dictionary[StringName, PackedScene] = {
 const ENEMY_SCENE: PackedScene = preload("res://entities/enemy/enemy.tscn")
 ## Biome des zones qui n'en déclarent pas (zone de test).
 const DEFAULT_BIOME: BiomeData = preload("res://data/biomes/countryside.tres")
+## Ce qui abrite de la pluie (nom de la scène -> rayon autour, en px).
+const COVER_RADII: Dictionary[String, float] = {
+	"house_ruin": 48.0,
+	"building_ruin": 58.0,
+	"shelter": 40.0,
+	"cart": 34.0,
+	"truck_wreck": 40.0,
+	"container": 40.0,
+}
+## Abri du train : autour de la porte, sous l'auvent.
+const TRAIN_COVER_RADIUS: float = 56.0
 ## Chance de trouver un plan en fouillant une caisse.
 const CACHE_PLAN_CHANCE: float = 0.2
 const GROUND_SOURCE_ID: int = 0
@@ -38,6 +49,8 @@ const GROUND_SOURCE_ID: int = 0
 @export var zone_override: ZoneProfile
 ## Graine forcée pour reproduire une zone (0 = celle de GameState).
 @export var seed_override: int = 0
+## Événement forcé pour tester (pluie infectée...). Vide = celui de GameState.
+@export var event_override: EventData
 
 @onready var _ground: InfectionGround = $Ground
 @onready var _world: Node2D = $World
@@ -54,6 +67,13 @@ var zone: ZoneProfile
 var biome: BiomeData
 ## Règle du biome (eau, froid, flaques, alarmes).
 var rules: BiomeRules
+## Pluie infectée de cet arrêt (null s'il n'y en a pas).
+var rain: InfectedRain
+var _rain_weather: Weather
+## Abris contre la pluie : position -> rayon (maisons, immeubles, abris, charrette...).
+var _covers: Array[Vector3] = []
+var _rain_rng: RandomNumberGenerator = RandomNumberGenerator.new()
+var _rain_seconds_shown: int = -1
 
 ## Hasard des rencontres (gains aléatoires, prénoms, infection cachée).
 var _encounter_rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -86,6 +106,7 @@ func _ready() -> void:
 	_build_bounds()
 	_setup_camera()
 	_wire_systems()
+	_setup_event()
 	_session.start(layout.stop_duration)
 
 
@@ -105,8 +126,13 @@ func _apply_biome() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if rules and _session.is_running():
+	if not _session.is_running():
+		return
+	if rules:
 		rules.tick(delta, layout.is_hazard_at(_player.global_position))
+	if rain:
+		rain.tick(delta, is_sheltered(_player.global_position))
+		_show_rain_time()
 
 
 func _refresh_speed() -> void:
@@ -158,6 +184,9 @@ func _apply_layout() -> void:
 		var node := scene.instantiate() as Node2D
 		node.position = spawn.position
 		_world.add_child(node)
+		var cover: float = COVER_RADII.get(node.scene_file_path.get_file().get_basename(), 0.0)
+		if cover > 0.0:
+			_covers.append(Vector3(spawn.position.x, spawn.position.y, cover))
 		if node is Harvestable:
 			_connect_harvestable(node as Harvestable, spawn.kind)
 		elif node is EncounterSpot:
@@ -209,6 +238,125 @@ func _setup_camera() -> void:
 	_camera.reset_smoothing()
 
 
+# --- Pluie infectée -----------------------------------------------------------------
+
+func _setup_event() -> void:
+	var event: EventData = event_override if event_override else GameState.current_event
+	if event == null or event.id != &"infected_rain":
+		return
+	_rain_rng.seed = (seed_override if seed_override != 0 else GameState.current_seed) + 21
+	rain = InfectedRain.new()
+	rain.name = "InfectedRain"
+	add_child(rain)
+	rain.setup(event, layout.stop_duration, _rain_rng)
+	_rain_weather = Weather.make(&"infected_rain")
+	add_child(_rain_weather)
+	rain.warned.connect(_on_rain_warned)
+	rain.started.connect(_on_rain_started)
+	rain.ended.connect(_on_rain_ended)
+	rain.exposed.connect(func(amount: float) -> void: _player.exposure.add(amount))
+	rain.shelter_changed.connect(func(_sheltered: bool) -> void: _show_rain_time(true))
+
+
+## À l'abri de la pluie ? Contre un bâtiment, un abri, la charrette, un conteneur, le train.
+func is_sheltered(at: Vector2) -> bool:
+	if at.distance_to(_train.global_position + _train.door.position) <= TRAIN_COVER_RADIUS:
+		return true
+	for cover: Vector3 in _covers:
+		if at.distance_to(Vector2(cover.x, cover.y)) <= cover.z:
+			return true
+	return false
+
+
+func _on_rain_warned(seconds: float) -> void:
+	_rain_weather.set_rain(0.4, 3.0)
+	_hud.call(&"toast", "Le ciel se couvre : une pluie infectée arrive ! Trouve un abri.", true)
+	_show_rain_time(true)
+
+
+func _on_rain_started(_duration: float) -> void:
+	_rain_weather.set_rain(1.0, 1.0)
+	_spawn_rain_infected()
+	_show_rain_time(true)
+
+
+func _on_rain_ended() -> void:
+	_rain_weather.set_rain(0.0, 3.0)
+	var grown: int = _grow_sprouts()
+	_hud.call(&"set_weather", "", false)
+	if grown > 0:
+		_hud.call(&"toast", "La pluie cesse. Des plantes infectées ont poussé.", false)
+
+
+## Compte à rebours du HUD : « Pluie dans 8 s », puis « Pluie 0:35 · à découvert ! ».
+func _show_rain_time(force: bool = false) -> void:
+	if rain == null:
+		return
+	var seconds: int = ceili(rain.time_left)
+	if seconds == _rain_seconds_shown and not force:
+		return
+	_rain_seconds_shown = seconds
+	match rain.phase:
+		InfectedRain.Phase.WARNING:
+			_hud.call(&"set_weather", "Pluie dans %d s" % seconds, true)
+		InfectedRain.Phase.RAINING:
+			var sheltered: bool = is_sheltered(_player.global_position)
+			_hud.call(&"set_weather", "Pluie %d:%02d · %s" % [seconds / 60, seconds % 60,
+				"à l'abri" if sheltered else "à découvert !"], not sheltered)
+
+
+## Des infectés sortent sous la pluie, dans les zones violettes, loin du joueur.
+func _spawn_rain_infected() -> void:
+	var infected: EnemyData = EnemyCatalog.get_enemy(&"infected")
+	var count: int = _rain_rng.randi_range(rain.event.extra_infected.x, rain.event.extra_infected.y)
+	for at: Vector2 in _infected_spots(count, ZoneGenerator.ENEMY_SAFE_RADIUS):
+		_spawn_enemy(infected, at)
+
+
+## La pluie fait pousser des plantes infectées. Renvoie combien ont poussé.
+func _grow_sprouts() -> int:
+	var count: int = _rain_rng.randi_range(rain.event.sprouts.x, rain.event.sprouts.y)
+	var spots: Array[Vector2] = _infected_spots(count, 24.0)
+	for at: Vector2 in spots:
+		var herb := SCENES[&"infected_herb"].instantiate() as Node2D
+		herb.position = at
+		_world.add_child(herb)
+		if herb is Harvestable:
+			_connect_harvestable(herb as Harvestable, &"infected_herb")
+	return spots.size()
+
+
+## Jusqu'à `count` points au centre de tuiles infectées, à `min_distance` px au moins
+## du joueur et à 18 px des autres objets.
+func _infected_spots(count: int, min_distance: float) -> Array[Vector2]:
+	var cells: Array[Vector2] = []
+	var size: Vector2i = layout.size_in_tiles
+	for y: int in size.y:
+		for x: int in size.x:
+			if layout.tile_at(Vector2i(x, y)) == ZoneGenerator.Tile.INFECTED:
+				cells.append((Vector2(x, y) + Vector2(0.5, 0.5)) * ZoneGenerator.TILE_SIZE)
+	var taken: Array[Vector2] = []
+	for child: Node in _world.get_children():
+		if child is Node2D:
+			taken.append((child as Node2D).global_position)
+	var spots: Array[Vector2] = []
+	var attempts: int = 0
+	while spots.size() < count and attempts < 200 and not cells.is_empty():
+		attempts += 1
+		var at: Vector2 = cells[_rain_rng.randi_range(0, cells.size() - 1)]
+		if at.distance_to(_player.global_position) < min_distance:
+			continue
+		var free: bool = true
+		for other: Vector2 in taken:
+			if at.distance_to(other) < 18.0:
+				free = false
+				break
+		if free:
+			spots.append(at)
+			taken.append(at)
+	return spots
+
+
 # --- Branchement des systèmes ----------------------------------------------------
 
 func _wire_systems() -> void:
@@ -257,8 +405,11 @@ func _wire_systems() -> void:
 	_session.ended.connect(_on_session_ended)
 	_hud.call(&"bind", _session, _player, GameState.LOOT_TYPES)
 	_hud.call(&"show_order", GameState.current_order)
-	_hud.call(&"announce_zone", GameState.stop_number, zone.display_name,
-		"%s · %s" % [biome.display_name, biome.rule_text] if not biome.rule_text.is_empty() else "")
+	var subtitle: String = "%s · %s" % [biome.display_name, biome.rule_text] if not biome.rule_text.is_empty() else ""
+	var event: EventData = event_override if event_override else GameState.current_event
+	if event:
+		subtitle = (subtitle + " · " if not subtitle.is_empty() else "") + event.forecast_text
+	_hud.call(&"announce_zone", GameState.stop_number, zone.display_name, subtitle)
 	_dialog.connect(&"choice_selected", _on_choice_selected)
 	_dialog.connect(&"closed", _on_dialog_closed)
 	_result_screen.connect(&"continue_requested", _continue_journey)

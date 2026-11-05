@@ -17,6 +17,7 @@ Un **voyage** d'arrêt en arrêt :
   - Zone industrielle : les **flaques toxiques** brûlent, sauf avec la combinaison étanche.
 - **Aiguillage** : avant chaque arrêt (sauf le premier et les gares), le levier de la cabine propose **2 voies**. Chacune montre son type d'arrêt, sa **spécialité** (ce qu'on y trouve), son danger et l'ordre du capitaine. Chaque région a 3 types d'arrêt (ex. en ville : Boulevard, Quartier résidentiel, Hôpital abandonné).
 - **Arrêt** : chaque zone est **générée au hasard** à partir de son type d'arrêt. Le premier arrêt est toujours une plaine.
+- **Pluie infectée** (événement) : prévue sur la carte de sa voie à l'aiguillage (« Météo : pluie infectée annoncée »), surtout au marais, jamais en toundra ni avant l'arrêt n°3. En zone : le ciel se couvre, alerte 8 s avant, puis 30 à 45 s de pluie violette. **À découvert, l'infection monte** (moins avec masque et tenue) ; contre une maison, un immeuble, un abri, la charrette, un conteneur ou le train, on est **à l'abri**. La pluie fait sortir des infectés et **pousser des plantes infectées**.
 - **Points d'intérêt** dans les zones : **village abandonné** (maisons en ruine, caisses à fouiller), **refuge** avec un survivant à **recruter**, **marchand ambulant** pour **échanger**, et petites rencontres (sac abandonné, armoire à forcer).
 - **Gare refuge** (arrêts n°5, 10, 15…) : une ville fortifiée sur la ligne, **zone sûre** sans infection ni chrono. **Comptoir** pour échanger le surplus du stock, **bureau de quarantaine** pour recruter des survivants sains, **dépôt** pour renforcer la locomotive. On repart en remontant à bord.
 - **Retour à bord** : le butin et les recrues rejoignent le train et on repart vers l'arrêt suivant.
@@ -144,6 +145,8 @@ Le forçage est ignoré dans un build release.
 | `ZoneProfile` | `core/zone_profile.gd` | Type d'arrêt : biome, spécialité, fourchettes d'objets, d'infection, de sol piégeux, de durée (`data/zones/*.tres`) |
 | `BiomeData` | `core/biome_data.gd` | Biome d'une région : sol, lumière, météo, règle, décors propres (`data/biomes/*.tres`) |
 | `BiomeRules` | `levels/stop_zone/biome_rules.gd` | Règle du biome pendant un arrêt : eau, froid, glace, flaques toxiques, alarmes |
+| `EventData` | `core/event_data.gd` | Événement d'arrêt (`data/events/*.tres`) : chance par biome, déroulé, effets ; tiré pour chaque voie de l'aiguillage |
+| `InfectedRain` | `levels/stop_zone/infected_rain.gd` | Déroulé de la pluie infectée : alerte, pluie, fin, exposition à découvert |
 | `ZoneGenerator` | `levels/zone_generator.gd` | Génération pure d'un plan de zone : même profil + même graine = même zone |
 | `EncounterData` / `EncounterChoice` | `core/` | Une rencontre et ses choix (coût, gain, recrutement, exposition), en `.tres` dans `data/encounters/` |
 | `EncounterResolver` | `core/encounter_resolver.gd` | Applique un choix au butin de la sortie (pur, testable) |
