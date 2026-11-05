@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="BiomeData" format=3]
+
+[ext_resource type="Script" path="res://core/biome_data.gd" id="1_biome"]
+[ext_resource type="Texture2D" path="res://assets/tiles/ground_marsh.png" id="2_atlas"]
+[ext_resource type="PackedScene" path="res://props/reeds/reeds.tscn" id="3_scene"]
+
+[resource]
+script = ExtResource("1_biome")
+id = &"marsh"
+display_name = "Marais infecté"
+description = "Eau noire, roseaux, brume de spores : la ruche pousse bien dans l'humidité."
+rule = 1
+rule_text = "L'eau stagnante ralentit."
+ground_atlas = ExtResource("2_atlas")
+ambient = Color(0.86, 0.94, 0.86, 1)
+weather = &"spores"
+scenes = Dictionary[StringName, PackedScene]({
+&"herb": ExtResource("3_scene")
+})

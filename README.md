@@ -10,7 +10,13 @@ Un **voyage** d'arrêt en arrêt :
 
 - **Trajet** : le train roule, le décor défile. On voit le stock du train et le prochain arrêt.
 - **Dans le train** (vue de dessus, toit retiré) : tu marches de wagon en wagon par les passerelles. **Coffre** du stock, **établi** de l'atelier (fabriquer de l'équipement), **casier** (s'équiper), **couchettes** du dortoir (l'équipage), **table du capitaine** (construire des voitures, renforcer la locomotive) et le **levier** de la cabine pour descendre au prochain arrêt. La voie défile sous le train : on la voit entre les wagons, aux deux bouts et au bas de l'écran.
-- **Arrêt** : chaque zone est **générée au hasard** à partir d'un type de zone (plaine, forêt morte, casse automobile, terres contaminées). Le premier arrêt est toujours une plaine.
+- **Régions** : la ligne traverse 5 biomes, un par tronçon entre deux gares refuges : **Campagne** (arrêts 1 à 5) → **Marais infecté** → **Ville en ruine** → **Zone industrielle** → **Toundra gelée**, puis la ligne repart. Chaque biome a son sol, ses décors, son ambiance et **une règle** :
+  - Marais : l'eau stagnante **ralentit**.
+  - Toundra : le **froid** fait perdre 1 PV toutes les 15 s sans tenue chaude (veste rembourrée), et la **glace** fait glisser.
+  - Ville : fouiller une voiture peut déclencher une **alarme** qui attire les ennemis.
+  - Zone industrielle : les **flaques toxiques** brûlent, sauf avec la combinaison étanche.
+- **Aiguillage** : avant chaque arrêt (sauf le premier et les gares), le levier de la cabine propose **2 voies**. Chacune montre son type d'arrêt, sa **spécialité** (ce qu'on y trouve), son danger et l'ordre du capitaine. Chaque région a 3 types d'arrêt (ex. en ville : Boulevard, Quartier résidentiel, Hôpital abandonné).
+- **Arrêt** : chaque zone est **générée au hasard** à partir de son type d'arrêt. Le premier arrêt est toujours une plaine.
 - **Points d'intérêt** dans les zones : **village abandonné** (maisons en ruine, caisses à fouiller), **refuge** avec un survivant à **recruter**, **marchand ambulant** pour **échanger**, et petites rencontres (sac abandonné, armoire à forcer).
 - **Gare refuge** (arrêts n°5, 10, 15…) : une ville fortifiée sur la ligne, **zone sûre** sans infection ni chrono. **Comptoir** pour échanger le surplus du stock, **bureau de quarantaine** pour recruter des survivants sains, **dépôt** pour renforcer la locomotive. On repart en remontant à bord.
 - **Retour à bord** : le butin et les recrues rejoignent le train et on repart vers l'arrêt suivant.
@@ -135,7 +141,9 @@ Le forçage est ignoré dans un build release.
 | `Train` | `entities/train/` | Train vu de dehors : sifflet, départ, porte, nombre de wagons |
 | `InputMode` (autoload) | `core/input_mode.gd` | Dernier périphérique utilisé (clavier, manette, tactile) |
 | `GameState` (autoload) | `core/game_state.gd` | Partie en cours : numéro d'arrêt, prochaine zone et graine, stock du train |
-| `ZoneProfile` | `core/zone_profile.gd` | Type de zone : fourchettes d'objets, d'infection, de durée (`data/zones/*.tres`) |
+| `ZoneProfile` | `core/zone_profile.gd` | Type d'arrêt : biome, spécialité, fourchettes d'objets, d'infection, de sol piégeux, de durée (`data/zones/*.tres`) |
+| `BiomeData` | `core/biome_data.gd` | Biome d'une région : sol, lumière, météo, règle, décors propres (`data/biomes/*.tres`) |
+| `BiomeRules` | `levels/stop_zone/biome_rules.gd` | Règle du biome pendant un arrêt : eau, froid, glace, flaques toxiques, alarmes |
 | `ZoneGenerator` | `levels/zone_generator.gd` | Génération pure d'un plan de zone : même profil + même graine = même zone |
 | `EncounterData` / `EncounterChoice` | `core/` | Une rencontre et ses choix (coût, gain, recrutement, exposition), en `.tres` dans `data/encounters/` |
 | `EncounterResolver` | `core/encounter_resolver.gd` | Applique un choix au butin de la sortie (pur, testable) |
@@ -178,7 +186,9 @@ Le forçage est ignoré dans un build release.
 
 **Ajouter une gare refuge** : créer un `RefugeData` dans `data/refuges/` (nom, texte, échanges, recrues), puis l'ajouter à `REFUGES` dans `core/game_state.gd`. Les gares se succèdent dans l'ordre de la liste, puis on recommence. Le rythme (une gare tous les 5 arrêts) est `REFUGE_EVERY`.
 
-**Ajouter un type de zone** : dupliquer un fichier de `data/zones/`, régler ses fourchettes dans l'inspecteur, puis l'ajouter à `ZONES` dans `core/game_state.gd`. Aucun autre code à toucher.
+**Ajouter un type d'arrêt** : dupliquer un fichier de `data/zones/`, choisir son biome, écrire sa spécialité, régler ses fourchettes (objets, nappes de sol piégeux, `extras` comme les fûts), puis l'ajouter à `ZONES` dans `core/game_state.gd`. Aucun autre code à toucher.
+
+**Ajouter un biome** : créer un `BiomeData` dans `data/biomes/` (sol généré par `tools/gen_placeholders.py`, lumière, météo, règle, décors qui remplacent ceux de la campagne), l'ajouter à `REGIONS` dans `core/game_state.gd`, puis lui donner au moins 3 types d'arrêt.
 
 ```
 art/         définitions des sprites td2d (JSON), voir art/README.md

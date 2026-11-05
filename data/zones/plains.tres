@@ -1,11 +1,14 @@
 [gd_resource type="Resource" script_class="ZoneProfile" format=3]
 
 [ext_resource type="Script" path="res://core/zone_profile.gd" id="1_g3wbo"]
+[ext_resource type="Resource" path="res://data/biomes/countryside.tres" id="2_biome"]
 
 [resource]
 script = ExtResource("1_g3wbo")
 id = &"plains"
 display_name = "Plaine abandonnée"
+biome = ExtResource("2_biome")
+specialty = "Calme · villages, survivants, marchands"
 description = "Des champs à l'abandon et quelques voitures sur le bas-côté. Calme, en apparence."
 stop_duration = Vector2(85, 100)
 infected_radius = Vector2(3, 5)

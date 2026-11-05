@@ -9,6 +9,11 @@ extends Resource
 @export var id: StringName
 @export var display_name: String
 @export_multiline var description: String
+## Biome (région) auquel ce type d'arrêt appartient : sol, décors, règle.
+@export var biome: BiomeData
+## Ce qu'on vient y chercher, en quelques mots : affiché sur l'aiguillage pour choisir
+## son arrêt (ex. « Médicaments · beaucoup d'infectés »).
+@export var specialty: String
 ## Chance relative d'être tirée comme prochain arrêt.
 @export var weight: float = 1.0
 @export var size_in_tiles: Vector2i = Vector2i(48, 28)
@@ -22,6 +27,10 @@ extends Resource
 @export var infected_patches: Vector2i = Vector2i(1, 2)
 ## Rayon d'une zone infectée, en tuiles (min, max).
 @export var infected_radius: Vector2 = Vector2(3.0, 6.0)
+## Nappes de sol piégeux du biome (eau, glace, flaque toxique), (min, max).
+@export var hazard_patches: Vector2i = Vector2i.ZERO
+## Rayon d'une nappe de sol piégeux, en tuiles (min, max).
+@export var hazard_radius: Vector2 = Vector2(2.0, 4.0)
 
 @export_group("Objets (min, max)")
 @export var wrecks: Vector2i = Vector2i(3, 5)
@@ -50,6 +59,9 @@ extends Resource
 
 ## Épaves de camion (il faut un chalumeau), (min, max).
 @export var heavy_wrecks: Vector2i = Vector2i(0, 1)
+## Objets propres à certains arrêts (id du générateur -> (min, max)) : &"barrel" (fûts
+## chimiques), &"cache" (caisses à fouiller hors des villages).
+@export var extras: Dictionary[StringName, Vector2i] = {}
 
 
 ## Fourchette (min, max) du nombre d'objets d'un type.
@@ -68,4 +80,24 @@ func count_range(kind: StringName) -> Vector2i:
 		&"infected_herb":
 			return infected_herbs
 		_:
+			if extras.has(kind):
+				return extras[kind]
 			return enemies.get(kind, Vector2i.ZERO)
+
+
+## Nombre moyen d'ennemis attendus à cet arrêt (ceux déjà apparus à ce numéro d'arrêt).
+func expected_enemies(stop_number: int) -> float:
+	var total: float = 0.0
+	for id: StringName in enemies:
+		var enemy: EnemyData = EnemyCatalog.get_enemy(id)
+		if enemy and stop_number >= enemy.min_stop:
+			total += (enemies[id].x + enemies[id].y) / 2.0
+	return total
+
+
+## Danger affiché sur l'aiguillage : 0 faible, 1 moyen, 2 élevé.
+func danger(stop_number: int) -> int:
+	var expected: float = expected_enemies(stop_number)
+	if expected >= 5.0:
+		return 2
+	return 1 if expected >= 3.0 else 0

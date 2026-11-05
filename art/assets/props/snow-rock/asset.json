@@ -1,0 +1,124 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/snow-rock",
+  "type": "prop",
+  "description": "Rocher couvert de neige.",
+  "frame": {
+    "width": 28,
+    "height": 26
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "main",
+        "material": "stone",
+        "size": [
+          0.9,
+          0.6,
+          0.8
+        ],
+        "position": [
+          0,
+          0.3,
+          0
+        ],
+        "rotation": [
+          8,
+          25,
+          6
+        ]
+      },
+      {
+        "type": "box",
+        "id": "top",
+        "material": "stone",
+        "size": [
+          0.55,
+          0.35,
+          0.5
+        ],
+        "position": [
+          -0.1,
+          0.65,
+          0.05
+        ],
+        "rotation": [
+          -10,
+          50,
+          12
+        ]
+      },
+      {
+        "type": "box",
+        "id": "side",
+        "material": "stone",
+        "size": [
+          0.45,
+          0.3,
+          0.45
+        ],
+        "position": [
+          0.45,
+          0.15,
+          0.15
+        ],
+        "rotation": [
+          0,
+          15,
+          -8
+        ]
+      },
+      {
+        "type": "box",
+        "id": "snow-main",
+        "material": "snow",
+        "size": [
+          0.82,
+          0.12,
+          0.7
+        ],
+        "position": [
+          0.02,
+          0.62,
+          -0.02
+        ],
+        "rotation": [
+          6,
+          25,
+          4
+        ]
+      },
+      {
+        "type": "box",
+        "id": "snow-top",
+        "material": "snow",
+        "size": [
+          0.5,
+          0.1,
+          0.44
+        ],
+        "position": [
+          -0.1,
+          0.86,
+          0.03
+        ],
+        "rotation": [
+          -8,
+          50,
+          10
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

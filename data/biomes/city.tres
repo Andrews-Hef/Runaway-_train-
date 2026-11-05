@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="BiomeData" format=3]
+
+[ext_resource type="Script" path="res://core/biome_data.gd" id="1_biome"]
+[ext_resource type="Texture2D" path="res://assets/tiles/ground_city.png" id="2_atlas"]
+[ext_resource type="PackedScene" path="res://props/car/car.tscn" id="3_scene"]
+[ext_resource type="PackedScene" path="res://props/building_ruin/building_ruin.tscn" id="4_scene"]
+
+[resource]
+script = ExtResource("1_biome")
+id = &"city"
+display_name = "Ville en ruine"
+description = "Rues désertes, immeubles éventrés, voitures abandonnées : les pilleurs y ont leurs habitudes."
+rule = 3
+rule_text = "Fouiller une voiture peut déclencher une alarme."
+ground_atlas = ExtResource("2_atlas")
+ambient = Color(0.95, 0.95, 0.98, 1)
+weather = &""
+scenes = Dictionary[StringName, PackedScene]({
+&"wreck": ExtResource("3_scene"),
+&"house": ExtResource("4_scene")
+})

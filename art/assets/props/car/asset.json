@@ -1,0 +1,228 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/car",
+  "type": "prop",
+  "description": "Voiture abandonnee en ville, peinture bleue passee, petit feu d'alarme orange.",
+  "frame": {
+    "width": 72,
+    "height": 48
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "group",
+        "id": "car",
+        "rotation": [
+          0,
+          0,
+          -2
+        ],
+        "parts": [
+          {
+            "type": "box",
+            "id": "body",
+            "material": "car-paint",
+            "size": [
+              3.6,
+              0.7,
+              1.7
+            ],
+            "position": [
+              0,
+              0.6,
+              0
+            ]
+          },
+          {
+            "type": "box",
+            "id": "hood",
+            "material": "car-paint-light",
+            "size": [
+              1.0,
+              0.08,
+              1.6
+            ],
+            "position": [
+              1.25,
+              0.98,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -4
+            ]
+          },
+          {
+            "type": "box",
+            "id": "cabin",
+            "material": "glass",
+            "size": [
+              1.8,
+              0.55,
+              1.5
+            ],
+            "position": [
+              -0.3,
+              1.22,
+              0
+            ]
+          },
+          {
+            "type": "box",
+            "id": "roof",
+            "material": "car-paint",
+            "size": [
+              1.7,
+              0.1,
+              1.45
+            ],
+            "position": [
+              -0.3,
+              1.52,
+              0
+            ]
+          },
+          {
+            "type": "box",
+            "id": "bumper",
+            "material": "steel",
+            "size": [
+              0.12,
+              0.2,
+              1.6
+            ],
+            "position": [
+              1.82,
+              0.45,
+              0
+            ]
+          },
+          {
+            "type": "box",
+            "id": "rear-bumper",
+            "material": "steel",
+            "size": [
+              0.12,
+              0.2,
+              1.6
+            ],
+            "position": [
+              -1.82,
+              0.45,
+              0
+            ]
+          },
+          {
+            "type": "box",
+            "id": "alarm",
+            "material": "alarm-orange",
+            "size": [
+              0.18,
+              0.1,
+              0.18
+            ],
+            "position": [
+              0.45,
+              1.04,
+              0.5
+            ]
+          },
+          {
+            "type": "box",
+            "id": "rust-patch",
+            "material": "rust",
+            "size": [
+              0.7,
+              0.3,
+              0.05
+            ],
+            "position": [
+              -0.9,
+              0.55,
+              0.86
+            ]
+          },
+          {
+            "type": "cylinder",
+            "id": "wheel-fl",
+            "material": "dark",
+            "radius": 0.33,
+            "height": 0.25,
+            "position": [
+              1.15,
+              0.36,
+              0.8
+            ],
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          },
+          {
+            "type": "cylinder",
+            "id": "wheel-rl",
+            "material": "dark",
+            "radius": 0.33,
+            "height": 0.25,
+            "position": [
+              -1.15,
+              0.36,
+              0.8
+            ],
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          },
+          {
+            "type": "cylinder",
+            "id": "wheel-fr",
+            "material": "dark",
+            "radius": 0.33,
+            "height": 0.25,
+            "position": [
+              1.15,
+              0.36,
+              -0.8
+            ],
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          },
+          {
+            "type": "cylinder",
+            "id": "wheel-rr",
+            "material": "dark",
+            "radius": 0.33,
+            "height": 0.25,
+            "position": [
+              -1.15,
+              0.36,
+              -0.8
+            ],
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

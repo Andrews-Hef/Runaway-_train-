@@ -1,0 +1,120 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/snow-pine",
+  "type": "prop",
+  "description": "Sapin aux aiguilles sombres, neige sur chaque etage. Donne du bois.",
+  "frame": {
+    "width": 40,
+    "height": 64
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "id": "trunk",
+        "material": "dead-wood",
+        "radius": 0.15,
+        "height": 2.6,
+        "position": [
+          0,
+          1.3,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "snow-base",
+        "material": "snow",
+        "radius": 0.55,
+        "height": 0.08,
+        "position": [
+          0,
+          0.04,
+          0
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "needles-0",
+        "material": "pine",
+        "radius": 0.95,
+        "height": 0.9,
+        "position": [
+          0,
+          1.45,
+          0
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "snow-0",
+        "material": "snow",
+        "radius": 0.76,
+        "height": 0.49500000000000005,
+        "position": [
+          0.04,
+          1.558,
+          -0.03
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "needles-1",
+        "material": "pine",
+        "radius": 0.72,
+        "height": 0.8,
+        "position": [
+          0,
+          2.0,
+          0
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "snow-1",
+        "material": "snow",
+        "radius": 0.576,
+        "height": 0.44000000000000006,
+        "position": [
+          0.04,
+          2.096,
+          -0.03
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "needles-2",
+        "material": "pine",
+        "radius": 0.48,
+        "height": 0.75,
+        "position": [
+          0,
+          2.575,
+          0
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "snow-2",
+        "material": "snow",
+        "radius": 0.384,
+        "height": 0.41250000000000003,
+        "position": [
+          0.04,
+          2.665,
+          -0.03
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

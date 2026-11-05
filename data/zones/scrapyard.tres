@@ -1,11 +1,14 @@
 [gd_resource type="Resource" script_class="ZoneProfile" format=3]
 
 [ext_resource type="Script" path="res://core/zone_profile.gd" id="1_xdmx2"]
+[ext_resource type="Resource" path="res://data/biomes/countryside.tres" id="2_biome"]
 
 [resource]
 script = ExtResource("1_xdmx2")
 id = &"scrapyard"
 display_name = "Casse automobile"
+biome = ExtResource("2_biome")
+specialty = "Ferraille et pièces · pilleurs"
 description = "Un cimetière de voitures rouillées. La ferraille ne manque pas."
 weight = 0.8
 stop_duration = Vector2(90, 110)

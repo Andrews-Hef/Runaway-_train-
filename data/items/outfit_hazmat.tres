@@ -10,6 +10,7 @@ display_name = "Combinaison étanche"
 icon = ExtResource("9_icon")
 description = "Bâches et joints de caoutchouc. Chaude, mais rien ne passe."
 protection = 0.35
+resists = Array[StringName]([&"toxic"])
 recipe = Dictionary[StringName, int]({
 &"cloth": 4,
 &"parts": 2,

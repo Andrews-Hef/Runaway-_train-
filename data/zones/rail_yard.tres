@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="ZoneProfile" format=3]
+
+[ext_resource type="Script" path="res://core/zone_profile.gd" id="1_zone"]
+[ext_resource type="Resource" path="res://data/biomes/industrial.tres" id="2_biome"]
+
+[resource]
+script = ExtResource("1_zone")
+id = &"rail_yard"
+display_name = "Gare de triage"
+biome = ExtResource("2_biome")
+specialty = "Plaques de métal (chalumeau), ferraille"
+description = "Des wagons de marchandises renversés sur des voies mortes. Avec un chalumeau, une mine de plaques de métal."
+stop_duration = Vector2(85, 100)
+dirt_ratio = 0.12
+grass_variant_ratio = 0.35
+infected_patches = Vector2i(1, 2)
+infected_radius = Vector2(3, 4)
+hazard_patches = Vector2i(1, 3)
+hazard_radius = Vector2(1.5, 2.5)
+wrecks = Vector2i(5, 7)
+dead_trees = Vector2i(0, 2)
+rocks = Vector2i(3, 5)
+herbs = Vector2i(1, 3)
+infected_herbs = Vector2i(2, 4)
+village_chance = 0.0
+refuge_chance = 0.3
+merchant_chance = 0.3
+enemies = Dictionary[StringName, Vector2i]({
+&"infected": Vector2i(1, 2),
+&"raider": Vector2i(1, 2),
+&"raider_marksman": Vector2i(1, 1),
+&"raider_brute": Vector2i(0, 1)
+})
+heavy_wrecks = Vector2i(3, 4)
+extras = Dictionary[StringName, Vector2i]({
+&"barrel": Vector2i(1, 2)
+})

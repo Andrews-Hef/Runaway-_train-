@@ -58,6 +58,14 @@ func harvest_speed_for(tag: StringName) -> float:
 	return 1.0
 
 
+## Un équipement porté protège-t-il de cette règle de biome (&"cold", &"toxic") ?
+func resists(tag: StringName) -> bool:
+	for item: ItemData in equipped.values():
+		if tag in item.resists:
+			return true
+	return false
+
+
 func damage() -> int:
 	var weapon: ItemData = get_item(ItemData.Slot.WEAPON)
 	return weapon.damage if weapon else 0

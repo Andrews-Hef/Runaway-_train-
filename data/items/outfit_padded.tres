@@ -10,6 +10,7 @@ display_name = "Veste rembourrée"
 icon = ExtResource("9_icon")
 description = "Plusieurs couches de tissu cousues ensemble. Arrête un peu les spores."
 protection = 0.15
+resists = Array[StringName]([&"cold"])
 recipe = Dictionary[StringName, int]({
 &"cloth": 3,
 &"scrap": 1

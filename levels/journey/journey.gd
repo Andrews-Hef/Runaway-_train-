@@ -59,6 +59,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _paint_scenery() -> void:
+	BiomeData.apply_ground(_ground, GameState.region())
 	var rng := RandomNumberGenerator.new()
 	rng.seed = GameState.current_seed
 	_scenery.repeat_size = Vector2(STRIP_TILES * TILE_SIZE, 0.0)
@@ -100,10 +101,21 @@ func _fill_texts() -> void:
 	else:
 		_title.text = "En route"
 		_subtitle.text = "Le train file vers l'arrêt suivant."
-	_next_stop.text = "Arrêt n°%d : %s" % [GameState.stop_number, GameState.stop_name()]
-	_description.text = GameState.stop_description()
-	if GameState.current_order:
-		_description.text += "\nOrdre du capitaine : %s." % GameState.current_order.text()
+	if GameState.has_route_choice():
+		# Deux voies à l'aiguillage : on choisit dans la cabine du train.
+		var names: PackedStringArray = []
+		for option: Object in GameState.route_options:
+			var option_zone: ZoneProfile = option.get(&"zone")
+			names.append("%s (%s)" % [option_zone.display_name, option_zone.specialty])
+		_next_stop.text = "Arrêt n°%d : aiguillage en %s" % [GameState.stop_number, GameState.region().display_name]
+		_description.text = "Deux voies possibles : %s.\nChoisis la tienne au levier de la cabine." % " ou ".join(names)
+		if GameState.stop_number == GameState.region_stops().x and GameState.stop_number > 1:
+			_subtitle.text = "Nouvelle région : %s. %s" % [GameState.region().display_name, GameState.region().description]
+	else:
+		_next_stop.text = "Arrêt n°%d : %s" % [GameState.stop_number, GameState.stop_name()]
+		_description.text = GameState.stop_description()
+		if GameState.current_order:
+			_description.text += "\nOrdre du capitaine : %s." % GameState.current_order.text()
 	if not GameState.last_production.is_empty():
 		_description.text += "\nPendant le trajet, les machines du train ont produit : %s." % MenuKit.describe_amounts(GameState.last_production)
 	_storage.text = _storage_summary() + "\n" + _crew_summary()

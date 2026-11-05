@@ -110,13 +110,25 @@ func bind(session: StopSession, player: Player, loot_types: Array[LootData]) -> 
 	_on_loot_changed(session.result)
 
 
-## Affiche « Arrêt n°X : nom de la zone » quelques secondes au début de l'arrêt.
-func announce_zone(stop_number: int, zone_name: String) -> void:
+## Affiche « Arrêt n°X : nom de la zone » quelques secondes au début de l'arrêt,
+## avec en dessous le biome et sa règle (« Toundra gelée · Le froid… »).
+func announce_zone(stop_number: int, zone_name: String, subtitle: String = "") -> void:
 	_zone_title.text = "Arrêt n°%d : %s" % [stop_number, zone_name]
 	_zone_title.visible = true
 	_zone_title.modulate.a = 1.0
+	var rule_label: Label = null
+	if not subtitle.is_empty():
+		rule_label = Label.new()
+		rule_label.name = "ZoneRule"
+		rule_label.text = subtitle
+		rule_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		rule_label.add_theme_color_override(&"font_color", Color(1.0, 0.85, 0.55))
+		_zone_title.add_child(rule_label)
+		rule_label.position = Vector2(0.0, _zone_title.size.y + 2.0)
+		rule_label.size = Vector2(_zone_title.size.x, 12.0)
+		_outline_labels(_zone_title)
 	var tween := create_tween()
-	tween.tween_interval(2.5)
+	tween.tween_interval(3.5 if rule_label else 2.5)
 	tween.tween_property(_zone_title, "modulate:a", 0.0, 0.8)
 	tween.tween_callback(_zone_title.hide)
 

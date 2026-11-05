@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ZoneProfile" format=3]
+
+[ext_resource type="Script" path="res://core/zone_profile.gd" id="1_zone"]
+[ext_resource type="Resource" path="res://data/biomes/marsh.tres" id="2_biome"]
+
+[resource]
+script = ExtResource("1_zone")
+id = &"reed_beds"
+display_name = "Roselière"
+biome = ExtResource("2_biome")
+specialty = "Plantes, bois · rampants cachés"
+description = "Des roseaux plus hauts qu'un homme. On y coupe de quoi faire des remèdes, mais quelque chose rampe dessous."
+stop_duration = Vector2(80, 95)
+dirt_ratio = 0.2
+grass_variant_ratio = 0.35
+infected_patches = Vector2i(1, 2)
+infected_radius = Vector2(3, 4)
+hazard_patches = Vector2i(3, 5)
+hazard_radius = Vector2(2.0, 4.0)
+wrecks = Vector2i(0, 1)
+dead_trees = Vector2i(6, 9)
+rocks = Vector2i(1, 3)
+herbs = Vector2i(14, 18)
+infected_herbs = Vector2i(3, 5)
+village_chance = 0.15
+refuge_chance = 0.4
+merchant_chance = 0.2
+enemies = Dictionary[StringName, Vector2i]({
+&"infected": Vector2i(1, 1),
+&"infected_crawler": Vector2i(2, 3),
+&"raider_lurker": Vector2i(1, 1)
+})
+heavy_wrecks = Vector2i(0, 0)

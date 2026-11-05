@@ -33,6 +33,9 @@ const MUZZLE: Vector2 = Vector2(0.0, -14.0)
 ## Marge de portée au moment du coup (un lourd frappe large).
 const MELEE_MARGIN: float = 6.0
 const HEAVY_MARGIN: float = 10.0
+## Alarme : durée de l'alerte et portée de vue multipliée pendant ce temps.
+const ALERT_TIME: float = 8.0
+const ALERT_SIGHT: float = 3.0
 
 @export var data: EnemyData
 
@@ -55,6 +58,8 @@ var _pause: float = 0.0
 var _wander_point: Vector2
 var _aim_point: Vector2
 var _rng := RandomNumberGenerator.new()
+## Temps restant d'alerte (alarme) : il voit beaucoup plus loin et accourt.
+var _alerted: float = 0.0
 
 
 func _ready() -> void:
@@ -86,17 +91,19 @@ func think(delta: float) -> void:
 		velocity = Vector2.ZERO
 		return
 	_timer -= delta
+	_alerted = maxf(_alerted - delta, 0.0)
+	var sight: float = data.sight_range * (ALERT_SIGHT if _alerted > 0.0 else 1.0)
 	var has_target: bool = is_instance_valid(target)
 	var to_target: Vector2 = target.global_position - global_position if has_target else Vector2.ZERO
 	var distance: float = to_target.length() if has_target else INF
 	match state:
 		State.WANDER:
-			if distance <= data.sight_range:
+			if distance <= sight:
 				state = State.CHASE
 			else:
 				_wander(delta)
 		State.CHASE:
-			if distance > data.sight_range * 1.6 or global_position.distance_to(home) > data.leash_range:
+			if distance > sight * 1.6 or global_position.distance_to(home) > data.leash_range:
 				state = State.WANDER
 				_wander_point = home
 			elif data.archetype == EnemyData.Archetype.SNIPER:
@@ -229,6 +236,17 @@ func _wander(delta: float) -> void:
 
 
 # --- Réactions ----------------------------------------------------------------------
+
+## Une alarme sonne en `at` (voiture fouillée en ville) : il accourt, et voit loin
+## pendant ALERT_TIME secondes. Son point d'attache devient l'alarme.
+func alert(at: Vector2) -> void:
+	if state == State.DEAD:
+		return
+	home = at
+	_alerted = ALERT_TIME
+	if state == State.WANDER:
+		state = State.CHASE
+
 
 func _on_damaged(_amount: int, from: Vector2) -> void:
 	if health.is_dead():

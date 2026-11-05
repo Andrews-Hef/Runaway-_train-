@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="ZoneProfile" format=3]
+
+[ext_resource type="Script" path="res://core/zone_profile.gd" id="1_zone"]
+[ext_resource type="Resource" path="res://data/biomes/industrial.tres" id="2_biome"]
+
+[resource]
+script = ExtResource("1_zone")
+id = &"warehouses"
+display_name = "Entrepôts"
+biome = ExtResource("2_biome")
+specialty = "Pièces mécaniques, caisses · pilleurs"
+description = "Des conteneurs empilés et des caisses de matériel. Les pilleurs s'y servent, et s'y cachent."
+stop_duration = Vector2(85, 100)
+dirt_ratio = 0.12
+grass_variant_ratio = 0.35
+infected_patches = Vector2i(1, 2)
+infected_radius = Vector2(3, 4)
+hazard_patches = Vector2i(1, 2)
+hazard_radius = Vector2(1.5, 2.5)
+wrecks = Vector2i(2, 3)
+dead_trees = Vector2i(0, 1)
+rocks = Vector2i(6, 9)
+herbs = Vector2i(1, 2)
+infected_herbs = Vector2i(2, 3)
+village_chance = 0.0
+refuge_chance = 0.3
+merchant_chance = 0.5
+lone_events = Vector2i(1, 2)
+enemies = Dictionary[StringName, Vector2i]({
+&"raider": Vector2i(2, 3),
+&"raider_lurker": Vector2i(1, 1),
+&"raider_marksman": Vector2i(0, 1),
+&"raider_brute": Vector2i(0, 1)
+})
+heavy_wrecks = Vector2i(0, 1)
+extras = Dictionary[StringName, Vector2i]({
+&"cache": Vector2i(5, 7),
+&"barrel": Vector2i(1, 3)
+})

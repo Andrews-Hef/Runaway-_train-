@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="BiomeData" format=3]
+
+[ext_resource type="Script" path="res://core/biome_data.gd" id="1_biome"]
+[ext_resource type="Texture2D" path="res://assets/tiles/ground_industrial.png" id="2_atlas"]
+[ext_resource type="PackedScene" path="res://props/container/container.tscn" id="3_scene"]
+
+[resource]
+script = ExtResource("1_biome")
+id = &"industrial"
+display_name = "Zone industrielle"
+description = "Usines, entrepôts, gare de triage : du métal et des produits chimiques, et des flaques qui brûlent."
+rule = 4
+rule_text = "Les flaques toxiques brûlent, sauf avec une combinaison étanche."
+ground_atlas = ExtResource("2_atlas")
+ambient = Color(1.02, 1.0, 0.9, 1)
+weather = &""
+scenes = Dictionary[StringName, PackedScene]({
+&"rock": ExtResource("3_scene")
+})

@@ -1,0 +1,218 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/reeds",
+  "type": "prop",
+  "description": "Touffe de roseaux du marais, massettes brunes. Se cueille comme une plante.",
+  "frame": {
+    "width": 36,
+    "height": 32
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "group",
+        "id": "clump",
+        "scale": 1.4,
+        "parts": [
+          {
+            "type": "cylinder",
+            "id": "stem-0",
+            "material": "reed",
+            "radius": 0.045,
+            "height": 1.0,
+            "position": [
+              0,
+              0.5,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "type": "cylinder",
+            "id": "stem-1",
+            "material": "reed",
+            "radius": 0.045,
+            "height": 0.85,
+            "position": [
+              0.28,
+              0.425,
+              0.05
+            ],
+            "rotation": [
+              0,
+              0,
+              12
+            ]
+          },
+          {
+            "type": "cylinder",
+            "id": "stem-2",
+            "material": "reed",
+            "radius": 0.045,
+            "height": 0.9,
+            "position": [
+              -0.3,
+              0.45,
+              0.02
+            ],
+            "rotation": [
+              0,
+              0,
+              -14
+            ]
+          },
+          {
+            "type": "cylinder",
+            "id": "stem-3",
+            "material": "reed",
+            "radius": 0.045,
+            "height": 0.75,
+            "position": [
+              0.12,
+              0.375,
+              -0.2
+            ],
+            "rotation": [
+              0,
+              0,
+              6
+            ]
+          },
+          {
+            "type": "cylinder",
+            "id": "stem-4",
+            "material": "reed",
+            "radius": 0.045,
+            "height": 0.7,
+            "position": [
+              -0.14,
+              0.35,
+              0.2
+            ],
+            "rotation": [
+              0,
+              0,
+              -6
+            ]
+          },
+          {
+            "type": "cylinder",
+            "id": "stem-5",
+            "material": "reed",
+            "radius": 0.045,
+            "height": 0.55,
+            "position": [
+              0.42,
+              0.275,
+              -0.08
+            ],
+            "rotation": [
+              0,
+              0,
+              22
+            ]
+          },
+          {
+            "type": "cylinder",
+            "id": "stem-6",
+            "material": "reed",
+            "radius": 0.045,
+            "height": 0.6,
+            "position": [
+              -0.42,
+              0.3,
+              -0.1
+            ],
+            "rotation": [
+              0,
+              0,
+              -22
+            ]
+          },
+          {
+            "type": "cylinder",
+            "id": "stem-7",
+            "material": "reed",
+            "radius": 0.045,
+            "height": 0.5,
+            "position": [
+              0.05,
+              0.25,
+              0.25
+            ],
+            "rotation": [
+              0,
+              0,
+              3
+            ]
+          },
+          {
+            "type": "capsule",
+            "id": "cattail-0",
+            "material": "cattail",
+            "radius": 0.06,
+            "length": 0.16,
+            "position": [
+              0.0,
+              0.98,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "type": "capsule",
+            "id": "cattail-1",
+            "material": "cattail",
+            "radius": 0.06,
+            "length": 0.16,
+            "position": [
+              0.19840000000000002,
+              0.83,
+              0.05
+            ],
+            "rotation": [
+              0,
+              0,
+              12
+            ]
+          },
+          {
+            "type": "capsule",
+            "id": "cattail-2",
+            "material": "cattail",
+            "radius": 0.06,
+            "length": 0.16,
+            "position": [
+              -0.1992,
+              0.88,
+              0.02
+            ],
+            "rotation": [
+              0,
+              0,
+              -14
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

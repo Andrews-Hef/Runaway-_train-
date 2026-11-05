@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="BiomeData" format=3]
+
+[ext_resource type="Script" path="res://core/biome_data.gd" id="1_biome"]
+[ext_resource type="Texture2D" path="res://assets/tiles/ground_tundra.png" id="2_atlas"]
+[ext_resource type="PackedScene" path="res://props/snow_pine/snow_pine.tscn" id="3_scene"]
+[ext_resource type="PackedScene" path="res://props/snow_rock/snow_rock.tscn" id="4_scene"]
+
+[resource]
+script = ExtResource("1_biome")
+id = &"tundra"
+display_name = "Toundra gelée"
+description = "Neige à perte de vue, sapins morts, camps militaires abandonnés."
+rule = 2
+rule_text = "Le froid fait perdre de la vie sans tenue chaude ; la glace fait glisser."
+ground_atlas = ExtResource("2_atlas")
+ambient = Color(0.9, 0.95, 1.05, 1)
+weather = &"snow"
+scenes = Dictionary[StringName, PackedScene]({
+&"dead_tree": ExtResource("3_scene"),
+&"rock": ExtResource("4_scene")
+})

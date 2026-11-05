@@ -1,0 +1,189 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/container",
+  "type": "prop",
+  "description": "Conteneur de fret bleu, nervures sombres et taches de rouille. Obstacle.",
+  "frame": {
+    "width": 64,
+    "height": 48
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "body",
+        "material": "container-blue",
+        "size": [
+          3.0,
+          1.3,
+          1.3
+        ],
+        "position": [
+          0,
+          0.65,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rib-0",
+        "material": "container-dark",
+        "size": [
+          0.06,
+          1.24,
+          1.34
+        ],
+        "position": [
+          -1.3,
+          0.65,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rib-1",
+        "material": "container-dark",
+        "size": [
+          0.06,
+          1.24,
+          1.34
+        ],
+        "position": [
+          -0.8700000000000001,
+          0.65,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rib-2",
+        "material": "container-dark",
+        "size": [
+          0.06,
+          1.24,
+          1.34
+        ],
+        "position": [
+          -0.44000000000000006,
+          0.65,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rib-3",
+        "material": "container-dark",
+        "size": [
+          0.06,
+          1.24,
+          1.34
+        ],
+        "position": [
+          -0.010000000000000009,
+          0.65,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rib-4",
+        "material": "container-dark",
+        "size": [
+          0.06,
+          1.24,
+          1.34
+        ],
+        "position": [
+          0.41999999999999993,
+          0.65,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rib-5",
+        "material": "container-dark",
+        "size": [
+          0.06,
+          1.24,
+          1.34
+        ],
+        "position": [
+          0.8499999999999999,
+          0.65,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rib-6",
+        "material": "container-dark",
+        "size": [
+          0.06,
+          1.24,
+          1.34
+        ],
+        "position": [
+          1.28,
+          0.65,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "door",
+        "material": "container-dark",
+        "size": [
+          0.06,
+          1.2,
+          1.2
+        ],
+        "position": [
+          1.52,
+          0.65,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rust-a",
+        "material": "rust",
+        "size": [
+          0.6,
+          0.25,
+          0.04
+        ],
+        "position": [
+          -0.6,
+          0.35,
+          0.66
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rust-b",
+        "material": "rust",
+        "size": [
+          0.35,
+          0.4,
+          0.04
+        ],
+        "position": [
+          0.8,
+          0.9,
+          0.66
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

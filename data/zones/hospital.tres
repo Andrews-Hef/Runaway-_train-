@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="ZoneProfile" format=3]
+
+[ext_resource type="Script" path="res://core/zone_profile.gd" id="1_zone"]
+[ext_resource type="Resource" path="res://data/biomes/city.tres" id="2_biome"]
+
+[resource]
+script = ExtResource("1_zone")
+id = &"hospital"
+display_name = "Hôpital abandonné"
+biome = ExtResource("2_biome")
+specialty = "Médicaments · beaucoup d'infectés"
+description = "Le dernier endroit où l'on soignait encore. La ruche y a pris ses quartiers, mais les armoires sont pleines."
+stop_duration = Vector2(75, 90)
+dirt_ratio = 0.08
+grass_variant_ratio = 0.35
+infected_patches = Vector2i(3, 4)
+infected_radius = Vector2(4, 6)
+wrecks = Vector2i(2, 4)
+dead_trees = Vector2i(0, 2)
+rocks = Vector2i(2, 4)
+herbs = Vector2i(1, 3)
+infected_herbs = Vector2i(6, 9)
+village_chance = 0.6
+refuge_chance = 0.2
+merchant_chance = 0.1
+lone_events = Vector2i(2, 3)
+enemies = Dictionary[StringName, Vector2i]({
+&"infected": Vector2i(3, 4),
+&"infected_spitter": Vector2i(1, 2),
+&"infected_crawler": Vector2i(1, 2),
+&"infected_bloated": Vector2i(0, 1)
+})
+heavy_wrecks = Vector2i(0, 0)
+extras = Dictionary[StringName, Vector2i]({
+&"cache": Vector2i(2, 3)
+})

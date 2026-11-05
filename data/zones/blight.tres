@@ -1,11 +1,14 @@
 [gd_resource type="Resource" script_class="ZoneProfile" format=3]
 
 [ext_resource type="Script" path="res://core/zone_profile.gd" id="1_7b37p"]
+[ext_resource type="Resource" path="res://data/biomes/countryside.tres" id="2_biome"]
 
 [resource]
 script = ExtResource("1_7b37p")
 id = &"blight"
 display_name = "Terres contaminées"
+biome = ExtResource("2_biome")
+specialty = "Plantes infectées · beaucoup d'infectés"
 description = "La ruche a tout recouvert. Riche en plantes infectées... et dangereux."
 weight = 0.6
 stop_duration = Vector2(60, 75)

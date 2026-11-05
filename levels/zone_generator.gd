@@ -21,7 +21,8 @@ const RESERVED_RADIUS: float = 40.0
 const ENEMY_SAFE_RADIUS: float = 150.0
 
 ## Index des tuiles dans assets/tiles/ground_placeholder.png
-enum Tile { GRASS_A, GRASS_B, DIRT, INFECTED, RAILS }
+## HAZARD : sol piégeux du biome (eau du marais, glace, flaque toxique) : voir BiomeData.
+enum Tile { GRASS_A, GRASS_B, DIRT, INFECTED, RAILS, HAZARD }
 ## Où un objet a le droit d'apparaître.
 enum Placement { ANYWHERE, HEALTHY, INFECTED }
 
@@ -34,6 +35,8 @@ const RULES: Dictionary[StringName, Array] = {
 	&"rock": [Placement.ANYWHERE, 22.0],
 	&"herb": [Placement.HEALTHY, 18.0],
 	&"infected_herb": [Placement.INFECTED, 18.0],
+	&"barrel": [Placement.HEALTHY, 20.0],
+	&"cache": [Placement.HEALTHY, 30.0],
 }
 
 
@@ -92,6 +95,8 @@ class Layout:
 	var pois: Array[Poi] = []
 	## Centre et rayon (en tuiles) de chaque zone infectée.
 	var infected_patches: Array[Vector3] = []
+	## Centre et rayon (en tuiles) de chaque nappe de sol piégeux.
+	var hazard_patches: Array[Vector3] = []
 	var stop_duration: float = 90.0
 	## Position du train (pivot de la voiture de queue), en pixels.
 	var train_position: Vector2 = TRAIN_POSITION
@@ -103,6 +108,9 @@ class Layout:
 
 	func is_infected_at(world_position: Vector2) -> bool:
 		return tile_at(Vector2i((world_position / TILE_SIZE).floor())) == Tile.INFECTED
+
+	func is_hazard_at(world_position: Vector2) -> bool:
+		return tile_at(Vector2i((world_position / TILE_SIZE).floor())) == Tile.HAZARD
 
 	func count(kind: StringName) -> int:
 		var total: int = 0
@@ -139,6 +147,7 @@ static func generate(profile: ZoneProfile, zone_seed: int, reserved: Array[Vecto
 
 	_place_pois(layout, profile, rng)
 	_place_infected_patches(layout, profile, rng, reserved)
+	_place_hazard_patches(layout, profile, rng, reserved)
 	_paint_tiles(layout, profile, rng, reserved)
 	_fill_pois(layout, rng)
 
@@ -147,6 +156,8 @@ static func generate(profile: ZoneProfile, zone_seed: int, reserved: Array[Vecto
 		occupied.append(spawn.position)
 	for kind: StringName in RULES:
 		var range_: Vector2i = profile.count_range(kind)
+		if range_ == Vector2i.ZERO:
+			continue
 		var wanted: int = rng.randi_range(range_.x, range_.y)
 		_scatter(layout, kind, wanted, rng, occupied, reserved)
 	# Les ennemis en dernier : le décor d'une graine ne change pas quand on règle les ennemis.
@@ -250,6 +261,33 @@ static func _pick_encounter(pool_kind: StringName, rng: RandomNumberGenerator) -
 
 # --- Sol --------------------------------------------------------------------------
 
+## Nappes de sol piégeux : hors des points d'intérêt, du joueur et des zones infectées.
+## Leur propre hasard : ajouter des nappes ne change pas le reste d'une zone déjà connue.
+static func _place_hazard_patches(layout: Layout, profile: ZoneProfile, rng: RandomNumberGenerator, reserved: Array[Vector2]) -> void:
+	if profile.hazard_patches == Vector2i.ZERO:
+		return
+	var local := RandomNumberGenerator.new()
+	local.seed = rng.seed + 11
+	var count: int = local.randi_range(profile.hazard_patches.x, profile.hazard_patches.y)
+	var min_y: float = RAILS_ROW + PLATFORM_ROWS + 2.0
+	for i: int in count:
+		var radius: float = local.randf_range(profile.hazard_radius.x, profile.hazard_radius.y)
+		for attempt: int in 30:
+			var center := Vector2(
+				local.randf_range(BORDER + 2.0, layout.size_in_tiles.x - BORDER - 2.0),
+				local.randf_range(min_y, layout.size_in_tiles.y - BORDER - 1.0)
+			)
+			if _patch_touches_poi(layout, center, radius) or _patch_touches_points(center, radius, reserved):
+				continue
+			var near_infection: bool = false
+			for patch: Vector3 in layout.infected_patches:
+				if center.distance_to(Vector2(patch.x, patch.y)) < radius + patch.z + 1.0:
+					near_infection = true
+			if not near_infection:
+				layout.hazard_patches.append(Vector3(center.x, center.y, radius))
+				break
+
+
 static func _place_infected_patches(layout: Layout, profile: ZoneProfile, rng: RandomNumberGenerator, reserved: Array[Vector2]) -> void:
 	var count: int = rng.randi_range(profile.infected_patches.x, profile.infected_patches.y)
 	var min_y: float = RAILS_ROW + PLATFORM_ROWS + 2.0
@@ -315,6 +353,11 @@ static func _pick_tile(cell: Vector2i, layout: Layout, profile: ZoneProfile, rng
 			if distance < patch.z - 1.0 or (distance < patch.z + 1.0 and rng.randf() < 0.5):
 				return Tile.INFECTED
 	var roll: float = rng.randf()
+	if not on_platform:
+		for patch: Vector3 in layout.hazard_patches:
+			var distance: float = Vector2(cell).distance_to(Vector2(patch.x, patch.y))
+			if distance < patch.z - 0.5 or (distance < patch.z + 0.5 and roll < 0.5):
+				return Tile.HAZARD
 	if roll < profile.dirt_ratio:
 		return Tile.DIRT
 	if roll < profile.dirt_ratio + profile.grass_variant_ratio:
@@ -352,11 +395,11 @@ static func _scatter(layout: Layout, kind: StringName, wanted: int, rng: RandomN
 static func _placement_allows(layout: Layout, placement: Placement, pos: Vector2) -> bool:
 	match placement:
 		Placement.HEALTHY:
-			return not layout.is_infected_at(pos)
+			return not layout.is_infected_at(pos) and not layout.is_hazard_at(pos)
 		Placement.INFECTED:
 			return layout.is_infected_at(pos)
 		_:
-			return true
+			return not layout.is_hazard_at(pos)
 
 
 static func _is_free(pos: Vector2, spacing: float, occupied: Array[Vector2]) -> bool:

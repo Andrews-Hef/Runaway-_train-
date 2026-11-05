@@ -30,6 +30,9 @@ const SLOT_NAMES: Array[String] = ["Tenue", "Masque", "Sac", "Outil", "Arme"]
 @export var harvest_speed: float = 1.0
 ## Dégâts au combat (armes).
 @export var damage: int = 0
+## Protège d'une règle de biome : &"cold" (tenue chaude, toundra), &"toxic" (tenue
+## étanche, flaques de la zone industrielle).
+@export var resists: Array[StringName] = []
 ## Extraction : en récoltant cette ressource (id de LootData), on obtient aussi `extra_loot`
 ## (ex. le kit de chimie tire des produits chimiques des plantes infectées).
 @export var extra_from: StringName
@@ -69,4 +72,8 @@ func describe_effects() -> String:
 		parts.append("Découpe les épaves de camion")
 	if not extra_loot.is_empty():
 		parts.append("Extrait des produits chimiques")
+	if &"cold" in resists:
+		parts.append("Tient chaud")
+	if &"toxic" in resists:
+		parts.append("Étanche aux flaques toxiques")
 	return " · ".join(parts) if not parts.is_empty() else "Aucun effet"

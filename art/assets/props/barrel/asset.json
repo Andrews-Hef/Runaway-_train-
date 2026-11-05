@@ -1,0 +1,99 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/barrel",
+  "type": "prop",
+  "description": "Fut chimique jaune cercle de noir, fuite verdatre au pied. Donne des produits chimiques.",
+  "frame": {
+    "width": 20,
+    "height": 28
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "id": "leak",
+        "material": "toxic",
+        "radius": 0.42,
+        "height": 0.03,
+        "position": [
+          0.15,
+          0.015,
+          0.2
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "body",
+        "material": "barrel-yellow",
+        "radius": 0.32,
+        "height": 0.9,
+        "position": [
+          0,
+          0.45,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "band-low",
+        "material": "dark",
+        "radius": 0.335,
+        "height": 0.06,
+        "position": [
+          0,
+          0.22,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "band-high",
+        "material": "dark",
+        "radius": 0.335,
+        "height": 0.06,
+        "position": [
+          0,
+          0.68,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "lid",
+        "material": "steel",
+        "radius": 0.3,
+        "height": 0.04,
+        "position": [
+          0,
+          0.92,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "label",
+        "material": "dark",
+        "size": [
+          0.22,
+          0.2,
+          0.04
+        ],
+        "position": [
+          0,
+          0.45,
+          0.31
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

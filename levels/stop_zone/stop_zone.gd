@@ -24,9 +24,12 @@ const SCENES: Dictionary[StringName, PackedScene] = {
 	&"merchant": preload("res://entities/npc/merchant.tscn"),
 	&"backpack": preload("res://props/backpack/backpack.tscn"),
 	&"locker": preload("res://props/locker/locker.tscn"),
+	&"barrel": preload("res://props/barrel/barrel.tscn"),
 }
 
 const ENEMY_SCENE: PackedScene = preload("res://entities/enemy/enemy.tscn")
+## Biome des zones qui n'en déclarent pas (zone de test).
+const DEFAULT_BIOME: BiomeData = preload("res://data/biomes/countryside.tres")
 ## Chance de trouver un plan en fouillant une caisse.
 const CACHE_PLAN_CHANCE: float = 0.2
 const GROUND_SOURCE_ID: int = 0
@@ -48,6 +51,9 @@ const GROUND_SOURCE_ID: int = 0
 
 var layout: ZoneGenerator.Layout
 var zone: ZoneProfile
+var biome: BiomeData
+## Règle du biome (eau, froid, flaques, alarmes).
+var rules: BiomeRules
 
 ## Hasard des rencontres (gains aléatoires, prénoms, infection cachée).
 var _encounter_rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -57,6 +63,11 @@ var _combat_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _armor: int = 0
 ## Vitesse du joueur sans malus d'infection.
 var _base_speed: float = 0.0
+## Multiplicateurs de vitesse : palier d'infection et sol (eau du marais).
+var _infection_speed: float = 1.0
+var _terrain_speed: float = 1.0
+var _base_acceleration: float = 0.0
+var _base_friction: float = 0.0
 var _infection_stage: int = -1
 ## Rencontre en cours (null si aucune fenêtre ouverte).
 var _active_spot: EncounterSpot
@@ -64,11 +75,13 @@ var _active_spot: EncounterSpot
 
 func _ready() -> void:
 	zone = zone_override if zone_override else GameState.current_zone
+	biome = zone.biome if zone.biome else DEFAULT_BIOME
 	var zone_seed: int = seed_override if seed_override != 0 else GameState.current_seed
 	var player_spawn: Vector2 = ZoneGenerator.TRAIN_POSITION + _train.door.position + Vector2(0.0, 40.0)
 	layout = ZoneGenerator.generate(zone, zone_seed, [player_spawn], GameState.stop_number)
 	_encounter_rng.seed = zone_seed + 1
 	_combat_rng.seed = zone_seed + 2
+	_apply_biome()
 	_apply_layout()
 	_build_bounds()
 	_setup_camera()
@@ -77,6 +90,53 @@ func _ready() -> void:
 
 
 # --- Application du plan --------------------------------------------------------
+
+## Le biome : sol, lumière, ambiance (neige, brume).
+func _apply_biome() -> void:
+	BiomeData.apply_ground(_ground, biome)
+	if biome.ambient != Color.WHITE:
+		var light := CanvasModulate.new()
+		light.name = "BiomeLight"
+		light.color = biome.ambient
+		add_child(light)
+	var weather := Weather.make(biome.weather)
+	if weather:
+		add_child(weather)
+
+
+func _physics_process(delta: float) -> void:
+	if rules and _session.is_running():
+		rules.tick(delta, layout.is_hazard_at(_player.global_position))
+
+
+func _refresh_speed() -> void:
+	_player.move_speed = _base_speed * _infection_speed * _terrain_speed
+
+
+## Eau (plus lent), glace (on glisse : on accélère et on freine mal).
+func _on_terrain_changed(speed: float, slippery: bool) -> void:
+	_terrain_speed = speed
+	_refresh_speed()
+	var grip: float = BiomeRules.ICE_GRIP if slippery else 1.0
+	_player.acceleration = _base_acceleration * grip
+	_player.friction = _base_friction * grip
+
+
+## Froid ou brûlure : des PV en moins (l'armure n'y fait rien).
+func _on_biome_hurt(amount: int, message: String) -> void:
+	_player.health.take_damage(amount, _player.global_position)
+	if not message.is_empty():
+		_hud.call(&"toast", message, true)
+
+
+## Alarme de voiture : les ennemis proches accourent.
+func _on_alarm(at: Vector2) -> void:
+	_hud.call(&"toast", "Une alarme hurle ! Les ennemis accourent.", true)
+	for node: Node in get_tree().get_nodes_in_group(Enemy.GROUP):
+		var enemy := node as Enemy
+		if enemy and enemy.global_position.distance_to(at) <= BiomeRules.ALARM_RADIUS:
+			enemy.alert(at)
+
 
 func _apply_layout() -> void:
 	var size: Vector2i = layout.size_in_tiles
@@ -94,11 +154,12 @@ func _apply_layout() -> void:
 		if enemy_data:
 			_spawn_enemy(enemy_data, spawn.position)
 			continue
-		var node := SCENES[spawn.kind].instantiate() as Node2D
+		var scene: PackedScene = biome.scenes.get(spawn.kind, SCENES[spawn.kind])
+		var node := scene.instantiate() as Node2D
 		node.position = spawn.position
 		_world.add_child(node)
 		if node is Harvestable:
-			_connect_harvestable(node as Harvestable)
+			_connect_harvestable(node as Harvestable, spawn.kind)
 		elif node is EncounterSpot:
 			var spot := node as EncounterSpot
 			spot.encounter = EncounterLibrary.get_encounter(spawn.data)
@@ -156,6 +217,15 @@ func _wire_systems() -> void:
 	# L'infection continue celle des arrêts précédents : elle ne redescend pas toute seule.
 	_player.exposure.value = GameState.infection
 	_base_speed = _player.move_speed
+	_base_acceleration = _player.acceleration
+	_base_friction = _player.friction
+	rules = BiomeRules.new()
+	rules.name = "BiomeRules"
+	add_child(rules)
+	rules.setup(biome, loadout)
+	rules.terrain_changed.connect(_on_terrain_changed)
+	rules.hurt.connect(_on_biome_hurt)
+	rules.alarm_raised.connect(_on_alarm)
 	# Équipement + talents de la carrière.
 	_player.exposure.protection = minf(loadout.protection() + GameState.perk_bonus(&"protection"), Loadout.MAX_PROTECTION)
 	var harvest_bonus: float = 1.0 + GameState.perk_bonus(&"harvest_speed")
@@ -187,7 +257,8 @@ func _wire_systems() -> void:
 	_session.ended.connect(_on_session_ended)
 	_hud.call(&"bind", _session, _player, GameState.LOOT_TYPES)
 	_hud.call(&"show_order", GameState.current_order)
-	_hud.call(&"announce_zone", GameState.stop_number, zone.display_name)
+	_hud.call(&"announce_zone", GameState.stop_number, zone.display_name,
+		"%s · %s" % [biome.display_name, biome.rule_text] if not biome.rule_text.is_empty() else "")
 	_dialog.connect(&"choice_selected", _on_choice_selected)
 	_dialog.connect(&"closed", _on_dialog_closed)
 	_result_screen.connect(&"continue_requested", _continue_journey)
@@ -273,11 +344,13 @@ static func _loot_type(id: StringName) -> LootData:
 	return null
 
 
-func _connect_harvestable(harvestable: Harvestable) -> void:
+func _connect_harvestable(harvestable: Harvestable, kind: StringName = &"") -> void:
 	harvestable.harvested.connect(func(loot: LootData, amount: int, exposure: float) -> void:
 		_session.add_loot(loot, amount)
 		_player.exposure.add(exposure)
 		_extract_with_tool(loot)
+		if kind == &"wreck":
+			rules.car_searched(harvestable.global_position, _combat_rng)
 		if harvestable.harvest_tag == &"cache" and _combat_rng.randf() < CACHE_PLAN_CHANCE:
 			var plan: StringName = _session.find_plan(_combat_rng)
 			if plan != &"":
@@ -319,7 +392,8 @@ func _on_infection_changed(value: float) -> void:
 	_infection_stage = stage
 	var max_health: int = maxi(GameState.BASE_HEALTH + int(GameState.perk_bonus(&"max_health")) - Infection.health_malus(value), 1)
 	_player.health.set_max(max_health)
-	_player.move_speed = _base_speed * Infection.speed_factor(value)
+	_infection_speed = Infection.speed_factor(value)
+	_refresh_speed()
 	if worse:
 		_hud.call(&"toast", "Infection : %s" % Infection.describe(value), true)
 

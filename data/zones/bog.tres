@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ZoneProfile" format=3]
+
+[ext_resource type="Script" path="res://core/zone_profile.gd" id="1_zone"]
+[ext_resource type="Resource" path="res://data/biomes/marsh.tres" id="2_biome"]
+
+[resource]
+script = ExtResource("1_zone")
+id = &"bog"
+display_name = "Tourbière"
+biome = ExtResource("2_biome")
+specialty = "Plantes infectées, produits chimiques (kit)"
+description = "Une étendue d'eau noire et de mousse. Les plantes de la ruche y poussent comme nulle part ailleurs."
+stop_duration = Vector2(75, 90)
+dirt_ratio = 0.2
+grass_variant_ratio = 0.35
+infected_patches = Vector2i(2, 3)
+infected_radius = Vector2(3, 5)
+hazard_patches = Vector2i(4, 6)
+hazard_radius = Vector2(2.5, 4.5)
+wrecks = Vector2i(0, 1)
+dead_trees = Vector2i(5, 8)
+rocks = Vector2i(2, 4)
+herbs = Vector2i(6, 9)
+infected_herbs = Vector2i(10, 14)
+village_chance = 0.1
+refuge_chance = 0.3
+merchant_chance = 0.2
+enemies = Dictionary[StringName, Vector2i]({
+&"infected": Vector2i(2, 3),
+&"infected_crawler": Vector2i(1, 2),
+&"infected_spitter": Vector2i(1, 1),
+&"infected_bloated": Vector2i(0, 1)
+})
+heavy_wrecks = Vector2i(0, 0)

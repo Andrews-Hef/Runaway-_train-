@@ -160,6 +160,76 @@
         "color": "#a8936c",
         "bands": 3,
         "hueShift": 25
+      },
+      "reed": {
+        "color": "#7d8a45",
+        "bands": 3,
+        "hueShift": 20
+      },
+      "reed-dark": {
+        "color": "#4f5a2c",
+        "bands": 3,
+        "hueShift": 20
+      },
+      "cattail": {
+        "color": "#5e3d24",
+        "bands": 3,
+        "hueShift": 20
+      },
+      "pine": {
+        "color": "#2f4a3a",
+        "bands": 3,
+        "hueShift": 25
+      },
+      "snow": {
+        "color": "#e4ebf2",
+        "bands": 3,
+        "hueShift": 15
+      },
+      "car-paint": {
+        "color": "#55778f",
+        "bands": 3,
+        "hueShift": 20
+      },
+      "car-paint-light": {
+        "color": "#6e90a6",
+        "bands": 3,
+        "hueShift": 20
+      },
+      "alarm-orange": {
+        "color": "#ff8a2a",
+        "bands": 2,
+        "hueShift": 10
+      },
+      "concrete": {
+        "color": "#8e8b84",
+        "bands": 3,
+        "hueShift": 15
+      },
+      "concrete-dark": {
+        "color": "#65625c",
+        "bands": 3,
+        "hueShift": 15
+      },
+      "barrel-yellow": {
+        "color": "#c9a227",
+        "bands": 3,
+        "hueShift": 20
+      },
+      "toxic": {
+        "color": "#9fd03a",
+        "bands": 2,
+        "hueShift": 15
+      },
+      "container-blue": {
+        "color": "#3f6f8f",
+        "bands": 3,
+        "hueShift": 20
+      },
+      "container-dark": {
+        "color": "#2c4f66",
+        "bands": 3,
+        "hueShift": 20
       }
     }
   }

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BiomeData" format=3]
+
+[ext_resource type="Script" path="res://core/biome_data.gd" id="1_biome"]
+[ext_resource type="Texture2D" path="res://assets/tiles/ground_placeholder.png" id="2_atlas"]
+
+[resource]
+script = ExtResource("1_biome")
+id = &"countryside"
+display_name = "Campagne"
+description = "Champs abandonnés, bois morts, villages vides : la ligne commence ici."
+rule = 0
+rule_text = ""
+ground_atlas = ExtResource("2_atlas")
+ambient = Color(1, 1, 1, 1)
+weather = &""
+scenes = Dictionary[StringName, PackedScene]({})

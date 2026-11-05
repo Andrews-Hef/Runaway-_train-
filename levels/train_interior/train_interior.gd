@@ -16,6 +16,7 @@ extends Node2D
 const STOP_SCENE: String = "res://levels/stop_zone/stop_zone.tscn"
 const REFUGE_SCENE: String = "res://levels/refuge/refuge.tscn"
 const TrainMenu = preload("res://ui/train/train_menu.gd")
+const RouteMenu = preload("res://ui/route/route_menu.gd")
 
 const TILE_SIZE: int = 16
 ## Un wagon fait 8,5 m hors tout (136 px, parois comprises) ; entre deux wagons,
@@ -125,11 +126,19 @@ const STATION_ANIMATIONS: Dictionary[StringName, StringName] = {
 
 var _target: Interactable
 var _leaving: bool = false
+## Aiguillage : choix de la voie au levier de la cabine.
+var _route_menu: CanvasLayer
 
 
 func _ready() -> void:
+	BiomeData.apply_ground(_ground_tiles, GameState.region())
 	_build_ground()
 	_build_train()
+	_route_menu = RouteMenu.new()
+	_route_menu.name = "RouteMenu"
+	add_child(_route_menu)
+	_route_menu.connect(&"chosen", func(_index: int) -> void: _leave_for_stop())
+	_route_menu.connect(&"closed", _on_menu_closed)
 	_player.position = Vector2(_wagon_x(_start_wagon()) - 40.0, 2.0)
 	_camera.zoom = Vector2(ZOOM, ZOOM)
 	_camera.position = Vector2(_player.position.x, CAMERA_Y)
@@ -279,6 +288,8 @@ func _add_furniture(wagon_x: float, entry: Array) -> void:
 	spot.prompt = entry[3]
 	if station == &"lever" and GameState.is_refuge_stop():
 		spot.prompt = "Descendre à la gare refuge"
+	elif station == &"lever" and GameState.has_route_choice():
+		spot.prompt = "Aiguillage : choisir le prochain arrêt"
 	spot.hold_time = 0.7 if station == &"lever" else 0.25
 	spot.animation = STATION_ANIMATIONS.get(station, &"work")
 	spot.indicator_offset = Vector2(0.0, -40.0)
@@ -390,7 +401,14 @@ func _use_station(station: StringName, spot: Interactable = null) -> void:
 	if _leaving:
 		return
 	if station == &"lever":
-		_leave_for_stop()
+		if GameState.has_route_choice():
+			_player.set_controls_enabled(false)
+			_prompt.visible = false
+			if spot:
+				_player.hold_pose(spot.animation, spot.global_position)
+			_route_menu.call(&"open")
+		else:
+			_leave_for_stop()
 		return
 	_player.set_controls_enabled(false)
 	if spot:
@@ -424,10 +442,15 @@ func next_scene() -> String:
 # --- Interface -------------------------------------------------------------------------
 
 func _refresh_texts() -> void:
-	_destination.text = "En route vers l'arrêt n°%d : %s" % [GameState.stop_number, GameState.stop_name()]
 	var order: CaptainOrders.Order = GameState.current_order
-	_order.text = "%s · %s" % [GameState.grade().display_name,
-		("Ordre du capitaine : " + order.text()) if order else "Pas d'ordre en gare"]
+	if GameState.has_route_choice():
+		_destination.text = "%s · aiguillage avant l'arrêt n°%d : choisis ta voie au levier de la cabine" % [
+			GameState.region().display_name, GameState.stop_number]
+		_order.text = "%s · Ordre du capitaine : selon la voie choisie" % GameState.grade().display_name
+	else:
+		_destination.text = "En route vers l'arrêt n°%d : %s" % [GameState.stop_number, GameState.stop_name()]
+		_order.text = "%s · %s" % [GameState.grade().display_name,
+			("Ordre du capitaine : " + order.text()) if order else "Pas d'ordre en gare"]
 	if not GameState.pending_promotions.is_empty():
 		_order.text += " · Talent à choisir (%s : inventaire)" % InputMode.label_for(&"inventory")
 	_summary.text = "Infection %d %% · Stock %d/%d · Équipage %d/%d · Voitures %d/%d" % [

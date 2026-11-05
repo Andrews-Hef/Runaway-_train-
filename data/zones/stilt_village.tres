@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="ZoneProfile" format=3]
+
+[ext_resource type="Script" path="res://core/zone_profile.gd" id="1_zone"]
+[ext_resource type="Resource" path="res://data/biomes/marsh.tres" id="2_biome"]
+
+[resource]
+script = ExtResource("1_zone")
+id = &"stilt_village"
+display_name = "Village sur pilotis"
+biome = ExtResource("2_biome")
+specialty = "Caisses à fouiller, survivants à recruter"
+description = "Des maisons au bord de l'eau, abandonnées en hâte. Il reste des caisses, et parfois quelqu'un."
+stop_duration = Vector2(85, 100)
+dirt_ratio = 0.2
+grass_variant_ratio = 0.35
+infected_patches = Vector2i(1, 2)
+infected_radius = Vector2(3, 4)
+hazard_patches = Vector2i(3, 4)
+hazard_radius = Vector2(2.0, 3.5)
+wrecks = Vector2i(0, 1)
+dead_trees = Vector2i(3, 5)
+rocks = Vector2i(2, 4)
+herbs = Vector2i(5, 8)
+infected_herbs = Vector2i(4, 6)
+village_chance = 1.0
+refuge_chance = 0.7
+merchant_chance = 0.4
+lone_events = Vector2i(1, 2)
+enemies = Dictionary[StringName, Vector2i]({
+&"infected": Vector2i(1, 2),
+&"infected_crawler": Vector2i(1, 1),
+&"raider": Vector2i(1, 1),
+&"raider_lurker": Vector2i(0, 1)
+})
+heavy_wrecks = Vector2i(0, 0)

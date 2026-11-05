@@ -23,13 +23,36 @@ const INTERCOM_PLAN: StringName = &"intercom"
 const FIXED_SEED_SETTING: String = "game/debug/fixed_seed"
 ## Le premier arrêt est toujours celui-ci : une zone simple pour commencer.
 const FIRST_ZONE: ZoneProfile = preload("res://data/zones/plains.tres")
-## Zones possibles pour les arrêts suivants.
+## Tous les types d'arrêt. Chacun appartient à un biome (sa région).
 const ZONES: Array[ZoneProfile] = [
 	preload("res://data/zones/plains.tres"),
 	preload("res://data/zones/dead_forest.tres"),
 	preload("res://data/zones/scrapyard.tres"),
 	preload("res://data/zones/blight.tres"),
+	preload("res://data/zones/bog.tres"),
+	preload("res://data/zones/stilt_village.tres"),
+	preload("res://data/zones/reed_beds.tres"),
+	preload("res://data/zones/boulevard.tres"),
+	preload("res://data/zones/residential.tres"),
+	preload("res://data/zones/hospital.tres"),
+	preload("res://data/zones/chemical_plant.tres"),
+	preload("res://data/zones/warehouses.tres"),
+	preload("res://data/zones/rail_yard.tres"),
+	preload("res://data/zones/frozen_plain.tres"),
+	preload("res://data/zones/pine_forest.tres"),
+	preload("res://data/zones/military_camp.tres"),
 ]
+## Les régions de la ligne, dans l'ordre : on change de région à chaque gare refuge
+## (arrêts 1 à 5 : campagne, 6 à 10 : marais...). Après la toundra, la ligne repart.
+const REGIONS: Array[BiomeData] = [
+	preload("res://data/biomes/countryside.tres"),
+	preload("res://data/biomes/marsh.tres"),
+	preload("res://data/biomes/city.tres"),
+	preload("res://data/biomes/industrial.tres"),
+	preload("res://data/biomes/tundra.tres"),
+]
+## Nombre de voies proposées à chaque aiguillage.
+const ROUTE_CHOICES: int = 2
 
 ## Points de vie du joueur sans talent.
 const BASE_HEALTH: int = 10
@@ -85,10 +108,25 @@ const BUILDABLE_WAGONS: Array[WagonData] = [
 	preload("res://data/wagons/laboratory.tres"),
 ]
 
+
+## Une voie de l'aiguillage : un type d'arrêt, sa graine et l'ordre du capitaine.
+class StopOption:
+	var zone: ZoneProfile
+	var seed: int
+	var order: CaptainOrders.Order
+
+	func _init(option_zone: ZoneProfile, option_seed: int, option_order: CaptainOrders.Order) -> void:
+		zone = option_zone
+		seed = option_seed
+		order = option_order
+
 ## Numéro de l'arrêt en cours ou à venir (1 = premier arrêt).
 var stop_number: int = 0
 ## Type de zone de l'arrêt (le dernier tiré, si l'arrêt est une gare refuge).
 var current_zone: ZoneProfile
+## Voies proposées à l'aiguillage pour le prochain arrêt (vide pour une gare refuge).
+## current_zone, current_seed et current_order valent la voie choisie (la 1re par défaut).
+var route_options: Array[StopOption] = []
 ## Gare refuge de l'arrêt, ou null si c'est une zone à fouiller.
 var current_refuge: RefugeData
 var current_seed: int = 0
@@ -164,27 +202,72 @@ func new_run(run_seed: int = 0) -> void:
 	plans_changed.emit()
 
 
-## Tire le prochain arrêt : gare refuge (tous les REFUGE_EVERY arrêts) ou type de
-## zone, et graine de génération.
+## Prépare le prochain arrêt : gare refuge (tous les REFUGE_EVERY arrêts), ou deux voies
+## à l'aiguillage, tirées parmi les types d'arrêt de la région en cours.
 func prepare_next_stop() -> void:
 	# On quitte un arrêt : les machines du train travaillent pendant le trajet.
 	last_production.clear()
 	if stop_number >= 1:
 		last_production = run_machines()
 	stop_number += 1
+	route_options.clear()
 	if stop_number % REFUGE_EVERY == 0:
 		current_refuge = REFUGES[(stop_number / REFUGE_EVERY - 1) % REFUGES.size()]
+		current_seed = _rng.randi()
+		current_order = null
 	else:
 		current_refuge = null
-		current_zone = FIRST_ZONE if stop_number == 1 else _pick_zone(current_zone)
-	current_seed = _rng.randi()
-	# L'ordre a son propre hasard, tiré de la graine de l'arrêt : il ne change pas le voyage.
-	current_order = null
-	if current_refuge == null:
-		var order_rng := RandomNumberGenerator.new()
-		order_rng.seed = current_seed + 7
-		current_order = CaptainOrders.pick(current_zone, stop_number, order_rng, bag_capacity())
+		var zones: Array[ZoneProfile] = [FIRST_ZONE]
+		if stop_number > 1:
+			zones = _pick_zones(region(), current_zone, ROUTE_CHOICES)
+		for zone: ZoneProfile in zones:
+			route_options.append(_make_option(zone, _rng.randi()))
+		_apply_option(route_options[0])
 	career_changed.emit()
+
+
+## Une voie : l'ordre a son propre hasard, tiré de la graine de l'arrêt.
+func _make_option(zone: ZoneProfile, option_seed: int) -> StopOption:
+	var order_rng := RandomNumberGenerator.new()
+	order_rng.seed = option_seed + 7
+	return StopOption.new(zone, option_seed, CaptainOrders.pick(zone, stop_number, order_rng, bag_capacity()))
+
+
+func _apply_option(option: StopOption) -> void:
+	current_zone = option.zone
+	current_seed = option.seed
+	current_order = option.order
+
+
+## Faut-il choisir sa voie à l'aiguillage avant de descendre ?
+func has_route_choice() -> bool:
+	return route_options.size() > 1
+
+
+## Prend la voie n° index de l'aiguillage. Renvoie false si elle n'existe pas.
+func choose_route(index: int) -> bool:
+	if index < 0 or index >= route_options.size():
+		return false
+	_apply_option(route_options[index])
+	career_changed.emit()
+	return true
+
+
+## Région (biome) d'un numéro d'arrêt : elle change après chaque gare refuge.
+func region_for(stop: int) -> BiomeData:
+	var index: int = maxi(stop - 1, 0) / REFUGE_EVERY
+	return REGIONS[index % REGIONS.size()]
+
+
+## Région de l'arrêt à venir.
+func region() -> BiomeData:
+	return region_for(stop_number)
+
+
+## Arrêts de la région en cours : du premier à la gare refuge qui la termine.
+func region_stops() -> Vector2i:
+	var first: int = maxi(stop_number - 1, 0) / REFUGE_EVERY * REFUGE_EVERY + 1
+	return Vector2i(first, first + REFUGE_EVERY - 1)
 
 
 func is_refuge_stop() -> bool:
@@ -578,7 +661,7 @@ func to_save() -> Dictionary:
 		equipped.append(String(item.id))
 	return {
 		"version": SAVE_VERSION,
-		"label": "Arrêt n°%d : %s" % [stop_number, stop_name()],
+		"label": "Arrêt n°%d : %s" % [stop_number, region().display_name if has_route_choice() else stop_name()],
 		"stop_number": stop_number,
 		"zone": String(current_zone.id) if current_zone else "",
 		"refuge": String(current_refuge.id) if current_refuge else "",
@@ -601,6 +684,12 @@ func to_save() -> Dictionary:
 		"researched_plans": researched_plans.map(func(id: StringName) -> String: return String(id)),
 		"order": String(current_order.data.id) if current_order else "",
 		"order_amount": current_order.amount if current_order else 0,
+		"route": route_options.map(func(option: StopOption) -> Dictionary: return {
+			"zone": String(option.zone.id),
+			"seed": str(option.seed),
+			"order": String(option.order.data.id) if option.order else "",
+			"order_amount": option.order.amount if option.order else 0,
+		}),
 	}
 
 
@@ -669,6 +758,17 @@ func load_save(data: Dictionary) -> bool:
 		researched_plans.append(StringName(id))
 	var order_data: OrderData = CaptainOrders.find(StringName(data.get("order", "")))
 	current_order = CaptainOrders.Order.new(order_data, int(data.get("order_amount", 0))) if order_data else null
+	# Voies de l'aiguillage (anciennes sauvegardes : la seule voie est l'arrêt enregistré).
+	route_options.clear()
+	for entry: Dictionary in data.get("route", []):
+		var option_zone: ZoneProfile = _find_by_id(ZONES, entry.get("zone", ""))
+		if option_zone == null:
+			continue
+		var option_order_data: OrderData = CaptainOrders.find(StringName(entry.get("order", "")))
+		route_options.append(StopOption.new(option_zone, str(entry.get("seed", "0")).to_int(),
+			CaptainOrders.Order.new(option_order_data, int(entry.get("order_amount", 0))) if option_order_data else null))
+	if route_options.is_empty() and current_zone and current_refuge == null:
+		route_options.append(StopOption.new(current_zone, current_seed, current_order))
 	storage_changed.emit()
 	crew_changed.emit()
 	equipment_changed.emit()
@@ -686,20 +786,29 @@ static func _find_by_id(list: Array, id: String) -> Resource:
 	return null
 
 
-## Tirage pondéré, en évitant si possible de reprendre la même zone deux fois de suite.
-func _pick_zone(previous: ZoneProfile) -> ZoneProfile:
+## Tirage pondéré de `count` types d'arrêt différents dans une région, en évitant si
+## possible de reprendre celui qu'on vient de faire.
+func _pick_zones(biome: BiomeData, previous: ZoneProfile, count: int) -> Array[ZoneProfile]:
 	var candidates: Array[ZoneProfile] = []
 	for zone: ZoneProfile in ZONES:
-		if zone != previous:
+		if zone.biome == biome and zone != previous:
 			candidates.append(zone)
-	if candidates.is_empty():
-		candidates = ZONES.duplicate()
-	var total: float = 0.0
-	for zone: ZoneProfile in candidates:
-		total += zone.weight
-	var roll: float = _rng.randf() * total
-	for zone: ZoneProfile in candidates:
-		roll -= zone.weight
-		if roll <= 0.0:
-			return zone
-	return candidates.back()
+	if candidates.size() < count:
+		for zone: ZoneProfile in ZONES:
+			if zone.biome == biome and not zone in candidates:
+				candidates.append(zone)
+	var picked: Array[ZoneProfile] = []
+	while picked.size() < count and not candidates.is_empty():
+		var total: float = 0.0
+		for zone: ZoneProfile in candidates:
+			total += zone.weight
+		var roll: float = _rng.randf() * total
+		var chosen: ZoneProfile = candidates.back()
+		for zone: ZoneProfile in candidates:
+			roll -= zone.weight
+			if roll <= 0.0:
+				chosen = zone
+				break
+		picked.append(chosen)
+		candidates.erase(chosen)
+	return picked
