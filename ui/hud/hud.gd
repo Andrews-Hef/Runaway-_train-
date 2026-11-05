@@ -3,7 +3,8 @@ extends CanvasLayer
 ##
 ## Elle n'a aucune logique de jeu : elle affiche ce que les systèmes lui signalent.
 ## Icônes 12 px (assets/ui/icons/), chiffres en gras plus gros, ombre sous les textes :
-## lisible sur un petit écran.
+## lisible sur un petit écran. Style : plaques de fer du thème (HudPanel), ordre du
+## capitaine sur un télégramme (PaperPanel), vie en segments, infection à paliers.
 
 const NORMAL_TIME_COLOR: Color = Color(1.0, 1.0, 1.0)
 const WHISTLE_TIME_COLOR: Color = Color(1.0, 0.45, 0.35)
@@ -14,10 +15,15 @@ const PLAN_ICON: Texture2D = preload("res://assets/ui/icons/plan.png")
 ## Police des chiffres : Barlow Bold (OFL), plus grosse que le texte.
 const NUMBERS_FONT: Font = preload("res://assets/fonts/barlow/Barlow-Bold.ttf")
 const NUMBERS_SIZE: int = 11
+## Encre du télégramme (ordre du capitaine) : en cours, puis rempli.
+const INK: Color = Color(0.17, 0.12, 0.08)
+const INK_DONE: Color = Color(0.16, 0.42, 0.14)
+const BAG_FILL: Color = Color(0.85, 0.68, 0.3)
+const BAG_FULL: Color = Color(0.9, 0.3, 0.25)
 
 @onready var _timer_label: Label = %TimerLabel
 @onready var _health_label: Label = %HealthLabel
-@onready var _health_bar: ProgressBar = %HealthBar
+@onready var _health_bar: SegmentBar = %HealthBar
 @onready var _toast: Label = %Toast
 @onready var _order: Control = %Order
 @onready var _order_text: Label = %OrderText
@@ -27,7 +33,7 @@ const NUMBERS_SIZE: int = 11
 @onready var _mash_label: Label = %MashLabel
 @onready var _mash_bar: ProgressBar = %MashBar
 @onready var _exposure_label: Label = %ExposureLabel
-@onready var _exposure_bar: ProgressBar = %ExposureBar
+@onready var _exposure_bar: StageBar = %ExposureBar
 @onready var _zone_warning: Label = %ZoneWarning
 @onready var _loot_list: VBoxContainer = %LootList
 @onready var _banner: Label = %Banner
@@ -40,6 +46,7 @@ var _target: Interactable
 var _interactor: Interactor
 var _session: StopSession
 var _bag_label: Label
+var _bag_bar: StageBar
 var _loot_grid: GridContainer
 var _extras: VBoxContainer
 var _shown_plans: Array[StringName] = []
@@ -51,6 +58,11 @@ var _exposure_value: float = 0.0
 
 func _ready() -> void:
 	_outline_labels($Root)
+	# Repères des paliers d'infection (Fièvre, Contaminé, Critique) sur la jauge.
+	var marks: Array[float] = []
+	for stage: Dictionary in Infection.STAGES.slice(1):
+		marks.append(stage["from"])
+	_exposure_bar.marks = marks
 	# Équipement porté, sous la vie et l'infection.
 	var bar := EquipmentBar.new()
 	bar.name = "EquipmentBar"
@@ -59,8 +71,11 @@ func _ready() -> void:
 
 ## Une ombre portée noire sous tous les textes : lisibles sur n'importe quel décor,
 ## sans boucher l'intérieur des chiffres (un contour remplirait le creux des 8 et des 0).
+## Pas d'ombre sur le papier du télégramme : l'encre y est sombre.
 static func _outline_labels(node: Node) -> void:
 	for child: Node in node.get_children():
+		if child is PanelContainer and (child as PanelContainer).theme_type_variation == &"PaperPanel":
+			continue
 		if child is Label and not (child as Label).has_theme_constant_override(&"outline_size"):
 			var label := child as Label
 			var big: bool = label.get_theme_font_size(&"font_size") >= 16
@@ -127,7 +142,7 @@ func _refresh_order() -> void:
 		progress = _captain_order.progress_text(_session.result)
 	_order_text.text = _captain_order.text()
 	_order_progress.text = progress
-	var color: Color = Color(0.55, 0.85, 0.45) if done else Color(1.0, 0.82, 0.35)
+	var color: Color = INK_DONE if done else INK
 	_order_text.add_theme_color_override(&"font_color", color)
 	_order_progress.add_theme_color_override(&"font_color", color)
 
@@ -160,6 +175,12 @@ func _build_loot_list() -> void:
 	var bag_row := _icon_row(BAG_ICON)
 	_bag_label = bag_row.get_child(1) as Label
 	_loot_list.add_child(bag_row)
+	# Remplissage du sac : une jauge qui rougit quand il est plein.
+	_bag_bar = StageBar.new()
+	_bag_bar.custom_minimum_size = Vector2(0.0, 4.0)
+	_bag_bar.fill_color = BAG_FILL
+	_bag_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_loot_list.add_child(_bag_bar)
 	_loot_grid = GridContainer.new()
 	_loot_grid.columns = 2
 	_loot_grid.add_theme_constant_override(&"h_separation", 6)
@@ -229,6 +250,8 @@ func _on_loot_changed(result: ExpeditionResult) -> void:
 	if _session and _session.capacity >= 0:
 		_bag_label.text = "%d/%d" % [result.total_items(), _session.capacity]
 		_bag_label.add_theme_color_override(&"font_color", Color(1.0, 0.45, 0.35) if _session.is_bag_full() else Color(0.85, 0.85, 0.88))
+		_bag_bar.value = float(result.total_items()) / maxf(_session.capacity, 1.0)
+		_bag_bar.fill_color = BAG_FULL if _session.is_bag_full() else BAG_FILL
 	_refresh_prompt()
 
 

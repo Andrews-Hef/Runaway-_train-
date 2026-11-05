@@ -7,29 +7,8 @@
 [ext_resource type="Texture2D" path="res://assets/ui/icons/infection.png" id="12_infection"]
 [ext_resource type="Texture2D" path="res://assets/ui/icons/order.png" id="13_order"]
 [ext_resource type="FontFile" path="res://assets/fonts/barlow/Barlow-Bold.ttf" id="14_numbers"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-content_margin_left = 4.0
-content_margin_top = 3.0
-content_margin_right = 4.0
-content_margin_bottom = 3.0
-bg_color = Color(0.04, 0.04, 0.06, 0.8)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_bg"]
-bg_color = Color(0, 0, 0, 0.6)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_fill"]
-bg_color = Color(0.7529412, 0.41960785, 1, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_fill"]
-bg_color = Color(0.86, 0.27, 0.24, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_banner"]
-content_margin_left = 6.0
-content_margin_top = 2.0
-content_margin_right = 6.0
-content_margin_bottom = 3.0
-bg_color = Color(0.08, 0.05, 0.05, 0.8)
+[ext_resource type="Script" path="res://ui/hud/segment_bar.gd" id="15_segments"]
+[ext_resource type="Script" path="res://ui/hud/stage_bar.gd" id="16_stages"]
 
 [node name="Hud" type="CanvasLayer"]
 layer = 5
@@ -52,7 +31,7 @@ offset_top = 4.0
 offset_right = 70.0
 offset_bottom = 40.0
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+theme_type_variation = &"HudPanel"
 
 [node name="VBox" type="VBoxContainer" parent="Root/Status"]
 layout_mode = 2
@@ -96,17 +75,12 @@ theme_override_fonts/font = ExtResource("14_numbers")
 theme_override_font_sizes/font_size = 11
 text = "10/10"
 
-[node name="HealthBar" type="ProgressBar" parent="Root/Status/VBox"]
+[node name="HealthBar" type="Control" parent="Root/Status/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(74, 4)
+custom_minimum_size = Vector2(74, 5)
 layout_mode = 2
 mouse_filter = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_health_fill")
-max_value = 10.0
-step = 1.0
-value = 10.0
-show_percentage = false
+script = ExtResource("15_segments")
 
 [node name="InfectionRow" type="HBoxContainer" parent="Root/Status/VBox"]
 layout_mode = 2
@@ -133,17 +107,12 @@ layout_mode = 2
 size_flags_vertical = 8
 text = "Sain"
 
-[node name="ExposureBar" type="ProgressBar" parent="Root/Status/VBox"]
+[node name="ExposureBar" type="Control" parent="Root/Status/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(74, 4)
+custom_minimum_size = Vector2(74, 5)
 layout_mode = 2
 mouse_filter = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_bar_fill")
-max_value = 1.0
-step = 0.001
-value = 0.0
-show_percentage = false
+script = ExtResource("16_stages")
 
 [node name="ZoneWarning" type="Label" parent="Root/Status/VBox"]
 unique_name_in_owner = true
@@ -163,7 +132,7 @@ offset_right = -4.0
 offset_bottom = 4.0
 grow_horizontal = 0
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+theme_type_variation = &"HudPanel"
 
 [node name="LootList" type="VBoxContainer" parent="Root/Loot"]
 unique_name_in_owner = true
@@ -182,7 +151,7 @@ offset_top = 62.0
 offset_right = 130.0
 offset_bottom = 80.0
 grow_horizontal = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_banner")
+theme_type_variation = &"BannerLabel"
 theme_override_colors/font_color = Color(1, 0.82, 0.35, 1)
 theme_override_colors/font_outline_color = Color(0.08, 0.06, 0.06, 1)
 theme_override_constants/outline_size = 4
@@ -203,7 +172,7 @@ offset_right = 110.0
 offset_bottom = 24.0
 grow_horizontal = 2
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+theme_type_variation = &"PaperPanel"
 
 [node name="HBox" type="HBoxContainer" parent="Root/Order"]
 layout_mode = 2
@@ -221,7 +190,7 @@ stretch_mode = 5
 [node name="OrderText" type="Label" parent="Root/Order/HBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.82, 0.35, 1)
+theme_override_colors/font_color = Color(0.17, 0.12, 0.08, 1)
 text = "Ramène 4 ferrailles"
 
 [node name="OrderProgress" type="Label" parent="Root/Order/HBox"]
@@ -281,8 +250,6 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 6)
 layout_mode = 2
 mouse_filter = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_health_fill")
 max_value = 8.0
 show_percentage = false
 

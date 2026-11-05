@@ -5,13 +5,6 @@
 [ext_resource type="PackedScene" path="res://entities/train/train.tscn" id="3_train"]
 [ext_resource type="Theme" path="res://ui/theme/game_theme.tres" id="4_theme"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-content_margin_left = 8.0
-content_margin_top = 5.0
-content_margin_right = 8.0
-content_margin_bottom = 6.0
-bg_color = Color(0.05, 0.05, 0.07, 0.75)
-
 [node name="Journey" type="Node2D"]
 script = ExtResource("1_journey")
 
@@ -55,7 +48,6 @@ offset_right = 150.0
 offset_bottom = 70.0
 grow_horizontal = 2
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
 [node name="VBox" type="VBoxContainer" parent="Ui/Root/Panel"]
 layout_mode = 2

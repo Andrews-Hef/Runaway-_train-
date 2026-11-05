@@ -254,17 +254,9 @@ func _build() -> void:
 
 
 static func _panel(min_size: Vector2) -> PanelContainer:
+	# Style : la plaque du thème (ui/theme/game_theme.tres).
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = min_size
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.07, 0.07, 0.09, 0.96)
-	style.border_color = Color(0.45, 0.4, 0.3, 1.0)
-	style.set_border_width_all(1)
-	style.content_margin_left = 8.0
-	style.content_margin_right = 8.0
-	style.content_margin_top = 6.0
-	style.content_margin_bottom = 6.0
-	panel.add_theme_stylebox_override(&"panel", style)
 	return panel
 
 

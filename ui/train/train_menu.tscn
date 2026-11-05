@@ -3,18 +3,6 @@
 [ext_resource type="Script" path="res://ui/train/train_menu.gd" id="1_menu"]
 [ext_resource type="Theme" path="res://ui/theme/game_theme.tres" id="2_theme"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-content_margin_left = 8.0
-content_margin_top = 6.0
-content_margin_right = 8.0
-content_margin_bottom = 6.0
-bg_color = Color(0.07, 0.07, 0.09, 0.96)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.45, 0.4, 0.3, 1)
-
 [node name="TrainMenu" type="CanvasLayer"]
 layer = 15
 script = ExtResource("1_menu")
@@ -48,7 +36,6 @@ grow_vertical = 2
 [node name="Panel" type="PanelContainer" parent="Root/Center"]
 custom_minimum_size = Vector2(440, 220)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
 [node name="VBox" type="VBoxContainer" parent="Root/Center/Panel"]
 layout_mode = 2

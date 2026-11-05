@@ -8,13 +8,6 @@
 [ext_resource type="PackedScene" path="res://ui/refuge/refuge_menu.tscn" id="6_menu"]
 [ext_resource type="PackedScene" path="res://ui/touch/touch_controls.tscn" id="7_touch"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-content_margin_left = 6.0
-content_margin_top = 3.0
-content_margin_right = 6.0
-content_margin_bottom = 4.0
-bg_color = Color(0.05, 0.05, 0.07, 0.75)
-
 [node name="Refuge" type="Node2D"]
 script = ExtResource("1_refuge")
 
@@ -58,7 +51,7 @@ offset_right = 160.0
 offset_bottom = 36.0
 grow_horizontal = 2
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+theme_type_variation = &"HudPanel"
 
 [node name="VBox" type="VBoxContainer" parent="Ui/Root/Top"]
 layout_mode = 2

@@ -3,18 +3,6 @@
 [ext_resource type="Script" path="res://ui/result/result_screen.gd" id="1_result"]
 [ext_resource type="Theme" path="res://ui/theme/game_theme.tres" id="9_theme"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-content_margin_left = 12.0
-content_margin_top = 10.0
-content_margin_right = 12.0
-content_margin_bottom = 10.0
-bg_color = Color(0.07, 0.07, 0.09, 0.95)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.35, 0.35, 0.4, 1)
-
 [node name="ResultScreen" type="CanvasLayer"]
 layer = 20
 script = ExtResource("1_result")
@@ -48,7 +36,6 @@ grow_vertical = 2
 [node name="Panel" type="PanelContainer" parent="Root/Center"]
 custom_minimum_size = Vector2(340, 0)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
 [node name="VBox" type="VBoxContainer" parent="Root/Center/Panel"]
 layout_mode = 2

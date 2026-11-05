@@ -5,18 +5,6 @@
 [ext_resource type="PackedScene" path="res://entities/train/train.tscn" id="3_train"]
 [ext_resource type="Theme" path="res://ui/theme/game_theme.tres" id="4_theme"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-content_margin_left = 12.0
-content_margin_top = 8.0
-content_margin_right = 12.0
-content_margin_bottom = 10.0
-bg_color = Color(0.05, 0.05, 0.07, 0.82)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.45, 0.4, 0.3, 1)
-
 [node name="Title" type="Node2D"]
 script = ExtResource("1_title")
 
@@ -56,7 +44,6 @@ offset_top = 14.0
 offset_right = 150.0
 offset_bottom = 120.0
 grow_horizontal = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
 [node name="VBox" type="VBoxContainer" parent="Ui/Root/Panel"]
 layout_mode = 2

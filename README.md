@@ -201,6 +201,7 @@ tools/       scripts hors Godot (ignorés par Godot via .gdignore)
 - **Sprites temporaires** générés par [td2d](https://github.com/brphillis/threedee-twodee) à partir de modèles 3D décrits en JSON : voir `art/README.md`. Les tuiles du sol viennent de `python tools/gen_placeholders.py`.
 - **Police** : [Barlow](https://github.com/jpt/barlow) (SemiBold pour les textes, Bold pour les chiffres du HUD), une police lisse et lisible sur téléphone. Le jeu est rendu en mode `canvas_items` : le pixel art est agrandi par paliers entiers (net), le texte est dessiné à la vraie résolution de l'écran.
 - **Icônes** : pixel art 12 px, générées par `tools/gen_icons.py`.
+- **Interface** : plaques de fer, boutons, onglets et télégramme en pixel art, dessinés par `python tools/gen_ui.py`, puis assemblés en thème Godot par `godot --headless --path . --script tools/build_theme.gd` (écrit `ui/theme/game_theme.tres`).
 
 ## Tests
 

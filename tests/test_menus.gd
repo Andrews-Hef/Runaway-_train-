@@ -171,3 +171,27 @@ func test_rappel_des_touches_a_l_arrivee() -> void:
 func test_quitter_previent_de_ce_qu_on_perd() -> void:
 	assert_true("perdu" in GameMenuScript.quit_warning(&"zone"), "en zone, le butin est perdu")
 	assert_true("sauvegardée" in GameMenuScript.quit_warning(&"train"), "dans le train, rien n'est perdu")
+
+
+# --- Style de l'interface ----------------------------------------------------------------
+
+func test_le_theme_a_ses_plaques_et_ses_variantes() -> void:
+	var theme: Theme = preload("res://ui/theme/game_theme.tres")
+	assert_true(theme.get_stylebox(&"panel", &"PanelContainer") is StyleBoxTexture, "plaque des menus")
+	assert_true(theme.get_stylebox(&"normal", &"Button") is StyleBoxTexture, "boutons en relief")
+	for variation: StringName in [&"HudPanel", &"PaperPanel", &"AlertPanel", &"SlotPanel", &"InsetPanel"]:
+		assert_true(theme.get_type_variation_base(variation) == &"PanelContainer", "variante %s" % variation)
+		assert_true(theme.get_stylebox(&"panel", variation) is StyleBoxTexture, "%s a sa texture" % variation)
+	assert_true(theme.get_type_variation_base(&"BannerLabel") == &"Label", "bandeau d'alerte")
+
+
+func test_le_hud_montre_la_vie_en_segments_et_les_paliers() -> void:
+	var hud: CanvasLayer = preload("res://ui/hud/hud.tscn").instantiate()
+	tree.root.add_child(hud)
+	var health: Control = hud.get_node("%HealthBar")
+	var exposure: Control = hud.get_node("%ExposureBar")
+	assert_true(health is SegmentBar, "vie en segments")
+	assert_true(exposure is StageBar, "infection avec repères")
+	assert_true((exposure as StageBar).marks == [0.3, 0.6, 0.9], "repères Fièvre, Contaminé, Critique")
+	assert_true((hud.get_node("Root/Order") as PanelContainer).theme_type_variation == &"PaperPanel", "ordre sur télégramme")
+	hud.free()
