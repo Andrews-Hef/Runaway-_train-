@@ -1,0 +1,194 @@
+name: CI
+
+# Tests à chaque push et pull request.
+# Builds Android, Windows et Linux : à chaque tag (ajoutés à la Release GitHub du tag),
+# ou à la demande (onglet Actions → CI → Run workflow ; fichiers dans les artefacts du run).
+on:
+  push:
+    branches: [main]
+    tags: ["*"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  GODOT_RELEASE: "4.7-stable"
+
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./.github/actions/setup-godot
+        with:
+          version: ${{ env.GODOT_RELEASE }}
+
+      - name: Importer le projet
+        run: timeout 600 "$GODOT" --headless --path . --import
+
+      - name: Lancer les tests
+        run: timeout 600 "$GODOT" --headless --path . --script tests/run_tests.gd
+
+  build:
+    name: Builds (Android, Windows, Linux)
+    needs: tests
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./.github/actions/setup-godot
+        with:
+          version: ${{ env.GODOT_RELEASE }}
+          templates: "true"
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # Godot lit les chemins du SDK Android et de Java dans ses réglages d'éditeur.
+      # Le SDK Android est déjà installé sur les machines ubuntu de GitHub ($ANDROID_HOME).
+      - name: Réglages Android de Godot
+        run: |
+          SHORT=$(echo "${GODOT_RELEASE%-*}" | cut -d. -f1,2)
+          mkdir -p ~/.config/godot
+          cat > "$HOME/.config/godot/editor_settings-${SHORT}.tres" <<EOF
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/android_sdk_path = "${ANDROID_HOME}"
+          export/android/java_sdk_path = "${JAVA_HOME}"
+          EOF
+
+      # Nom de version : le tag, sinon « <version du projet>-dev.<n° du run> ».
+      # Code de version Android : le n° du run, qui ne fait que monter (sinon une mise à
+      # jour refuse de s'installer par-dessus la précédente).
+      - name: Numéro de version
+        run: |
+          BASE=$(grep -oP '^config/version="\K[^"]+' project.godot)
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            VERSION="$GITHUB_REF_NAME"
+          else
+            VERSION="${BASE}-dev.${GITHUB_RUN_NUMBER}"
+          fi
+          sed -i "s|^config/version=.*|config/version=\"${VERSION}\"|" project.godot
+          sed -i "s|^version/code=.*|version/code=${GITHUB_RUN_NUMBER}|" export_presets.cfg
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+          echo "Version ${VERSION}, code Android ${GITHUB_RUN_NUMBER}"
+
+      # Ta clé (secrets ANDROID_KEYSTORE_*), sinon une clé temporaire créée pour ce run :
+      # l'APK s'installe, mais la suivante ne pourra pas le mettre à jour (il faudra
+      # désinstaller). La clé n'est jamais écrite dans le dépôt.
+      - name: Clé de signature Android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_ALIAS: ${{ secrets.ANDROID_KEYSTORE_ALIAS }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          KEYSTORE="$RUNNER_TEMP/android.keystore"
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            if [ -z "$KEYSTORE_ALIAS" ] || [ -z "$KEYSTORE_PASSWORD" ]; then
+              echo "::error::Il manque ANDROID_KEYSTORE_ALIAS ou ANDROID_KEYSTORE_PASSWORD dans les secrets."
+              exit 1
+            fi
+            printf '%s' "$KEYSTORE_BASE64" | tr -d ' \r\n' | base64 -d > "$KEYSTORE"
+            if ! keytool -list -keystore "$KEYSTORE" -storepass "$KEYSTORE_PASSWORD" -alias "$KEYSTORE_ALIAS" > /dev/null 2>&1; then
+              echo "::error::Keystore illisible : vérifie ANDROID_KEYSTORE_BASE64, l'alias et le mot de passe."
+              exit 1
+            fi
+            echo "SIGNING=ta clé de release" >> "$GITHUB_ENV"
+          else
+            KEYSTORE_ALIAS=temporaire
+            KEYSTORE_PASSWORD=$(openssl rand -hex 16)
+            echo "::add-mask::$KEYSTORE_PASSWORD"
+            keytool -genkeypair -noprompt -keystore "$KEYSTORE" -alias "$KEYSTORE_ALIAS" \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass "$KEYSTORE_PASSWORD" -keypass "$KEYSTORE_PASSWORD" \
+              -dname "CN=Runaway Train (cle temporaire)"
+            echo "::warning title=APK signé avec une clé temporaire::Ajoute les secrets ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_ALIAS et ANDROID_KEYSTORE_PASSWORD (voir le README)."
+            echo "SIGNING=clé temporaire (ajoute les secrets ANDROID_KEYSTORE_*)" >> "$GITHUB_ENV"
+          fi
+          {
+            echo "GODOT_ANDROID_KEYSTORE_RELEASE_PATH=$KEYSTORE"
+            echo "GODOT_ANDROID_KEYSTORE_RELEASE_USER=$KEYSTORE_ALIAS"
+            echo "GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD=$KEYSTORE_PASSWORD"
+          } >> "$GITHUB_ENV"
+
+      - name: Importer le projet
+        run: timeout 600 "$GODOT" --headless --path . --import
+
+      - name: Exporter
+        run: |
+          mkdir -p builds/android builds/windows builds/linux builds/out
+          export_preset() {
+            timeout 900 "$GODOT" --headless --path . --export-release "$1" "$2"
+            if [ ! -s "$2" ]; then
+              echo "::error::Export « $1 » raté : $2 est absent."
+              exit 1
+            fi
+          }
+          export_preset "Android" "builds/android/RunawayTrain.apk"
+          export_preset "Windows" "builds/windows/RunawayTrain.exe"
+          export_preset "Linux" "builds/linux/RunawayTrain.x86_64"
+          cp builds/android/RunawayTrain.apk "builds/out/RunawayTrain-${VERSION}-android.apk"
+          (cd builds/windows && zip -q -9 "../out/RunawayTrain-${VERSION}-windows.zip" RunawayTrain.exe)
+          (cd builds/linux && zip -q -9 "../out/RunawayTrain-${VERSION}-linux.zip" RunawayTrain.x86_64)
+          ls -la builds/out
+
+      # Vérifie la signature et affiche l'empreinte du certificat : c'est elle qui doit
+      # rester la même d'une version à l'autre.
+      - name: Vérifier la signature de l'APK
+        run: |
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -maxdepth 2 -name apksigner | sort -V | tail -1)
+          "$APKSIGNER" verify --print-certs "builds/out/RunawayTrain-${VERSION}-android.apk" | tee "$RUNNER_TEMP/certs.txt"
+          DIGEST=$(grep -m1 "SHA-256 digest" "$RUNNER_TEMP/certs.txt" | awk -F': ' '{print $2}' || true)
+          {
+            echo "### Runaway Train ${VERSION}"
+            echo ""
+            echo "- Signature Android : ${SIGNING}"
+            echo "- Empreinte SHA-256 du certificat : \`${DIGEST}\`"
+            echo "- Code de version Android : ${GITHUB_RUN_NUMBER}"
+            echo ""
+            echo "| Fichier | Taille |"
+            echo "|---|---|"
+            for f in builds/out/*; do echo "| $(basename "$f") | $(du -h "$f" | cut -f1) |"; done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: RunawayTrain-${{ env.VERSION }}
+          path: builds/out/*
+          retention-days: 14
+          if-no-files-found: error
+
+      # Sur un tag : ajoute les fichiers à la Release du tag. Si elle n'existe pas encore,
+      # elle est créée en brouillon (pré-version pour rc/alpha/beta) : tu la publies toi-même.
+      - name: Release GitHub
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          FILES=(builds/out/*)
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "${FILES[@]}" --clobber
+          else
+            FLAGS=(--draft --generate-notes --title "Runaway Train $GITHUB_REF_NAME")
+            if [[ "$GITHUB_REF_NAME" =~ (rc|alpha|beta) ]]; then
+              FLAGS+=(--prerelease)
+            fi
+            gh release create "$GITHUB_REF_NAME" "${FILES[@]}" "${FLAGS[@]}"
+          fi
