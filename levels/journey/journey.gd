@@ -60,6 +60,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _paint_scenery() -> void:
 	BiomeData.apply_ground(_ground, GameState.region())
+	# Lumière du milieu du trajet (l'arrivée est à GameState.clock_minutes).
+	var light := CanvasModulate.new()
+	light.name = "DayLight"
+	light.color = DayClock.sky_color(GameState.clock_minutes - DayClock.TRAVEL_MINUTES / 2)
+	add_child(light)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = GameState.current_seed
 	_scenery.repeat_size = Vector2(STRIP_TILES * TILE_SIZE, 0.0)
@@ -126,6 +131,10 @@ func _fill_texts() -> void:
 		_description.text += "\nTrain %s. Répare-le à la cabine." % GameState.describe_condition()
 	if not GameState.last_production.is_empty():
 		_description.text += "\nPendant le trajet, les machines du train ont produit : %s." % MenuKit.describe_amounts(GameState.last_production)
+	_description.text += "\nArrivée vers %s, %s (%s)." % [DayClock.time_text(GameState.clock_minutes),
+		"jour %d" % DayClock.day(GameState.clock_minutes), DayClock.period_name(GameState.clock_minutes)]
+	if DayClock.is_night(GameState.clock_minutes) and not GameState.is_refuge_stop():
+		_description.text += " La nuit, la ruche chasse et les pilleurs somnolent."
 	_storage.text = _storage_summary() + "\n" + _crew_summary()
 
 

@@ -625,8 +625,43 @@ EQUIPMENT_ICONS = {
     "weapon_sledge": sledgehammer,
 }
 
+
+def sun() -> Image.Image:
+    return outline(from_map([
+        "............",
+        ".....y......",
+        "..y..y..y...",
+        "...yyyyy....",
+        "..yyYYYyy...",
+        "yyyYYYYYyyy.",
+        "..yyYYYyy...",
+        "...yyyyy....",
+        "..y..y..y...",
+        ".....y......",
+        "............",
+        "............",
+    ], {"y": "#f2c94c", "Y": "#ffe9a3"}))
+
+
+def moon() -> Image.Image:
+    return outline(from_map([
+        "............",
+        "....mmm.....",
+        "...mmM......",
+        "..mmM.......",
+        "..mmM.......",
+        "..mmM.......",
+        "..mmmM......",
+        "...mmmMM....",
+        "....mmmm....",
+        "............",
+        "............",
+        "............",
+    ], {"m": "#c9d6ff", "M": "#8fa0d8"}))
+
+
 ICONS = {
-    "health": heart, "infection": spore, "timer": clock, "bag": bag, "order": star, "recruit": person, "plan": plan,
+    "health": heart, "infection": spore, "timer": clock, "sun": sun, "moon": moon, "bag": bag, "order": star, "recruit": person, "plan": plan,
     "scrap": scrap, "wood": wood,
     "herb": lambda: leaf("#6fbf4a", "#3f7a2a", "#b5e88f"),
     "infected_herb": lambda: leaf("#a04fd0", "#5e2585", "#d9a6ff", dots=True),

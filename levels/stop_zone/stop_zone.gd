@@ -41,6 +41,13 @@ const COVER_RADII: Dictionary[String, float] = {
 }
 ## Abri du train : autour de la porte, sous l'auvent.
 const TRAIN_COVER_RADIUS: float = 56.0
+## La nuit : lanterne du joueur, lumière du train, lueur des plantes infectées.
+const LANTERN_ENERGY: float = 1.1
+const LANTERN_SCALE: float = 1.2
+const LANTERN_COLOR: Color = Color(1.0, 0.86, 0.62)
+const TRAIN_LIGHT_SCALE: float = 1.8
+const GLOW_SCALE: float = 0.4
+const GLOW_COLOR: Color = Color(0.72, 0.38, 1.0)
 ## Chance de trouver un plan en fouillant une caisse.
 const CACHE_PLAN_CHANCE: float = 0.2
 const GROUND_SOURCE_ID: int = 0
@@ -81,6 +88,14 @@ var horde: Horde
 var _horde_event: EventData
 var _train_attacked: bool = false
 var _train_broke_down: bool = false
+## Heure à l'arrivée (minutes, voir DayClock) ; elle avance pendant l'arrêt.
+var _start_minutes: int = 0
+var _night: bool = false
+var _clock_shown: int = -1
+var _day_light: CanvasModulate
+var _lantern: PointLight2D
+var _train_light: PointLight2D
+var _glows: Array[PointLight2D] = []
 
 ## Hasard des rencontres (gains aléatoires, prénoms, infection cachée).
 var _encounter_rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -113,6 +128,8 @@ func _ready() -> void:
 	_build_bounds()
 	_setup_camera()
 	_wire_systems()
+	_start_minutes = GameState.clock_minutes
+	_setup_lights()
 	_setup_event()
 	_setup_horde(zone_seed)
 	# Train critique : il repart plus tôt.
@@ -124,11 +141,11 @@ func _ready() -> void:
 ## Le biome : sol, lumière, ambiance (neige, brume).
 func _apply_biome() -> void:
 	BiomeData.apply_ground(_ground, biome)
-	if biome.ambient != Color.WHITE:
-		var light := CanvasModulate.new()
-		light.name = "BiomeLight"
-		light.color = biome.ambient
-		add_child(light)
+	# Lumière du monde : teinte du biome le jour, bleu nuit la nuit (voir _update_daylight).
+	_day_light = CanvasModulate.new()
+	_day_light.name = "BiomeLight"
+	_day_light.color = biome.ambient
+	add_child(_day_light)
 	var weather := Weather.make(biome.weather)
 	if weather:
 		add_child(weather)
@@ -144,6 +161,7 @@ func _physics_process(delta: float) -> void:
 		_show_rain_time()
 	if horde:
 		horde.tick(delta)
+	_update_daylight()
 
 
 func _refresh_speed() -> void:
@@ -200,6 +218,8 @@ func _apply_layout() -> void:
 			_covers.append(Vector3(spawn.position.x, spawn.position.y, cover))
 		if node is Harvestable:
 			_connect_harvestable(node as Harvestable, spawn.kind)
+		if spawn.kind == &"infected_herb":
+			_add_glow(node)
 		elif node is EncounterSpot:
 			var spot := node as EncounterSpot
 			spot.encounter = EncounterLibrary.get_encounter(spawn.data)
@@ -217,6 +237,7 @@ func _spawn_enemy(enemy_data: EnemyData, at: Vector2) -> Enemy:
 	enemy.shot_fired.connect(_on_enemy_shot)
 	enemy.grabbed.connect(_on_enemy_grab)
 	enemy.died.connect(_on_enemy_died)
+	enemy.set_night(_night)
 	return enemy
 
 
@@ -335,6 +356,8 @@ func _grow_sprouts() -> int:
 		_world.add_child(herb)
 		if herb is Harvestable:
 			_connect_harvestable(herb as Harvestable, &"infected_herb")
+		_add_glow(herb)
+	_update_daylight(true)
 	return spots.size()
 
 
@@ -369,11 +392,93 @@ func _infected_spots(count: int, min_distance: float) -> Array[Vector2]:
 	return spots
 
 
+# --- Jour et nuit -------------------------------------------------------------------
+
+## Heure actuelle (minutes) : celle de l'arrivée, plus le temps passé à l'arrêt.
+func clock_now() -> int:
+	return _start_minutes + int((_session.duration - _session.remaining) * DayClock.MINUTES_PER_SECOND)
+
+
+func _setup_lights() -> void:
+	_lantern = _make_light(LANTERN_SCALE, LANTERN_COLOR)
+	_lantern.name = "Lantern"
+	_player.add_child(_lantern)
+	_train_light = _make_light(TRAIN_LIGHT_SCALE, LANTERN_COLOR)
+	_train_light.name = "TrainLight"
+	_train_light.position = _train.door.position + Vector2(0.0, 6.0)
+	_train.add_child(_train_light)
+	_update_daylight(true)
+
+
+## Les plantes infectées luisent la nuit (violet : la couleur de l'infection).
+func _add_glow(node: Node) -> void:
+	var glow := _make_light(GLOW_SCALE, GLOW_COLOR)
+	glow.name = "Glow"
+	glow.position = Vector2(0.0, -8.0)
+	node.add_child(glow)
+	_glows.append(glow)
+
+
+static func _make_light(scale: float, color: Color) -> PointLight2D:
+	var light := PointLight2D.new()
+	light.texture = _light_texture()
+	light.texture_scale = scale
+	light.color = color
+	light.energy = 0.0
+	return light
+
+
+static var _cached_light_texture: GradientTexture2D
+
+## Halo rond : blanc au centre, transparent au bord.
+static func _light_texture() -> GradientTexture2D:
+	if _cached_light_texture == null:
+		var gradient := Gradient.new()
+		gradient.set_color(0, Color(1.0, 1.0, 1.0, 1.0))
+		gradient.set_color(1, Color(1.0, 1.0, 1.0, 0.0))
+		gradient.add_point(0.55, Color(1.0, 1.0, 1.0, 0.55))
+		_cached_light_texture = GradientTexture2D.new()
+		_cached_light_texture.gradient = gradient
+		_cached_light_texture.fill = GradientTexture2D.FILL_RADIAL
+		_cached_light_texture.fill_from = Vector2(0.5, 0.5)
+		_cached_light_texture.fill_to = Vector2(1.0, 0.5)
+		_cached_light_texture.width = 128
+		_cached_light_texture.height = 128
+	return _cached_light_texture
+
+
+## Lumière selon l'heure ; à la tombée de la nuit (ou au lever du jour), les ennemis changent.
+func _update_daylight(force: bool = false) -> void:
+	if _day_light == null or _lantern == null:
+		return
+	var now: int = clock_now()
+	var dark: float = 1.0 - DayClock.daylight(now)
+	_day_light.color = DayClock.sky_color(now, biome.ambient)
+	_lantern.energy = LANTERN_ENERGY * dark
+	_train_light.energy = LANTERN_ENERGY * dark
+	for glow: PointLight2D in _glows:
+		if is_instance_valid(glow):
+			glow.energy = dark
+	var night: bool = DayClock.is_night(now)
+	if night != _night or force:
+		var changed: bool = night != _night
+		_night = night
+		for node: Node in get_tree().get_nodes_in_group(Enemy.GROUP):
+			(node as Enemy).set_night(night)
+		if changed and not force:
+			_hud.call(&"toast", "La nuit tombe : la ruche chasse, les pilleurs somnolent." if night else "Le jour se lève.", night)
+	var minute: int = now
+	if minute != _clock_shown:
+		_clock_shown = minute
+		_hud.call(&"set_clock", DayClock.describe(now), night)
+
+
 # --- Horde --------------------------------------------------------------------------
 
 ## Une horde peut surgir peu après l'arrivée : jamais annoncée, tirée de la graine de l'arrêt.
 func _setup_horde(zone_seed: int) -> void:
-	_horde_event = surprise_override if surprise_override else GameState.roll_surprise(biome, GameState.stop_number, zone_seed)
+	_horde_event = surprise_override if surprise_override else GameState.roll_surprise(biome, GameState.stop_number, zone_seed,
+		DayClock.is_night(_start_minutes))
 	if _horde_event == null or _horde_event.id != &"horde":
 		return
 	var rng := RandomNumberGenerator.new()
@@ -653,6 +758,8 @@ func _on_dialog_closed() -> void:
 # --- Fin de la sortie -------------------------------------------------------------
 
 func _on_session_ended(result: ExpeditionResult) -> void:
+	# Le temps passé à l'arrêt compte pour la suite.
+	GameState.clock_minutes = clock_now()
 	_end_combat()
 	_dialog.call(&"close")
 	if result.turned:

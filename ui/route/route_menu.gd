@@ -62,7 +62,9 @@ func open() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override(&"font_size", 11)
 	_box.add_child(title)
-	var subtitle := MenuKit.label("Région : %s · gare refuge à l'arrêt n°%d" % [region.display_name, stops.y], MenuKit.MUTED)
+	var arrival: int = GameState.clock_minutes
+	var subtitle := MenuKit.label("Région : %s · gare refuge à l'arrêt n°%d · arrivée vers %s (%s)" % [
+		region.display_name, stops.y, DayClock.time_text(arrival), DayClock.period_name(arrival)], MenuKit.MUTED)
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_box.add_child(subtitle)
 	_cards = HBoxContainer.new()

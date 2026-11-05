@@ -43,6 +43,10 @@ const ALERT_SIGHT: float = 3.0
 ## Horde : distance au point du train où il s'arrête pour frapper, et vitesse de marche.
 const SIEGE_REACH: float = 8.0
 const SIEGE_SPEED: float = 0.9
+## La nuit : infectés plus dangereux, pilleurs moins vigilants.
+const NIGHT_INFECTED_SIGHT: float = 1.4
+const NIGHT_INFECTED_SPEED: float = 1.15
+const NIGHT_RAIDER_SIGHT: float = 0.65
 
 @export var data: EnemyData
 
@@ -72,6 +76,9 @@ var besieging: bool = false
 var siege_point: Vector2
 ## Le coup en cours vise le train (pas le joueur).
 var _hitting_train: bool = false
+## Réglages de la nuit (voir set_night) : portée de vue et vitesse de poursuite.
+var sight_scale: float = 1.0
+var speed_scale: float = 1.0
 
 
 func _ready() -> void:
@@ -104,7 +111,7 @@ func think(delta: float) -> void:
 		return
 	_timer -= delta
 	_alerted = maxf(_alerted - delta, 0.0)
-	var sight: float = data.sight_range * (ALERT_SIGHT if _alerted > 0.0 else 1.0)
+	var sight: float = data.sight_range * sight_scale * (ALERT_SIGHT if _alerted > 0.0 else 1.0)
 	var has_target: bool = is_instance_valid(target)
 	var to_target: Vector2 = target.global_position - global_position if has_target else Vector2.ZERO
 	var distance: float = to_target.length() if has_target else INF
@@ -126,7 +133,7 @@ func think(delta: float) -> void:
 				_start_windup(to_target)
 			else:
 				facing = to_target.normalized()
-				velocity = facing * data.chase_speed
+				velocity = facing * chase_speed()
 		State.WINDUP:
 			velocity = Vector2.ZERO
 			# Le tireur suit sa cible du regard, puis fige sa visée juste avant de tirer.
@@ -189,9 +196,9 @@ func _start_windup(to_target: Vector2) -> void:
 func _keep_distance(to_target: Vector2, distance: float) -> void:
 	facing = to_target.normalized()
 	if distance < data.flee_range:
-		velocity = -facing * data.chase_speed
+		velocity = -facing * chase_speed()
 	elif distance > data.attack_range:
-		velocity = facing * data.chase_speed
+		velocity = facing * chase_speed()
 	else:
 		_start_windup(to_target)
 
@@ -249,7 +256,25 @@ func _besiege() -> void:
 		_start_windup(Vector2.UP * 8.0)
 		return
 	facing = to_point.normalized()
-	velocity = facing * data.chase_speed * SIEGE_SPEED
+	velocity = facing * chase_speed() * SIEGE_SPEED
+
+
+func chase_speed() -> float:
+	return data.chase_speed * speed_scale
+
+
+## La nuit, la ruche chasse (les infectés voient plus loin et courent plus vite) et les
+## pilleurs dorment à moitié (ils voient moins loin).
+func set_night(night: bool) -> void:
+	if not night or data == null:
+		sight_scale = 1.0
+		speed_scale = 1.0
+	elif data.faction == EnemyData.Faction.INFECTED:
+		sight_scale = NIGHT_INFECTED_SIGHT
+		speed_scale = NIGHT_INFECTED_SPEED
+	else:
+		sight_scale = NIGHT_RAIDER_SIGHT
+		speed_scale = 1.0
 
 
 ## En fait un membre de horde : il fonce sur ce point du train (son nouveau « chez lui »).

@@ -36,6 +36,8 @@ const DOOR_FUNNEL: float = 6.0
 const SIDE_TRACK_ROW: int = 2
 ## Grossissement de la caméra : on est à l'intérieur, on voit de plus près.
 const ZOOM: float = 2.0
+## Les lampes du train : part de la nuit effacée à l'intérieur.
+const INTERIOR_LAMPS: float = 0.45
 ## Taille (à l'écran, avant zoom) des textes posés dans le monde du train.
 const WORLD_FONT_SIZE: float = 8.0
 ## Hauteur fixe de la caméra : le train (paroi du fond comprise) est centré.
@@ -132,6 +134,11 @@ var _route_menu: CanvasLayer
 
 func _ready() -> void:
 	BiomeData.apply_ground(_ground_tiles, GameState.region())
+	# Dehors, l'heure du trajet ; dedans, les lampes du train adoucissent la nuit.
+	var light := CanvasModulate.new()
+	light.name = "DayLight"
+	light.color = DayClock.sky_color(GameState.clock_minutes - DayClock.TRAVEL_MINUTES / 2).lerp(Color.WHITE, INTERIOR_LAMPS)
+	add_child(light)
 	_build_ground()
 	_build_train()
 	_route_menu = RouteMenu.new()
@@ -454,7 +461,8 @@ func _refresh_texts() -> void:
 			("Ordre du capitaine : " + order.text()) if order else "Pas d'ordre en gare"]
 	if not GameState.pending_promotions.is_empty():
 		_order.text += " · Talent à choisir (%s : inventaire)" % InputMode.label_for(&"inventory")
-	_summary.text = "Infection %d %% · Stock %d/%d · Équipage %d/%d · Voitures %d/%d · Train %d %%" % [
+	_summary.text = "Arrivée %s · Infection %d %% · Stock %d/%d · Équipage %d/%d · Voitures %d/%d · Train %d %%" % [
+		DayClock.time_text(GameState.clock_minutes),
 		roundi(GameState.infection * 100.0), GameState.storage_total(), GameState.storage_capacity(),
 		GameState.crew.size(), GameState.beds(), GameState.train.size(), GameState.max_cars(),
 		roundi(GameState.train_condition * 100.0)]

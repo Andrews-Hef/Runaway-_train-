@@ -77,6 +77,8 @@ const MECHANIC_REPAIR: float = 0.1
 const MAX_MECHANICS: int = 2
 ## Mérite pour une horde repoussée (tous ses membres éliminés).
 const HORDE_MERIT: int = 15
+## La nuit, les hordes sont plus fréquentes (multiplie leur chance).
+const NIGHT_HORDE_FACTOR: float = 1.5
 
 ## Points de vie du joueur sans talent.
 const BASE_HEALTH: int = 10
@@ -180,6 +182,9 @@ var pending_promotions: Array[GradeData] = []
 var current_order: CaptainOrders.Order
 ## Infection du joueur (0 à 1) : elle ne baisse qu'avec des médicaments. Voir Infection.
 var infection: float = 0.0
+## Heure du jeu, en minutes depuis le jour 1 à 0h (voir DayClock). Dans le train et
+## au trajet : l'heure d'arrivée au prochain arrêt.
+var clock_minutes: int = DayClock.START_MINUTES
 ## État du train (0 à 1) : la horde l'abîme, on le répare. Il reste d'un arrêt à l'autre.
 var train_condition: float = 1.0
 ## Réparé par les mécaniciens pendant le dernier trajet.
@@ -224,6 +229,7 @@ func new_run(run_seed: int = 0) -> void:
 	infection = 0.0
 	train_condition = 1.0
 	last_repair = 0.0
+	clock_minutes = DayClock.START_MINUTES
 	found_plans.clear()
 	researched_plans.clear()
 	last_production.clear()
@@ -246,6 +252,10 @@ func prepare_next_stop() -> void:
 	if stop_number >= 1:
 		last_production = run_machines()
 		last_repair = _mechanics_repair()
+	# Le temps passe : une heure en gare refuge si on en repart, puis le trajet.
+	if current_refuge != null and stop_number >= 1:
+		clock_minutes += DayClock.REFUGE_MINUTES
+	clock_minutes += DayClock.TRAVEL_MINUTES
 	stop_number += 1
 	route_options.clear()
 	if stop_number % REFUGE_EVERY == 0:
@@ -283,11 +293,13 @@ static func roll_event(biome: BiomeData, stop: int, option_seed: int) -> EventDa
 
 
 ## Surprise d'un arrêt (horde), tirée de sa graine à l'arrivée : jamais annoncée.
-static func roll_surprise(biome: BiomeData, stop: int, stop_seed: int) -> EventData:
+## La nuit, les hordes sont plus fréquentes.
+static func roll_surprise(biome: BiomeData, stop: int, stop_seed: int, night: bool = false) -> EventData:
 	var surprise_rng := RandomNumberGenerator.new()
 	surprise_rng.seed = stop_seed + 29
 	for event: EventData in EVENTS:
-		if not event.announced and surprise_rng.randf() < event.chance_for(biome, stop):
+		var chance: float = event.chance_for(biome, stop) * (NIGHT_HORDE_FACTOR if night else 1.0)
+		if not event.announced and surprise_rng.randf() < chance:
 			return event
 	return null
 
@@ -800,7 +812,8 @@ func to_save() -> Dictionary:
 		equipped.append(String(item.id))
 	return {
 		"version": SAVE_VERSION,
-		"label": "Arrêt n°%d : %s" % [stop_number, region().display_name if has_route_choice() else stop_name()],
+		"label": "Jour %d · Arrêt n°%d : %s" % [DayClock.day(clock_minutes), stop_number,
+			region().display_name if has_route_choice() else stop_name()],
 		"stop_number": stop_number,
 		"zone": String(current_zone.id) if current_zone else "",
 		"refuge": String(current_refuge.id) if current_refuge else "",
@@ -820,6 +833,7 @@ func to_save() -> Dictionary:
 		"pending_promotions": pending_promotions.map(func(g: GradeData) -> String: return String(g.id)),
 		"infection": infection,
 		"train_condition": train_condition,
+		"clock": clock_minutes,
 		"found_plans": found_plans.map(func(id: StringName) -> String: return String(id)),
 		"researched_plans": researched_plans.map(func(id: StringName) -> String: return String(id)),
 		"order": String(current_order.data.id) if current_order else "",
@@ -893,6 +907,7 @@ func load_save(data: Dictionary) -> bool:
 			pending_promotions.append(promotion)
 	infection = clampf(float(data.get("infection", 0.0)), 0.0, 1.0)
 	train_condition = clampf(float(data.get("train_condition", 1.0)), 0.0, 1.0)
+	clock_minutes = maxi(int(data.get("clock", DayClock.START_MINUTES)), 0)
 	found_plans.clear()
 	for id: String in data.get("found_plans", []):
 		found_plans.append(StringName(id))

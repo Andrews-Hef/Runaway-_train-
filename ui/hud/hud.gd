@@ -12,6 +12,8 @@ const OUTLINE_COLOR: Color = Color(0.06, 0.05, 0.06)
 const BAG_ICON: Texture2D = preload("res://assets/ui/icons/bag.png")
 const RECRUIT_ICON: Texture2D = preload("res://assets/ui/icons/recruit.png")
 const PLAN_ICON: Texture2D = preload("res://assets/ui/icons/plan.png")
+const SUN_ICON: Texture2D = preload("res://assets/ui/icons/sun.png")
+const MOON_ICON: Texture2D = preload("res://assets/ui/icons/moon.png")
 ## Police des chiffres : Barlow Bold (OFL), plus grosse que le texte.
 const NUMBERS_FONT: Font = preload("res://assets/fonts/barlow/Barlow-Bold.ttf")
 const NUMBERS_SIZE: int = 11
@@ -53,6 +55,9 @@ var _bag_label: Label
 var _bag_bar: StageBar
 ## Météo (pluie infectée) : compte à rebours et abri, sous l'infection.
 var _weather_label: Label
+## Horloge : jour et heure, icône soleil ou lune (sous le temps d'arrêt).
+var _clock_icon: TextureRect
+var _clock_label: Label
 ## État du train (pendant une horde) : texte et jauge.
 var _train_label: Label
 var _train_bar: StageBar
@@ -76,6 +81,19 @@ func _ready() -> void:
 	var bar := EquipmentBar.new()
 	bar.name = "EquipmentBar"
 	%HealthBar.get_parent().add_child(bar)
+	var clock_row := HBoxContainer.new()
+	clock_row.name = "ClockRow"
+	clock_row.add_theme_constant_override(&"separation", 3)
+	clock_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_clock_icon = MenuKit.icon(SUN_ICON, 12.0)
+	clock_row.add_child(_clock_icon)
+	_clock_label = Label.new()
+	_clock_label.name = "ClockLabel"
+	_clock_label.add_theme_color_override(&"font_color", Color(0.85, 0.85, 0.88))
+	clock_row.add_child(_clock_label)
+	var status_box: Node = _timer_label.get_parent().get_parent()
+	status_box.add_child(clock_row)
+	status_box.move_child(clock_row, _timer_label.get_parent().get_index() + 1)
 	_weather_label = Label.new()
 	_weather_label.name = "WeatherLabel"
 	_weather_label.visible = false
@@ -185,6 +203,13 @@ func _refresh_order() -> void:
 	var color: Color = INK_DONE if done else INK
 	_order_text.add_theme_color_override(&"font_color", color)
 	_order_progress.add_theme_color_override(&"font_color", color)
+
+
+## Jour et heure (« Jour 2 · 21:40 »), lune la nuit.
+func set_clock(text: String, night: bool) -> void:
+	_clock_label.text = text
+	_clock_icon.texture = MOON_ICON if night else SUN_ICON
+	_clock_label.add_theme_color_override(&"font_color", Color(0.7, 0.76, 1.0) if night else Color(0.85, 0.85, 0.88))
 
 
 ## État du train pendant une horde : « Train 84 % » et sa jauge (repères abîmé, critique).

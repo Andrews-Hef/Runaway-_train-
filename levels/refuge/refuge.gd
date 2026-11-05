@@ -64,6 +64,11 @@ func _ready() -> void:
 	InputMode.changed.connect(func(_device: int) -> void: _refresh_prompt())
 	_title.text = "Arrêt n°%d : %s" % [GameState.stop_number, refuge.display_name]
 	_subtitle.text = "Partie sauvegardée · Zone sûre, le train attend. Remonte à bord pour repartir."
+	# L'heure d'arrivée : la gare est éclairée, la nuit y est plus douce que dehors.
+	var light := CanvasModulate.new()
+	light.name = "DayLight"
+	light.color = DayClock.sky_color(GameState.clock_minutes).lerp(Color.WHITE, 0.35)
+	add_child(light)
 	# Équipement porté, en haut à gauche.
 	_fade.get_parent().add_child(EquipmentBar.make_panel())
 	_fade.get_parent().move_child(_fade, -1)
