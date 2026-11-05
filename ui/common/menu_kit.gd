@@ -59,6 +59,22 @@ static func clear(container: Container) -> void:
 		child.queue_free()
 
 
+## Donne le focus (clavier, manette) au prochain frame, si le contrôle est encore
+## affiché : un menu reconstruit entre-temps (MenuKit.clear) a pu le retirer.
+static func focus_later(control: Control) -> void:
+	_focus_if_shown.call_deferred(control)
+
+
+static func _focus_if_shown(control: Variant) -> void:
+	if is_instance_valid(control) and (control as Control).is_inside_tree() and (control as Control).is_visible_in_tree():
+		(control as Control).grab_focus()
+
+
+## Version du jeu (« v0.0.1-rc1 ») : la CI y met le tag ou « -dev.<n° du run> ».
+static func version_text() -> String:
+	return "v%s" % ProjectSettings.get_setting("application/config/version", "?")
+
+
 ## « 3 bois, 2 tissu ».
 static func describe_amounts(amounts: Dictionary[StringName, int]) -> String:
 	var parts: PackedStringArray = []

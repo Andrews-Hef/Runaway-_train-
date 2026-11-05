@@ -7,6 +7,9 @@ extends CanvasLayer
 ##   équipement à bord ; onglet Grade (mérite, ordre, choix des talents).
 ## - Sur téléphone : deux boutons à droite de l'écran, « Sac » et « II ».
 ## - À l'arrivée en zone et dans le train : rappel des touches pendant quelques secondes.
+## - Android : le bouton retour fait comme Échap (il ne quitte pas le jeu, sauf depuis
+##   l'écran titre). Quand l'app passe en arrière-plan, le jeu se met en pause et se
+##   sauvegarde si possible (Android peut fermer une app en arrière-plan).
 ##
 ## L'interface est construite en code (comme les menus du train) et lit GameState.
 
@@ -23,6 +26,8 @@ const SCENE_KINDS: Dictionary[String, StringName] = {
 	"res://levels/refuge/refuge.tscn": &"refuge",
 	"res://levels/journey/journey.tscn": &"journey",
 }
+## Scènes où l'on peut sauvegarder à tout moment (on reprend au trajet, rien n'est perdu).
+const SAVABLE_KINDS: Array[StringName] = [&"train", &"journey"]
 ## Scènes avec les boutons tactiles « Sac » et « II » (le trajet n'a pas d'interface).
 const TOUCH_BUTTON_KINDS: Array[StringName] = [&"zone", &"train", &"refuge"]
 ## Durée du rappel des touches.
@@ -80,6 +85,48 @@ func is_open() -> bool:
 	return view != View.NONE
 
 
+# --- Système (Android : bouton retour, arrière-plan) ---------------------------------
+
+func _notification(what: int) -> void:
+	match what:
+		NOTIFICATION_WM_GO_BACK_REQUEST:
+			go_back()
+		NOTIFICATION_APPLICATION_PAUSED, NOTIFICATION_APPLICATION_FOCUS_OUT:
+			on_app_hidden()
+
+
+## Bouton retour d'Android : exactement comme Échap. Il ferme le menu ouvert (celui de
+## la scène d'abord, comme le menu du train), sinon il ouvre la pause. Sur l'écran
+## titre, c'est la scène qui décide (annuler, ou quitter le jeu).
+func go_back() -> void:
+	if scene_kind() == &"":
+		var scene: Node = get_tree().current_scene
+		if scene != null and scene.has_method(&"go_back"):
+			scene.call(&"go_back")
+		return
+	var escape := InputEventAction.new()
+	escape.action = &"pause"
+	escape.pressed = true
+	get_viewport().push_input(escape)
+
+
+## L'app passe en arrière-plan (appel, notification, bouton accueil, autre fenêtre) :
+## sauvegarde si la scène le permet, et pause pour ne rien rater au retour.
+func on_app_hidden() -> void:
+	save_if_possible()
+	if view == View.NONE and is_available():
+		open_pause()
+
+
+## Sauvegarde la partie telle quelle, si on est dans le train ou en trajet (on y
+## reprendra). En zone ou en gare, la reprise se fait au dernier point sauvegardé.
+func save_if_possible() -> bool:
+	if not scene_kind() in SAVABLE_KINDS:
+		return false
+	Campaign.autosave_journey()
+	return true
+
+
 # --- Entrées ------------------------------------------------------------------------
 
 ## Ouvrir : en dernier (les menus de la scène, comme celui du train, se ferment d'abord
@@ -131,7 +178,7 @@ func open_inventory(tab: InventoryTab = InventoryTab.ITEMS) -> void:
 	_inventory_panel.visible = true
 	_root.visible = true
 	_update_touch_buttons()
-	_inventory_tabs.get_tab_bar().grab_focus.call_deferred()
+	MenuKit.focus_later(_inventory_tabs.get_tab_bar())
 
 
 func close() -> void:
@@ -299,7 +346,11 @@ func _show_pause_buttons() -> void:
 	_pause_box.add_child(_button("Écran titre", _confirm_title))
 	if not OS.has_feature("mobile") and not OS.has_feature("web"):
 		_pause_box.add_child(_button("Quitter le jeu", func() -> void: get_tree().quit()))
-	resume.grab_focus.call_deferred()
+	var version := MenuKit.label(MenuKit.version_text(), MenuKit.MUTED)
+	version.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	version.add_theme_font_size_override(&"font_size", 7)
+	_pause_box.add_child(version)
+	MenuKit.focus_later(resume)
 
 
 func _show_controls() -> void:
@@ -315,7 +366,7 @@ func _show_controls() -> void:
 		_pause_box.add_child(row)
 	var back := _button("Retour", _show_pause_buttons)
 	_pause_box.add_child(back)
-	back.grab_focus.call_deferred()
+	MenuKit.focus_later(back)
 
 
 ## Les commandes du périphérique : [action, touche(s)].
@@ -326,7 +377,7 @@ static func controls_lines(device: int) -> Array[Array]:
 				["Inventaire", "Y"], ["Pause", "Start"], ["Retour", "B"]]
 		InputMode.Device.TOUCH:
 			return [["Se déplacer", "Joystick à gauche"], ["Frapper", "Bouton Coup"], ["Agir, fouiller", "Bouton Agir (maintenir)"],
-				["Inventaire", "Bouton Sac, à droite"], ["Pause", "Bouton II, à droite"]]
+				["Inventaire", "Bouton Sac, à droite"], ["Pause", "Bouton II, à droite"], ["Retour", "Bouton retour du téléphone"]]
 	return [["Se déplacer", "ZQSD, WASD ou flèches"], ["Frapper", "Espace ou clic gauche"],
 		["Agir, fouiller", "E (maintenir)"], ["Inventaire", "I ou Tab"], ["Pause", "Échap"]]
 
@@ -342,7 +393,7 @@ func _confirm_title() -> void:
 	_pause_box.add_child(_button("Oui, écran titre", _go_to_title))
 	var stay := _button("Non, reprendre", _show_pause_buttons)
 	_pause_box.add_child(stay)
-	stay.grab_focus.call_deferred()
+	MenuKit.focus_later(stay)
 
 
 ## Ce qu'on perd en quittant ici.
@@ -357,8 +408,7 @@ static func quit_warning(kind: StringName) -> String:
 
 func _go_to_title() -> void:
 	# Dans le train, rien n'est perdu : on sauvegarde la session telle quelle.
-	if scene_kind() == &"train" or scene_kind() == &"journey":
-		Campaign.autosave_journey()
+	save_if_possible()
 	view = View.NONE
 	_root.visible = false
 	get_tree().paused = false

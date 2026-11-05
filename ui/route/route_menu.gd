@@ -84,7 +84,7 @@ func open() -> void:
 	_box.add_child(cancel)
 	_root.visible = true
 	if first_button:
-		_focus.call_deferred(first_button)
+		MenuKit.focus_later(first_button)
 
 
 func close() -> void:
@@ -141,12 +141,6 @@ func _add_card(option: GameStateScript.StopOption, index: int) -> Button:
 	return button
 
 
-## Focus manette/clavier, si le bouton est encore affiché (le menu a pu changer entre-temps).
-static func _focus(button: Variant) -> void:
-	if is_instance_valid(button) and (button as Button).is_inside_tree():
-		(button as Button).grab_focus()
-
-
 static func _available_crew() -> Array[CrewMember]:
 	var able: Array[CrewMember] = []
 	for member: CrewMember in GameState.crew:
@@ -181,7 +175,7 @@ func _show_crew_for(index: int) -> void:
 	back.pressed.connect(open)
 	_box.add_child(back)
 	if first:
-		_focus.call_deferred(first)
+		MenuKit.focus_later(first)
 
 
 func _choose(index: int) -> void:

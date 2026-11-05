@@ -159,12 +159,12 @@ func _fill_promotion() -> void:
 		button.pressed.connect(func() -> void:
 			GameState.choose_perk(perk)
 			_fill_promotion.call_deferred()
-			_button.grab_focus.call_deferred())
+			MenuKit.focus_later(_button))
 		row.add_child(button)
 		if first == null:
 			first = button
 	_career.add_child(row)
-	first.grab_focus.call_deferred()
+	MenuKit.focus_later(first)
 
 
 func _career_line(text: String, color: Color) -> Label:

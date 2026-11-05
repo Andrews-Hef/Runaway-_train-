@@ -4,6 +4,7 @@ extends Node2D
 ## Le train roule en fond, la voie défile.
 
 const TILE_SIZE: int = 16
+const NEW_GAME_TEXT: String = "Nouvelle partie"
 
 @onready var _ground: Parallax2D = $Ground
 @onready var _tiles: TileMapLayer = $Ground/Tiles
@@ -24,7 +25,29 @@ func _ready() -> void:
 	_new_game.pressed.connect(_on_new_game)
 	_hint.text = "Partie sauvegardée à chaque trajet. Rater le train ramène à la dernière gare refuge." if has_save \
 		else "Tu viens d'être recruté à bord. Le capitaine attend."
-	(_continue if has_save else _new_game).grab_focus.call_deferred()
+	MenuKit.focus_later(_continue if has_save else _new_game)
+	_add_version()
+
+
+func _add_version() -> void:
+	var version := MenuKit.label(MenuKit.version_text(), MenuKit.MUTED)
+	version.name = "Version"
+	version.add_theme_font_size_override(&"font_size", 7)
+	$Ui/Root.add_child(version)
+	version.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	version.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	version.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT, Control.PRESET_MODE_MINSIZE, 4)
+
+
+## Bouton retour d'Android (via GameMenu) : annule la confirmation « effacer la partie »,
+## sinon quitte le jeu.
+func go_back() -> void:
+	if _confirm_new:
+		_confirm_new = false
+		_new_game.text = NEW_GAME_TEXT
+		_new_game.grab_focus()
+		return
+	get_tree().quit()
 
 
 func _paint_ground() -> void:

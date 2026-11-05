@@ -53,7 +53,7 @@ func open(tab: Tab) -> void:
 	_refresh()
 	_tabs.current_tab = tab
 	_root.visible = true
-	_close.grab_focus.call_deferred()
+	MenuKit.focus_later(_close)
 
 
 func close() -> void:

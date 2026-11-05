@@ -65,7 +65,7 @@ func open(tab: Tab) -> void:
 		_tabs.set_tab_hidden(i, not linked and i != tab)
 	_hint.visible = not linked
 	_root.visible = true
-	_close.grab_focus.call_deferred()
+	MenuKit.focus_later(_close)
 
 
 func close() -> void:

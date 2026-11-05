@@ -195,3 +195,84 @@ func test_le_hud_montre_la_vie_en_segments_et_les_paliers() -> void:
 	assert_true((exposure as StageBar).marks == [0.3, 0.6, 0.9], "repères Fièvre, Contaminé, Critique")
 	assert_true((hud.get_node("Root/Order") as PanelContainer).theme_type_variation == &"PaperPanel", "ordre sur télégramme")
 	hud.free()
+
+
+# --- Android : bouton retour, arrière-plan, version -----------------------------------
+
+const TITLE: PackedScene = preload("res://levels/title/title.tscn")
+
+
+## Fait comme si `path` était la scène en cours (pour GameMenu.scene_kind()).
+func _fake_scene(path: String) -> Node:
+	var scene := Node.new()
+	scene.scene_file_path = path
+	tree.root.add_child(scene)
+	tree.current_scene = scene
+	return scene
+
+
+func _leave_fake_scene(scene: Node) -> void:
+	GameMenu.close()
+	tree.current_scene = null
+	scene.free()
+	tree.paused = false
+
+
+func test_le_bouton_retour_ne_quitte_pas_le_jeu() -> void:
+	assert_false(ProjectSettings.get_setting("application/config/quit_on_go_back"), "réglage du projet")
+
+
+func test_le_bouton_retour_fait_comme_echap() -> void:
+	var scene := _fake_scene("res://levels/stop_zone/stop_zone.tscn")
+	GameMenu.go_back()
+	assert_true(GameMenu.is_open() and GameMenu.view == GameMenuScript.View.PAUSE, "ouvre la pause")
+	assert_true(tree.paused, "jeu en pause")
+	GameMenu.go_back()
+	assert_false(GameMenu.is_open(), "referme la pause")
+	assert_false(tree.paused, "le jeu reprend")
+	_leave_fake_scene(scene)
+
+
+func test_le_bouton_retour_ferme_d_abord_le_menu_du_train() -> void:
+	var scene := _fake_scene("res://levels/train_interior/train_interior.tscn")
+	var menu: Node = TRAIN_MENU.instantiate()
+	scene.add_child(menu)
+	menu.call(&"open", TrainMenu.Tab.STOCK)
+	GameMenu.go_back()
+	assert_false(menu.call(&"is_open"), "le menu du train se ferme")
+	assert_false(GameMenu.is_open(), "sans ouvrir la pause")
+	_leave_fake_scene(scene)
+
+
+func test_en_arriere_plan_le_jeu_se_met_en_pause_et_sauvegarde() -> void:
+	SaveStore.erase(SaveStore.RESUME)
+	var scene := _fake_scene("res://levels/train_interior/train_interior.tscn")
+	GameMenu.on_app_hidden()
+	assert_true(GameMenu.is_open() and tree.paused, "pause")
+	assert_true(SaveStore.exists(SaveStore.RESUME), "partie sauvegardée")
+	_leave_fake_scene(scene)
+	SaveStore.erase(SaveStore.RESUME)
+	scene = _fake_scene("res://levels/stop_zone/stop_zone.tscn")
+	GameMenu.on_app_hidden()
+	assert_true(GameMenu.is_open(), "en zone : pause aussi")
+	assert_false(SaveStore.exists(SaveStore.RESUME), "mais pas de sauvegarde au milieu d'un arrêt")
+	_leave_fake_scene(scene)
+
+
+func test_la_version_est_affichee() -> void:
+	var version: String = ProjectSettings.get_setting("application/config/version")
+	assert_true(MenuKit.version_text() == "v" + version, "v + version du projet")
+	var title: Node = TITLE.instantiate()
+	tree.root.add_child(title)
+	var label: Label = title.get_node("Ui/Root/Version")
+	assert_true(label.text == MenuKit.version_text(), "sur l'écran titre")
+	title.free()
+
+
+func test_sur_l_ecran_titre_retour_annule_la_confirmation() -> void:
+	var title: Node = TITLE.instantiate()
+	tree.root.add_child(title)
+	title.set(&"_confirm_new", true)
+	title.call(&"go_back")
+	assert_false(title.get(&"_confirm_new"), "confirmation annulée (le jeu ne quitte pas)")
+	title.free()

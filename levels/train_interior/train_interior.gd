@@ -479,12 +479,13 @@ func _send_on_mission(_index: int, member: CrewMember) -> void:
 	_leaving = true
 	_player.set_controls_enabled(false)
 	_prompt.text = "%s descend seul..." % member.display_name
+	# Tout est appliqué avant le fondu : une sauvegarde pendant le fondu (app mise en
+	# arrière-plan) ne doit pas permettre de rejouer l'arrêt.
 	GameState.run_mission(member)
+	GameState.prepare_next_stop()
 	var slow := create_tween()
 	slow.tween_property(_fade, "color:a", 1.0, 0.6)
-	slow.tween_callback(func() -> void:
-		GameState.prepare_next_stop()
-		get_tree().change_scene_to_file(JOURNEY_SCENE))
+	slow.tween_callback(get_tree().change_scene_to_file.bind(JOURNEY_SCENE))
 
 
 ## Scène de l'arrêt à venir : gare refuge ou zone à fouiller.

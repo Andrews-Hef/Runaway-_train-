@@ -124,8 +124,11 @@ Ouvrir `project.godot` dans Godot puis **F5**. Le jeu démarre sur l'écran titr
 |---|---|---|---|
 | Se déplacer | ZQSD en AZERTY (WASD en QWERTY) ou flèches | Stick gauche, croix directionnelle | Joystick : toucher la moitié gauche de l'écran |
 | Agir (maintenir) : récolter, monter à bord | E | A (Xbox) / Croix (PlayStation) | Bouton « Agir » |
-| Coup de barre de fer *(pas encore d'ennemi)* | Espace | X (Xbox) / Carré (PlayStation) | Bouton « Coup » |
-| Pause *(pas encore utilisée)* | Échap | Start | — |
+| Frapper | Espace ou clic gauche | X (Xbox) / Carré (PlayStation) | Bouton « Coup » |
+| Inventaire | I ou Tab | Y (Xbox) / Triangle (PlayStation) | Bouton « Sac », à droite |
+| Pause, retour | Échap | Start (pause), B (retour) | Bouton « II », à droite, ou bouton retour du téléphone |
+
+**Android** : le bouton retour fait comme Échap (il ferme le menu ouvert, sinon il ouvre la pause) et ne quitte le jeu que depuis l'écran titre. Quand l'app passe en arrière-plan (appel, notification, bouton accueil), le jeu se met en pause et se sauvegarde s'il est dans le train ou en trajet : Android peut fermer une app en arrière-plan. Sur PC, quitter la fenêtre met aussi en pause. La version du jeu s'affiche sur l'écran titre et dans le menu pause.
 
 Les touches sont définies par **position physique** : ZQSD fonctionne directement en AZERTY, sans réglage. Les consignes à l'écran s'adaptent au dernier périphérique utilisé (« Maintenir E », « Maintenir A » ou « Maintenir Agir »).
 

@@ -94,7 +94,7 @@ func _build_choices() -> void:
 		if first_enabled == null and not button.disabled:
 			first_enabled = button
 	if first_enabled:
-		first_enabled.grab_focus.call_deferred()
+		MenuKit.focus_later(first_enabled)
 
 
 func _on_continue_pressed() -> void:
