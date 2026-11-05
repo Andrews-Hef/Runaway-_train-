@@ -5,7 +5,7 @@ name: CI
 # ou à la demande (onglet Actions → CI → Run workflow ; fichiers dans les artefacts du run).
 on:
   push:
-    branches: [main]
+    branches: [main, ci-check]
     tags: ["*"]
   pull_request:
   workflow_dispatch:
@@ -41,7 +41,7 @@ jobs:
   build:
     name: Builds (Android, Windows, Linux)
     needs: tests
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/ci-check'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     permissions:
