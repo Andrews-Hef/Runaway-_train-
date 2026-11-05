@@ -78,6 +78,20 @@ func length() -> float:
 	return _base_body_size.x + WAGON_PITCH * _extra_wagons
 
 
+## Un point du flanc du train, côté quai (là où la horde frappe) : t = 0 queue, 1 tête.
+func flank_point(t: float) -> Vector2:
+	var shape := _body_shape.shape as RectangleShape2D
+	var left: float = _body_shape.position.x - shape.size.x / 2.0
+	var local := Vector2(left + shape.size.x * clampf(t, 0.0, 1.0), _body_shape.position.y + shape.size.y / 2.0 + 8.0)
+	return to_global(local)
+
+
+## Coup reçu (horde) : le train rougit un instant.
+func hit_flash() -> void:
+	_cars.modulate = Color(1.0, 0.5, 0.45)
+	create_tween().tween_property(_cars, "modulate", Color.WHITE, 0.3)
+
+
 ## En marche : roues qui tournent et grosse fumée. À l'arrêt : un filet de fumée.
 func set_running(value: bool) -> void:
 	running = value

@@ -120,6 +120,10 @@ func _fill_texts() -> void:
 			_description.text += "\nOrdre du capitaine : %s." % GameState.current_order.text()
 		if GameState.current_event:
 			_description.text += "\n%s." % GameState.current_event.forecast_text
+	if GameState.last_repair > 0.0:
+		_description.text += "\nLes mécaniciens ont réparé le train : +%d %%." % roundi(GameState.last_repair * 100.0)
+	if GameState.condition() != GameState.Condition.GOOD:
+		_description.text += "\nTrain %s. Répare-le à la cabine." % GameState.describe_condition()
 	if not GameState.last_production.is_empty():
 		_description.text += "\nPendant le trajet, les machines du train ont produit : %s." % MenuKit.describe_amounts(GameState.last_production)
 	_storage.text = _storage_summary() + "\n" + _crew_summary()

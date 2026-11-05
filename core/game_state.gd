@@ -17,6 +17,8 @@ signal career_changed
 signal infection_changed
 ## Un plan a été trouvé ou étudié.
 signal plans_changed
+## L'état du train a changé (horde, réparation).
+signal condition_changed
 
 ## Plan qui relie les postes du train (voir stations_linked()).
 const INTERCOM_PLAN: StringName = &"intercom"
@@ -53,10 +55,28 @@ const REGIONS: Array[BiomeData] = [
 ]
 ## Nombre de voies proposées à chaque aiguillage.
 const ROUTE_CHOICES: int = 2
-## Événements d'arrêt possibles (tirés pour chaque voie de l'aiguillage).
+## Événements d'arrêt possibles. Les annoncés (pluie) sont tirés pour chaque voie de
+## l'aiguillage ; les surprises (horde) sont tirées à l'arrivée, sans prévenir.
 const EVENTS: Array[EventData] = [
 	preload("res://data/events/infected_rain.tres"),
+	preload("res://data/events/horde.tres"),
 ]
+## État du train : en dessous, il est abîmé (les machines s'arrêtent)...
+const TRAIN_DAMAGED: float = 0.6
+## ... puis critique (il repart plus tôt : arrêts écourtés).
+const TRAIN_CRITICAL: float = 0.25
+## Arrêts écourtés quand le train est critique (part de la durée normale).
+const CRITICAL_STOP_TIME: float = 0.8
+## Réparation à la cabine : gain et coût.
+const REPAIR_STEP: float = 0.25
+const REPAIR_COST: Dictionary[StringName, int] = {&"scrap": 3, &"wood": 2}
+## Réparation complète au dépôt d'une gare refuge.
+const DEPOT_REPAIR_COST: Dictionary[StringName, int] = {&"scrap": 5}
+## Réparation par mécanicien de l'équipage, à chaque trajet (au plus 2 mécaniciens comptent).
+const MECHANIC_REPAIR: float = 0.1
+const MAX_MECHANICS: int = 2
+## Mérite pour une horde repoussée (tous ses membres éliminés).
+const HORDE_MERIT: int = 15
 
 ## Points de vie du joueur sans talent.
 const BASE_HEALTH: int = 10
@@ -160,6 +180,10 @@ var pending_promotions: Array[GradeData] = []
 var current_order: CaptainOrders.Order
 ## Infection du joueur (0 à 1) : elle ne baisse qu'avec des médicaments. Voir Infection.
 var infection: float = 0.0
+## État du train (0 à 1) : la horde l'abîme, on le répare. Il reste d'un arrêt à l'autre.
+var train_condition: float = 1.0
+## Réparé par les mécaniciens pendant le dernier trajet.
+var last_repair: float = 0.0
 ## Plans trouvés (pas encore étudiés) et plans étudiés (ids de BlueprintData).
 var found_plans: Array[StringName] = []
 var researched_plans: Array[StringName] = []
@@ -198,6 +222,8 @@ func new_run(run_seed: int = 0) -> void:
 	perks.clear()
 	pending_promotions.clear()
 	infection = 0.0
+	train_condition = 1.0
+	last_repair = 0.0
 	found_plans.clear()
 	researched_plans.clear()
 	last_production.clear()
@@ -214,10 +240,12 @@ func new_run(run_seed: int = 0) -> void:
 ## Prépare le prochain arrêt : gare refuge (tous les REFUGE_EVERY arrêts), ou deux voies
 ## à l'aiguillage, tirées parmi les types d'arrêt de la région en cours.
 func prepare_next_stop() -> void:
-	# On quitte un arrêt : les machines du train travaillent pendant le trajet.
+	# On quitte un arrêt : les machines travaillent et les mécaniciens réparent pendant le trajet.
 	last_production.clear()
+	last_repair = 0.0
 	if stop_number >= 1:
 		last_production = run_machines()
+		last_repair = _mechanics_repair()
 	stop_number += 1
 	route_options.clear()
 	if stop_number % REFUGE_EVERY == 0:
@@ -249,7 +277,17 @@ static func roll_event(biome: BiomeData, stop: int, option_seed: int) -> EventDa
 	var event_rng := RandomNumberGenerator.new()
 	event_rng.seed = option_seed + 13
 	for event: EventData in EVENTS:
-		if event_rng.randf() < event.chance_for(biome, stop):
+		if event.announced and event_rng.randf() < event.chance_for(biome, stop):
+			return event
+	return null
+
+
+## Surprise d'un arrêt (horde), tirée de sa graine à l'arrivée : jamais annoncée.
+static func roll_surprise(biome: BiomeData, stop: int, stop_seed: int) -> EventData:
+	var surprise_rng := RandomNumberGenerator.new()
+	surprise_rng.seed = stop_seed + 29
+	for event: EventData in EVENTS:
+		if not event.announced and surprise_rng.randf() < event.chance_for(biome, stop):
 			return event
 	return null
 
@@ -318,7 +356,8 @@ func record_expedition(result: ExpeditionResult) -> void:
 	if not result.boarded:
 		return
 	result.order_completed = current_order != null and current_order.is_completed(result)
-	result.merit_gained = result.kill_merit() + (current_order.data.merit if result.order_completed else 0)
+	result.merit_gained = result.kill_merit() + (current_order.data.merit if result.order_completed else 0) \
+		+ (HORDE_MERIT if result.horde_repelled else 0)
 	result.promotions = add_merit(result.merit_gained)
 	infection = clampf(result.exposure, 0.0, 1.0)
 	infection_changed.emit()
@@ -487,6 +526,9 @@ func make_recipe(recipe: RecipeData) -> bool:
 ## Les machines du train (serre, laboratoire) produisent : renvoie ce qui a été produit.
 func run_machines() -> Dictionary[StringName, int]:
 	var produced: Dictionary[StringName, int] = {}
+	# Train abîmé : plus de courant pour la serre ni le labo.
+	if train_condition < TRAIN_DAMAGED:
+		return produced
 	for wagon: WagonData in train:
 		var production: Dictionary[StringName, int] = wagon.production_at(wagon_level(wagon.id))
 		if production.is_empty() or not TrainRules.missing(wagon.production_cost, storage).is_empty():
@@ -505,6 +547,81 @@ func run_machines() -> Dictionary[StringName, int]:
 	if not produced.is_empty():
 		storage_changed.emit()
 	return produced
+
+
+# --- État du train -----------------------------------------------------------------
+
+enum Condition { GOOD, DAMAGED, CRITICAL }
+
+
+func condition() -> Condition:
+	if train_condition < TRAIN_CRITICAL:
+		return Condition.CRITICAL
+	return Condition.DAMAGED if train_condition < TRAIN_DAMAGED else Condition.GOOD
+
+
+## « 84 % · bon », « 40 % · abîmé : les machines sont à l'arrêt »...
+func describe_condition() -> String:
+	var percent: int = roundi(train_condition * 100.0)
+	match condition():
+		Condition.CRITICAL:
+			return "%d %% · critique : machines à l'arrêt, arrêts écourtés" % percent
+		Condition.DAMAGED:
+			return "%d %% · abîmé : machines à l'arrêt" % percent
+	return "%d %% · bon état" % percent
+
+
+## Coups de la horde. Renvoie l'état restant.
+func damage_train(amount: float) -> float:
+	if amount <= 0.0 or train_condition <= 0.0:
+		return train_condition
+	train_condition = maxf(train_condition - amount, 0.0)
+	condition_changed.emit()
+	return train_condition
+
+
+## Part de la durée normale d'un arrêt : écourté quand le train est critique.
+func stop_time_factor() -> float:
+	return CRITICAL_STOP_TIME if condition() == Condition.CRITICAL else 1.0
+
+
+func can_repair_train() -> bool:
+	return train_condition < 1.0 and TrainRules.missing(REPAIR_COST, storage).is_empty()
+
+
+## Réparation à la cabine : +REPAIR_STEP pour REPAIR_COST. Renvoie false si impossible.
+func repair_train() -> bool:
+	if not can_repair_train():
+		return false
+	TrainRules.pay(REPAIR_COST, storage)
+	train_condition = minf(train_condition + REPAIR_STEP, 1.0)
+	storage_changed.emit()
+	condition_changed.emit()
+	return true
+
+
+## Réparation complète au dépôt d'une gare refuge.
+func repair_train_at_depot() -> bool:
+	if train_condition >= 1.0 or not TrainRules.missing(DEPOT_REPAIR_COST, storage).is_empty():
+		return false
+	TrainRules.pay(DEPOT_REPAIR_COST, storage)
+	train_condition = 1.0
+	storage_changed.emit()
+	condition_changed.emit()
+	return true
+
+
+## Les mécaniciens de l'équipage réparent pendant le trajet. Renvoie le gain.
+func _mechanics_repair() -> float:
+	var mechanics: int = 0
+	for member: CrewMember in crew:
+		if member.role == &"mechanic":
+			mechanics += 1
+	var before: float = train_condition
+	train_condition = minf(train_condition + MECHANIC_REPAIR * mini(mechanics, MAX_MECHANICS), 1.0)
+	if train_condition != before:
+		condition_changed.emit()
+	return train_condition - before
 
 
 # --- Carrière ----------------------------------------------------------------------
@@ -702,6 +819,7 @@ func to_save() -> Dictionary:
 		"perks": perks.map(func(perk: PerkData) -> String: return String(perk.id)),
 		"pending_promotions": pending_promotions.map(func(g: GradeData) -> String: return String(g.id)),
 		"infection": infection,
+		"train_condition": train_condition,
 		"found_plans": found_plans.map(func(id: StringName) -> String: return String(id)),
 		"researched_plans": researched_plans.map(func(id: StringName) -> String: return String(id)),
 		"order": String(current_order.data.id) if current_order else "",
@@ -774,6 +892,7 @@ func load_save(data: Dictionary) -> bool:
 		if promotion:
 			pending_promotions.append(promotion)
 	infection = clampf(float(data.get("infection", 0.0)), 0.0, 1.0)
+	train_condition = clampf(float(data.get("train_condition", 1.0)), 0.0, 1.0)
 	found_plans.clear()
 	for id: String in data.get("found_plans", []):
 		found_plans.append(StringName(id))

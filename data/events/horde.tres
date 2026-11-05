@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="EventData" format=3]
+
+[ext_resource type="Script" path="res://core/event_data.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"horde"
+display_name = "Horde"
+announced = false
+forecast_text = ""
+description = "Un groupe d'infectés sort de nulle part et fonce sur le train. Défends-le, ou il faudra le réparer."
+chances = Dictionary[StringName, float]({
+&"countryside": 0.12,
+&"marsh": 0.15,
+&"city": 0.25,
+&"industrial": 0.2,
+&"tundra": 0.15
+})
+min_stop = 4
+horde_delay = Vector2(6, 12)
+horde_size = Vector2i(5, 7)
+horde_growth = 5
+horde_max = 12
+horde_mix = Dictionary[StringName, float]({
+&"infected": 0.6,
+&"infected_crawler": 0.25,
+&"infected_bloated": 0.15
+})
+train_damage_per_hit = 0.02

@@ -51,6 +51,8 @@ const GROUND_SOURCE_ID: int = 0
 @export var seed_override: int = 0
 ## Événement forcé pour tester (pluie infectée...). Vide = celui de GameState.
 @export var event_override: EventData
+## Surprise forcée pour tester (horde). Vide = tirée à l'arrivée.
+@export var surprise_override: EventData
 
 @onready var _ground: InfectionGround = $Ground
 @onready var _world: Node2D = $World
@@ -74,6 +76,11 @@ var _rain_weather: Weather
 var _covers: Array[Vector3] = []
 var _rain_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _rain_seconds_shown: int = -1
+## Horde de cet arrêt (null s'il n'y en a pas).
+var horde: Horde
+var _horde_event: EventData
+var _train_attacked: bool = false
+var _train_broke_down: bool = false
 
 ## Hasard des rencontres (gains aléatoires, prénoms, infection cachée).
 var _encounter_rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -107,7 +114,9 @@ func _ready() -> void:
 	_setup_camera()
 	_wire_systems()
 	_setup_event()
-	_session.start(layout.stop_duration)
+	_setup_horde(zone_seed)
+	# Train critique : il repart plus tôt.
+	_session.start(roundf(layout.stop_duration * GameState.stop_time_factor()))
 
 
 # --- Application du plan --------------------------------------------------------
@@ -133,6 +142,8 @@ func _physics_process(delta: float) -> void:
 	if rain:
 		rain.tick(delta, is_sheltered(_player.global_position))
 		_show_rain_time()
+	if horde:
+		horde.tick(delta)
 
 
 func _refresh_speed() -> void:
@@ -195,7 +206,7 @@ func _apply_layout() -> void:
 			spot.encounter_requested.connect(_open_encounter)
 
 
-func _spawn_enemy(enemy_data: EnemyData, at: Vector2) -> void:
+func _spawn_enemy(enemy_data: EnemyData, at: Vector2) -> Enemy:
 	var enemy := ENEMY_SCENE.instantiate() as Enemy
 	enemy.data = enemy_data
 	enemy.position = at
@@ -206,6 +217,7 @@ func _spawn_enemy(enemy_data: EnemyData, at: Vector2) -> void:
 	enemy.shot_fired.connect(_on_enemy_shot)
 	enemy.grabbed.connect(_on_enemy_grab)
 	enemy.died.connect(_on_enemy_died)
+	return enemy
 
 
 ## Quatre murs invisibles autour de la zone.
@@ -355,6 +367,61 @@ func _infected_spots(count: int, min_distance: float) -> Array[Vector2]:
 			spots.append(at)
 			taken.append(at)
 	return spots
+
+
+# --- Horde --------------------------------------------------------------------------
+
+## Une horde peut surgir peu après l'arrivée : jamais annoncée, tirée de la graine de l'arrêt.
+func _setup_horde(zone_seed: int) -> void:
+	_horde_event = surprise_override if surprise_override else GameState.roll_surprise(biome, GameState.stop_number, zone_seed)
+	if _horde_event == null or _horde_event.id != &"horde":
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = zone_seed + 31
+	horde = Horde.new()
+	horde.name = "Horde"
+	add_child(horde)
+	horde.setup(_horde_event, GameState.stop_number, rng)
+	horde.arrived.connect(_on_horde_arrived)
+	horde.repelled.connect(_on_horde_repelled)
+
+
+## La horde sort du bas de la carte et fonce sur le train, chacun vers un point du flanc.
+func _on_horde_arrived(members: Array[EnemyData]) -> void:
+	if not _session.is_running():
+		return
+	_hud.call(&"toast", "Une horde ! Elle fonce sur le train : défends-le !", true)
+	_hud.call(&"set_train_condition", GameState.train_condition)
+	var size_px := Vector2(layout.size_in_pixels())
+	var rng := RandomNumberGenerator.new()
+	rng.seed = GameState.current_seed + 37
+	var bottom: float = size_px.y - (ZoneGenerator.BORDER + 1) * ZoneGenerator.TILE_SIZE
+	for i: int in members.size():
+		var at := Vector2(size_px.x * (i + 0.5) / members.size() + rng.randf_range(-20.0, 20.0), bottom - rng.randf_range(0.0, 24.0))
+		var enemy: Enemy = _spawn_enemy(members[i], at.clamp(Vector2(16.0, 16.0), size_px - Vector2(16.0, 16.0)))
+		enemy.join_siege(_train.flank_point(rng.randf()))
+		enemy.train_hit.connect(_on_train_hit)
+		enemy.died.connect(func(_enemy: Enemy) -> void: horde.member_died())
+
+
+func _on_train_hit(enemy: Enemy) -> void:
+	if not _session.is_running() or _train_broke_down:
+		return
+	var left: float = GameState.damage_train(enemy.data.damage * _horde_event.train_damage_per_hit)
+	_train.hit_flash()
+	_hud.call(&"set_train_condition", left)
+	if not _train_attacked:
+		_train_attacked = true
+		_hud.call(&"toast", "La horde frappe le train !", true)
+	if left <= 0.0:
+		_train_broke_down = true
+		_hud.call(&"toast", "Le train est à bout : il démarre en catastrophe ! Remonte vite !", true)
+		_session.remaining = minf(_session.remaining, _session.whistle_time)
+
+
+func _on_horde_repelled() -> void:
+	_session.result.horde_repelled = true
+	_hud.call(&"toast", "Horde repoussée ! +%d mérite au retour." % GameState.HORDE_MERIT, false)
 
 
 # --- Branchement des systèmes ----------------------------------------------------

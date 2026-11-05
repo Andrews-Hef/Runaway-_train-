@@ -25,7 +25,7 @@ var _rng := RandomNumberGenerator.new()
 func _ready() -> void:
 	_root.visible = false
 	_close.pressed.connect(close)
-	for signal_name: StringName in [&"storage_changed", &"crew_changed", &"train_changed"]:
+	for signal_name: StringName in [&"storage_changed", &"crew_changed", &"train_changed", &"condition_changed"]:
 		# Différé : un bouton ne doit pas être détruit pendant son propre clic.
 		GameState.connect(signal_name, _refresh, CONNECT_DEFERRED)
 	_tabs.set_tab_title(Tab.TRADE, "Comptoir")
@@ -111,6 +111,13 @@ func _fill_depot() -> void:
 	MenuKit.clear(_depot_list)
 	_depot_list.add_child(MenuKit.label("Voitures : %d/%d · Locomotive niv. %d" % [
 		GameState.train.size(), GameState.max_cars(), GameState.locomotive_level], MenuKit.GOLD))
+	# Réparation complète du train (abîmé par une horde).
+	var needs_repair: bool = GameState.train_condition < 1.0
+	var can_repair: bool = needs_repair and TrainRules.missing(GameState.DEPOT_REPAIR_COST, GameState.storage).is_empty()
+	_depot_list.add_child(MenuKit.row("Réparer le train à fond (%d %% → 100 %%)" % roundi(GameState.train_condition * 100.0) if needs_repair else "Train en bon état",
+		"Coût : " + MenuKit.describe_amounts(GameState.DEPOT_REPAIR_COST) if needs_repair else "Rien à réparer.",
+		MenuKit.GOOD if can_repair or not needs_repair else MenuKit.BAD, "Réparer", not can_repair,
+		func() -> void: GameState.repair_train_at_depot()))
 	var next: LocomotiveLevel = TrainRules.next_level(GameState.locomotive_level)
 	if next == null:
 		_depot_list.add_child(MenuKit.row("Locomotive au niveau maximum", "Elle tire 8 voitures, on ne peut pas faire mieux.",

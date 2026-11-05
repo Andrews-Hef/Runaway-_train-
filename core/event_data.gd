@@ -6,6 +6,8 @@ extends Resource
 
 @export var id: StringName
 @export var display_name: String
+## Annoncé sur la carte de l'aiguillage (pluie). false : surprise à l'arrivée (horde).
+@export var announced: bool = true
 ## Sur la carte de l'aiguillage et au trajet (« Pluie infectée annoncée »).
 @export var forecast_text: String
 @export_multiline var description: String
@@ -29,6 +31,18 @@ extends Resource
 @export var sprouts: Vector2i = Vector2i(3, 5)
 ## Infectés qui sortent au début (min, max).
 @export var extra_infected: Vector2i = Vector2i(1, 2)
+
+@export_group("Horde")
+## Délai entre l'arrivée et la horde, en secondes (min, max).
+@export var horde_delay: Vector2 = Vector2(6.0, 12.0)
+## Taille de la horde (min, max), plus 1 tous les `horde_growth` arrêts.
+@export var horde_size: Vector2i = Vector2i(5, 7)
+@export var horde_growth: int = 5
+@export var horde_max: int = 12
+## Composition : id d'EnemyData -> poids (un ennemi pas encore apparu à cet arrêt est écarté).
+@export var horde_mix: Dictionary[StringName, float] = {}
+## État du train perdu à chaque coup, par point de dégât de l'ennemi.
+@export var train_damage_per_hit: float = 0.02
 
 
 ## Chance d'arriver à cet arrêt, dans ce biome.

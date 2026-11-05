@@ -34,7 +34,7 @@ func _ready() -> void:
 	_root.visible = false
 	_close.pressed.connect(close)
 	for signal_name: StringName in [&"storage_changed", &"equipment_changed", &"crew_changed", &"train_changed", &"career_changed",
-			&"infection_changed", &"plans_changed"]:
+			&"infection_changed", &"plans_changed", &"condition_changed"]:
 		# Différé : un bouton ne doit pas être détruit pendant son propre clic.
 		GameState.connect(signal_name, _refresh, CONNECT_DEFERRED)
 	_tabs.set_tab_title(Tab.STOCK, "Stock")
@@ -315,6 +315,17 @@ func _fill_train() -> void:
 	_train_list.add_child(MenuKit.label("Voitures : %d/%d — %s" % [GameState.train.size(), GameState.max_cars(), " · ".join(names)], GOLD))
 	_train_list.add_child(MenuKit.label("Couchettes : %d/%d · Stock : %d/%d" % [
 		GameState.crew.size(), GameState.beds(), GameState.storage_total(), GameState.storage_capacity()], MUTED))
+
+	# État du train : la horde l'abîme ; on le répare ici, les mécaniciens pendant le trajet.
+	var damaged: bool = GameState.condition() != GameState.Condition.GOOD
+	_train_list.add_child(MenuKit.label("État du train : " + GameState.describe_condition(), BAD if damaged else GOOD))
+	if GameState.train_condition < 1.0:
+		var can_repair: bool = GameState.can_repair_train()
+		_train_list.add_child(MenuKit.row("Réparer le train (+%d %%)" % roundi(GameState.REPAIR_STEP * 100.0),
+			"Coût : " + MenuKit.describe_amounts(GameState.REPAIR_COST), GOOD if can_repair else BAD,
+			"Réparer", not can_repair, func() -> void: GameState.repair_train()))
+	_train_list.add_child(MenuKit.label("Chaque mécanicien de l'équipage répare %d %% pendant un trajet (%d au plus). Réparation complète au dépôt des gares refuges." % [
+		roundi(GameState.MECHANIC_REPAIR * 100.0), GameState.MAX_MECHANICS], MUTED))
 
 	# Locomotive : elle fixe le nombre de voitures. Le renfort se fait au dépôt d'une gare refuge.
 	var next: LocomotiveLevel = TrainRules.next_level(GameState.locomotive_level)

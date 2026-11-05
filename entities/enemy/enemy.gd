@@ -9,6 +9,8 @@ extends CharacterBody2D
 ##   - rampant : il plaque le joueur (PRISE) et mord jusqu'à ce que le joueur se dégage,
 ##     puis il reste SONNÉ un moment.
 ##   Coup reçu → RECUL (sauf lourds) ; vie à 0 → MORT ; trop loin de chez lui → ERRANCE.
+##   Membre d'une horde (besieging) : au lieu d'errer, il marche sur le train et le frappe
+##   (signal train_hit) ; s'il voit le joueur, il le poursuit, puis retourne au train.
 ##
 ## Il ne sait pas ce que fait son action : il émet un signal, la zone applique les effets
 ## (dégâts, exposition, vol, plaquage).
@@ -17,6 +19,8 @@ signal attack_landed(enemy: Enemy)
 signal shot_fired(enemy: Enemy, projectile: Projectile)
 signal grabbed(enemy: Enemy)
 signal died(enemy: Enemy)
+## Membre d'une horde : son coup a porté sur le train.
+signal train_hit(enemy: Enemy)
 
 enum State { WANDER, CHASE, WINDUP, RECOVER, HURT, DEAD, GRAB, STUNNED }
 
@@ -36,6 +40,9 @@ const HEAVY_MARGIN: float = 10.0
 ## Alarme : durée de l'alerte et portée de vue multipliée pendant ce temps.
 const ALERT_TIME: float = 8.0
 const ALERT_SIGHT: float = 3.0
+## Horde : distance au point du train où il s'arrête pour frapper, et vitesse de marche.
+const SIEGE_REACH: float = 8.0
+const SIEGE_SPEED: float = 0.9
 
 @export var data: EnemyData
 
@@ -60,6 +67,11 @@ var _aim_point: Vector2
 var _rng := RandomNumberGenerator.new()
 ## Temps restant d'alerte (alarme) : il voit beaucoup plus loin et accourt.
 var _alerted: float = 0.0
+## Membre d'une horde : il marche sur `siege_point` (le flanc du train) et le frappe.
+var besieging: bool = false
+var siege_point: Vector2
+## Le coup en cours vise le train (pas le joueur).
+var _hitting_train: bool = false
 
 
 func _ready() -> void:
@@ -100,6 +112,8 @@ func think(delta: float) -> void:
 		State.WANDER:
 			if distance <= sight:
 				state = State.CHASE
+			elif besieging:
+				_besiege()
 			else:
 				_wander(delta)
 		State.CHASE:
@@ -116,7 +130,7 @@ func think(delta: float) -> void:
 		State.WINDUP:
 			velocity = Vector2.ZERO
 			# Le tireur suit sa cible du regard, puis fige sa visée juste avant de tirer.
-			if has_target and _timer > AIM_LOCK:
+			if has_target and _timer > AIM_LOCK and not _hitting_train:
 				_aim_point = target.global_position
 				facing = to_target.normalized()
 			if _timer <= 0.0:
@@ -185,6 +199,13 @@ func _keep_distance(to_target: Vector2, distance: float) -> void:
 ## Fin de l'élan : le coup, le tir ou le plaquage.
 func _release(distance: float) -> void:
 	_telegraph.queue_redraw()
+	if _hitting_train:
+		_hitting_train = false
+		if global_position.distance_to(siege_point) <= SIEGE_REACH * 2.0:
+			train_hit.emit(self)
+		state = State.RECOVER
+		_timer = data.cooldown
+		return
 	match data.archetype:
 		EnemyData.Archetype.SNIPER:
 			_fire()
@@ -218,6 +239,24 @@ func _fire() -> void:
 	projectile.color = data.projectile_color
 	projectile.position = origin
 	shot_fired.emit(self, projectile)
+
+
+## Horde : marcher sur le train, puis le frapper en boucle.
+func _besiege() -> void:
+	var to_point: Vector2 = siege_point - global_position
+	if to_point.length() <= SIEGE_REACH:
+		_hitting_train = true
+		_start_windup(Vector2.UP * 8.0)
+		return
+	facing = to_point.normalized()
+	velocity = facing * data.chase_speed * SIEGE_SPEED
+
+
+## En fait un membre de horde : il fonce sur ce point du train (son nouveau « chez lui »).
+func join_siege(point: Vector2) -> void:
+	besieging = true
+	siege_point = point
+	home = point
 
 
 func _wander(delta: float) -> void:
@@ -255,6 +294,7 @@ func _on_damaged(_amount: int, from: Vector2) -> void:
 	# Un lourd encaisse sans broncher ; un rampant qui tient sa proie ne lâche pas.
 	if data.stagger_immune or state == State.GRAB:
 		return
+	_hitting_train = false
 	state = State.HURT
 	_timer = HURT_TIME
 	_telegraph.queue_redraw()

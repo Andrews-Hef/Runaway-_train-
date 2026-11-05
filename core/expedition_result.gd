@@ -31,6 +31,8 @@ var kills: Dictionary[StringName, int] = {}
 ## Rempli au retour (GameState.record_expedition) : l'ordre du capitaine, le mérite gagné,
 ## et les grades obtenus.
 var order_completed: bool = false
+## Une horde a attaqué pendant l'arrêt, et tous ses membres ont été éliminés.
+var horde_repelled: bool = false
 var merit_gained: int = 0
 var promotions: Array[GradeData] = []
 

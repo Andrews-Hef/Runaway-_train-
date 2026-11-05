@@ -145,7 +145,8 @@ func _ready() -> void:
 	_camera.reset_smoothing()
 	_player.interactor.target_changed.connect(_on_target_changed)
 	_menu.connect(&"closed", _on_menu_closed)
-	for signal_name: StringName in [&"storage_changed", &"crew_changed", &"equipment_changed", &"train_changed", &"career_changed", &"infection_changed"]:
+	for signal_name: StringName in [&"storage_changed", &"crew_changed", &"equipment_changed", &"train_changed", &"career_changed",
+			&"infection_changed", &"condition_changed"]:
 		GameState.connect(signal_name, _refresh_texts)
 	GameState.train_changed.connect(_build_train)
 	InputMode.changed.connect(func(_device: int) -> void: _refresh_prompt())
@@ -453,9 +454,10 @@ func _refresh_texts() -> void:
 			("Ordre du capitaine : " + order.text()) if order else "Pas d'ordre en gare"]
 	if not GameState.pending_promotions.is_empty():
 		_order.text += " · Talent à choisir (%s : inventaire)" % InputMode.label_for(&"inventory")
-	_summary.text = "Infection %d %% · Stock %d/%d · Équipage %d/%d · Voitures %d/%d" % [
+	_summary.text = "Infection %d %% · Stock %d/%d · Équipage %d/%d · Voitures %d/%d · Train %d %%" % [
 		roundi(GameState.infection * 100.0), GameState.storage_total(), GameState.storage_capacity(),
-		GameState.crew.size(), GameState.beds(), GameState.train.size(), GameState.max_cars()]
+		GameState.crew.size(), GameState.beds(), GameState.train.size(), GameState.max_cars(),
+		roundi(GameState.train_condition * 100.0)]
 
 
 func _on_target_changed(target: Interactable) -> void:

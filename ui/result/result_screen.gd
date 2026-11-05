@@ -120,6 +120,11 @@ func _fill_career(result: ExpeditionResult) -> void:
 		kills += amount
 	if kills > 0:
 		_career_line("Ennemis éliminés : %d (+%d mérite)" % [kills, result.kill_merit()], Color(0.85, 0.85, 0.88))
+	if result.horde_repelled:
+		_career_line("Horde repoussée : +%d mérite" % GameState.HORDE_MERIT, RISK_LOW)
+	if GameState.train_condition < 1.0:
+		var color: Color = RISK_HIGH if GameState.condition() != GameState.Condition.GOOD else Color(0.85, 0.85, 0.88)
+		_career_line("Train : %s · à réparer à la cabine" % GameState.describe_condition(), color)
 	_fill_promotion()
 
 

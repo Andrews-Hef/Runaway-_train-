@@ -20,6 +20,10 @@ const INK: Color = Color(0.17, 0.12, 0.08)
 const INK_DONE: Color = Color(0.16, 0.42, 0.14)
 const BAG_FILL: Color = Color(0.85, 0.68, 0.3)
 const BAG_FULL: Color = Color(0.9, 0.3, 0.25)
+## État du train : bon, abîmé, critique.
+const TRAIN_GOOD: Color = Color(0.8, 0.82, 0.86)
+const TRAIN_DAMAGED: Color = Color(1.0, 0.7, 0.3)
+const TRAIN_CRITICAL: Color = Color(1.0, 0.35, 0.3)
 
 @onready var _timer_label: Label = %TimerLabel
 @onready var _health_label: Label = %HealthLabel
@@ -49,6 +53,9 @@ var _bag_label: Label
 var _bag_bar: StageBar
 ## Météo (pluie infectée) : compte à rebours et abri, sous l'infection.
 var _weather_label: Label
+## État du train (pendant une horde) : texte et jauge.
+var _train_label: Label
+var _train_bar: StageBar
 var _loot_grid: GridContainer
 var _extras: VBoxContainer
 var _shown_plans: Array[StringName] = []
@@ -74,6 +81,19 @@ func _ready() -> void:
 	_weather_label.visible = false
 	_zone_warning.get_parent().add_child(_weather_label)
 	_zone_warning.get_parent().move_child(_weather_label, _zone_warning.get_index() + 1)
+	_train_label = Label.new()
+	_train_label.name = "TrainLabel"
+	_train_label.visible = false
+	_zone_warning.get_parent().add_child(_train_label)
+	_zone_warning.get_parent().move_child(_train_label, _weather_label.get_index() + 1)
+	_train_bar = StageBar.new()
+	_train_bar.name = "TrainBar"
+	_train_bar.visible = false
+	_train_bar.custom_minimum_size = Vector2(74.0, 5.0)
+	_train_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_train_bar.marks = [GameState.TRAIN_CRITICAL, GameState.TRAIN_DAMAGED] as Array[float]
+	_zone_warning.get_parent().add_child(_train_bar)
+	_zone_warning.get_parent().move_child(_train_bar, _train_label.get_index() + 1)
 	_outline_labels(_weather_label.get_parent())
 
 
@@ -165,6 +185,17 @@ func _refresh_order() -> void:
 	var color: Color = INK_DONE if done else INK
 	_order_text.add_theme_color_override(&"font_color", color)
 	_order_progress.add_theme_color_override(&"font_color", color)
+
+
+## État du train pendant une horde : « Train 84 % » et sa jauge (repères abîmé, critique).
+func set_train_condition(value: float) -> void:
+	_train_label.visible = true
+	_train_bar.visible = true
+	_train_label.text = "Train %d %%" % roundi(value * 100.0)
+	var color: Color = TRAIN_GOOD if value >= GameState.TRAIN_DAMAGED else (TRAIN_DAMAGED if value >= GameState.TRAIN_CRITICAL else TRAIN_CRITICAL)
+	_train_label.add_theme_color_override(&"font_color", color)
+	_train_bar.fill_color = color
+	_train_bar.value = value
 
 
 ## Ligne météo (pluie infectée) : vide = cachée. `alarm` : en violet vif (à découvert).
