@@ -1,6 +1,7 @@
 class_name Career
 extends RefCounted
-## La carrière du joueur : grades, mérite, talents. Pur et testable.
+## La carrière du joueur : grades, mérite, talents, et ce que chaque grade permet de
+## décider (AUTHORITY). Avant le grade requis, c'est le capitaine qui décide. Pur et testable.
 
 const GRADES: Array[GradeData] = [
 	preload("res://data/grades/recruit.tres"),
@@ -10,6 +11,31 @@ const GRADES: Array[GradeData] = [
 	preload("res://data/grades/lieutenant.tres"),
 	preload("res://data/grades/captain.tres"),
 ]
+
+
+## Ce que le joueur a le droit de décider -> index du grade qui le permet.
+##   &"recruit" : recruter les survivants rencontrés (Soldat)
+##   &"route" : choisir la voie à l'aiguillage (Caporal)
+##   &"crew" : diriger l'équipage (repos, soins, quarantaine, renvoi) (Sergent)
+##   &"build" : construire et agrandir les voitures, renforcer la locomotive (Lieutenant)
+##   &"missions" : envoyer un équipier en mission à sa place (Capitaine)
+const AUTHORITY: Dictionary[StringName, int] = {
+	&"recruit": 1,
+	&"route": 2,
+	&"crew": 3,
+	&"build": 4,
+	&"missions": 5,
+}
+
+
+## Ce grade permet-il cette décision ?
+static func allows(grade_index: int, permission: StringName) -> bool:
+	return grade_index >= AUTHORITY.get(permission, 0)
+
+
+## Nom du grade qui permet cette décision (« Caporal »).
+static func required_grade(permission: StringName) -> String:
+	return GRADES[AUTHORITY.get(permission, 0)].display_name
 
 
 ## Index du grade atteint avec ce mérite.

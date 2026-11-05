@@ -67,6 +67,8 @@ func test_un_echange_doit_rentrer_dans_le_stock() -> void:
 func test_une_recrue_de_la_gare_est_saine_et_prend_une_couchette() -> void:
 	GameState.storage[&"herb"] = 20
 	var offer := _offer({&"herb": 2}, {}, &"medic")
+	assert_false(GameState.use_refuge_offer(offer, RandomNumberGenerator.new()), "une recrue ne recrute pas encore")
+	GameState.merit = Career.GRADES[Career.AUTHORITY[&"recruit"]].merit_needed
 	assert_true(GameState.use_refuge_offer(offer, RandomNumberGenerator.new()), "recrutée")
 	assert_true(GameState.crew.size() == 1 and not GameState.crew[0].infected, "une recrue saine")
 	assert_true(RefugeRules.problem(offer, GameState.storage, 60, 3, true) == RefugeRules.Problem.ALREADY_DONE, "une fois par passage")

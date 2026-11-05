@@ -47,6 +47,19 @@ Un **voyage** d'arrêt en arrêt :
 
 **Grades et ordres du capitaine** : à chaque arrêt (sauf en gare), le capitaine donne un **ordre** adapté à la zone : « Ramène 6 ferrailles », « Élimine 2 pilleurs », « Reviens avec moins de 25 % d'exposition »… Il est suivi en haut de l'écran. Ordre rempli et ennemis éliminés rapportent du **mérite**. Au fil du mérite, tu montes en grade : **Recrue → Soldat → Caporal → Sergent → Lieutenant → Capitaine**. À chaque promotion, tu choisis **un talent parmi deux** (+2 PV, sac +4, dégâts +1, se dégager plus vite, récolte plus rapide, armure…). Onglet **Grade** du menu du train : grade, mérite, ordre en cours, talents.
 
+**Responsabilités par grade** : tu commences recrue, et le capitaine (PNJ) décide de ce qui dépasse ton grade. Tu vois tout, mais c'est lui qui agit, et le trajet le raconte (« Le capitaine a choisi la voie… », « Le capitaine met Malik au repos »).
+
+| Grade (mérite) | Ce que tu débloques | Avant, le capitaine… |
+|---|---|---|
+| Recrue (0) | Sorties, fabrication de ton équipement, étude des plans | — |
+| Soldat (25) | Recruter les survivants rencontrés | … ne t'autorise pas à recruter |
+| Caporal (70) | Choisir la voie à l'aiguillage | … prend la voie la plus sûre |
+| Sergent (130) | Diriger l'équipage : panser, médicament, repos, quarantaine, renvoi | … met au repos les épuisés et isole les infectés |
+| Lieutenant (210) | Construire et agrandir les voitures, dépôt de la gare | … construit un dortoir ou un stock quand il en manque |
+| Capitaine (320) | **Envoyer un équipier en mission** à ta place | — |
+
+**Missions d'équipage** (Capitaine) : au levier, « Envoyer un équipier » sur une voie. Il descend seul pendant que tu restes à bord : l'arrêt est simulé. Il rapporte une part de ce que la zone offre (plus s'il est éclaireur ou fidèle, moins s'il est blessé ou fatigué, 10 objets au plus), se blesse selon le danger, peut revenir infecté sans le savoir, se fatigue beaucoup et gagne un peu de confiance. S'il meurt, l'équipage perd confiance. Une horde sur cette voie abîme le train sans défenseur (−10 %). Le récit s'affiche au trajet suivant.
+
 **Le train** : la locomotive tire un nombre limité de voitures, cabine comprise. On part avec 4 voitures (dortoir, atelier, stock, cabine) et une locomotive qui en tire 5 ; chaque renfort, fait au **dépôt d'une gare refuge**, en ajoute une, **jusqu'à 8**. Les voitures se construisent à bord avec le stock et s'attellent en queue.
 
 | Voiture | Effet | Coût |
@@ -153,6 +166,8 @@ Le forçage est ignoré dans un build release.
 | `InfectedRain` | `levels/stop_zone/infected_rain.gd` | Déroulé de la pluie infectée : alerte, pluie, fin, exposition à découvert |
 | `CrewLife` | `core/crew_life.gd` | Vie de l'équipage pendant un trajet : travail, fatigue, infection, contagion, ruche, mort, confiance, départs |
 | `CrewRequests` | `core/crew_requests.gd` | Demandes personnelles de l'équipage (donner, éliminer, rapporter) et confiance gagnée |
+| `CaptainDecisions` | `core/captain_decisions.gd` | Ce que décide le capitaine quand ton grade ne suffit pas : voie la plus sûre, soins de l'équipage, construction, dépôt |
+| `MissionSim` | `core/mission_sim.gd` | Mission d'équipage simulée (Capitaine) : butin, blessures, infection, fatigue, mort |
 | `DayClock` | `core/day_clock.gd` | Heure du jeu (minutes depuis le jour 1) : jour, lumière du jour, nuit, teinte du ciel |
 | `Horde` | `levels/stop_zone/horde.gd` | Horde surprise : délai, composition, pertes ; ses membres (`Enemy.join_siege`) frappent le train |
 | `ZoneGenerator` | `levels/zone_generator.gd` | Génération pure d'un plan de zone : même profil + même graine = même zone |

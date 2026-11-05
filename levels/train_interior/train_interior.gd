@@ -15,6 +15,7 @@ extends Node2D
 
 const STOP_SCENE: String = "res://levels/stop_zone/stop_zone.tscn"
 const REFUGE_SCENE: String = "res://levels/refuge/refuge.tscn"
+const JOURNEY_SCENE: String = "res://levels/journey/journey.tscn"
 const TrainMenu = preload("res://ui/train/train_menu.gd")
 const RouteMenu = preload("res://ui/route/route_menu.gd")
 
@@ -152,6 +153,7 @@ func _ready() -> void:
 	add_child(_route_menu)
 	_route_menu.connect(&"chosen", func(_index: int) -> void: _leave_for_stop())
 	_route_menu.connect(&"closed", _on_menu_closed)
+	_route_menu.connect(&"mission_chosen", _send_on_mission)
 	_player.position = Vector2(_wagon_x(_start_wagon()) - 40.0, 2.0)
 	_camera.zoom = Vector2(ZOOM, ZOOM)
 	_camera.position = Vector2(_player.position.x, CAMERA_Y)
@@ -472,6 +474,19 @@ func _leave_for_stop() -> void:
 	slow.tween_callback(func() -> void: get_tree().change_scene_to_file(next_scene()))
 
 
+## Grade Capitaine : un équipier part seul ; le joueur reste à bord et le train repart.
+func _send_on_mission(_index: int, member: CrewMember) -> void:
+	_leaving = true
+	_player.set_controls_enabled(false)
+	_prompt.text = "%s descend seul..." % member.display_name
+	GameState.run_mission(member)
+	var slow := create_tween()
+	slow.tween_property(_fade, "color:a", 1.0, 0.6)
+	slow.tween_callback(func() -> void:
+		GameState.prepare_next_stop()
+		get_tree().change_scene_to_file(JOURNEY_SCENE))
+
+
 ## Scène de l'arrêt à venir : gare refuge ou zone à fouiller.
 func next_scene() -> String:
 	return REFUGE_SCENE if GameState.is_refuge_stop() else STOP_SCENE
@@ -485,6 +500,11 @@ func _refresh_texts() -> void:
 		_destination.text = "%s · aiguillage avant l'arrêt n°%d : choisis ta voie au levier de la cabine" % [
 			GameState.region().display_name, GameState.stop_number]
 		_order.text = "%s · Ordre du capitaine : selon la voie choisie" % GameState.grade().display_name
+	elif GameState.route_by_captain:
+		_destination.text = "Arrêt n°%d : %s · voie choisie par le capitaine (%s requis pour choisir)" % [
+			GameState.stop_number, GameState.stop_name(), Career.required_grade(&"route")]
+		_order.text = "%s · %s" % [GameState.grade().display_name,
+			("Ordre du capitaine : " + order.text()) if order else "Pas d'ordre en gare"]
 	else:
 		_destination.text = "En route vers l'arrêt n°%d : %s" % [GameState.stop_number, GameState.stop_name()]
 		_order.text = "%s · %s" % [GameState.grade().display_name,

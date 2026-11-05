@@ -729,7 +729,7 @@ func _open_encounter(spot: EncounterSpot) -> void:
 	_active_spot = spot
 	_player.set_controls_enabled(false)
 	_set_enemies_active(false) # pas de coup dans le dos pendant un dialogue
-	_dialog.call(&"open", spot.encounter, _session.result, _session.capacity, _session.free_beds)
+	_dialog.call(&"open", spot.encounter, _session.result, _session.capacity, _session.free_beds, GameState.can(&"recruit"))
 
 
 func _on_choice_selected(choice: EncounterChoice) -> void:

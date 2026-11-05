@@ -201,6 +201,10 @@ func _fill_crew() -> void:
 		_crew_list.add_child(MenuKit.label("Recrute des survivants dans les refuges pendant les sorties.", MUTED))
 		return
 	_crew_list.add_child(MenuKit.label("Pendant les trajets, chacun travaille selon son rôle et se fatigue ; au repos, on récupère.", MUTED))
+	if not GameState.can(&"crew"):
+		var locked := MenuKit.label("%s : il met au repos les épuisés et isole les infectés. Tu peux remplir leurs demandes." % GameState.locked_text(&"crew"), BAD)
+		locked.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_crew_list.add_child(locked)
 	for member: CrewMember in GameState.crew:
 		_crew_list.add_child(_crew_card(member))
 
@@ -234,17 +238,19 @@ func _crew_card(member: CrewMember) -> PanelContainer:
 	if member.request_kind == &"deliver":
 		actions.add_child(_crew_button("Donner %s" % MenuKit.describe_amounts(CrewRequests.cost(member)),
 			not GameState.can_fulfil_request(member), func() -> void: GameState.fulfil_request(member)))
-	actions.add_child(_crew_button("Panser (1 tissu)", not GameState.can_bandage(member), func() -> void: GameState.bandage(member)))
+	# Diriger l'équipage : à partir de Sergent (avant, le capitaine décide).
+	var command: bool = GameState.can(&"crew")
+	actions.add_child(_crew_button("Panser (1 tissu)", not command or not GameState.can_bandage(member), func() -> void: GameState.bandage(member)))
 	var medicine: LootData = GameState.medicine_for_crew()
 	var medicine_text: String = ("Donner : " + medicine.display_name.to_lower()) if medicine else "Pas de médicament"
-	actions.add_child(_crew_button(medicine_text, medicine == null or (member.infection_known and member.infection == 0),
+	actions.add_child(_crew_button(medicine_text, not command or medicine == null or (member.infection_known and member.infection == 0),
 		func() -> void: GameState.medicate(member)))
-	actions.add_child(_crew_button("Travailler" if member.resting else "Repos", false, func() -> void: GameState.toggle_rest(member)))
-	actions.add_child(_crew_button("Sortir de quarantaine" if member.quarantined else "Quarantaine", not GameState.can_quarantine(member),
+	actions.add_child(_crew_button("Travailler" if member.resting else "Repos", not command, func() -> void: GameState.toggle_rest(member)))
+	actions.add_child(_crew_button("Sortir de quarantaine" if member.quarantined else "Quarantaine", not command or not GameState.can_quarantine(member),
 		func() -> void: GameState.toggle_quarantine(member)))
 	# Renvoyer : on confirme d'un second clic (pas de renvoi par erreur).
 	var confirm: bool = member.get_meta(&"confirm_dismiss", false)
-	actions.add_child(_crew_button("Confirmer le renvoi" if confirm else "Renvoyer", false, func() -> void:
+	actions.add_child(_crew_button("Confirmer le renvoi" if confirm else "Renvoyer", not command, func() -> void:
 		if member.get_meta(&"confirm_dismiss", false):
 			member.remove_meta(&"confirm_dismiss")
 			GameState.dismiss(member)
@@ -419,10 +425,12 @@ func _fill_train() -> void:
 			detail = TrainRules.PROBLEM_TEXTS[problem]
 		elif problem == TrainRules.Problem.NEEDS_PLAN:
 			detail = "Plan à étudier : " + BlueprintCatalog.get_plan(wagon.plan).display_name
+		if not GameState.can(&"build"):
+			detail += " · " + GameState.locked_text(&"build")
 		_train_list.add_child(MenuKit.row(
 			"%s (%s)" % [wagon.display_name, wagon.describe_effects()], detail,
-			GOOD if problem == TrainRules.Problem.NONE else BAD,
-			"Construire", problem != TrainRules.Problem.NONE, func() -> void: GameState.build_wagon(wagon)))
+			GOOD if problem == TrainRules.Problem.NONE and GameState.can(&"build") else BAD,
+			"Construire", problem != TrainRules.Problem.NONE or not GameState.can(&"build"), func() -> void: GameState.build_wagon(wagon)))
 
 	# Agrandir : chaque type de voiture du train, au niveau suivant (toutes ses voitures).
 	var shown: Array[StringName] = []
@@ -446,5 +454,7 @@ func _fill_train() -> void:
 			MenuKit.describe_amounts(TrainRules.upgrade_cost(wagon, level + 1, count))]
 		if problem == TrainRules.Problem.NEEDS_PLAN:
 			detail = "Niv. %d : %s · Plan à étudier : %s" % [level + 1, next_upgrade.describe(), BlueprintCatalog.get_plan(next_upgrade.plan).display_name]
-		_train_list.add_child(MenuKit.row(title, detail, GOOD if problem == TrainRules.Problem.NONE else BAD,
-			"Agrandir", problem != TrainRules.Problem.NONE, func() -> void: GameState.upgrade_wagon(wagon)))
+		if not GameState.can(&"build"):
+			detail += " · " + GameState.locked_text(&"build")
+		_train_list.add_child(MenuKit.row(title, detail, GOOD if problem == TrainRules.Problem.NONE and GameState.can(&"build") else BAD,
+			"Agrandir", problem != TrainRules.Problem.NONE or not GameState.can(&"build"), func() -> void: GameState.upgrade_wagon(wagon)))

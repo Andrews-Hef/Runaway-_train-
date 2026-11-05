@@ -4,19 +4,22 @@ extends RefCounted
 ##
 ## Pur : on lui passe le stock, la place libre, les couchettes libres.
 
-enum Problem { NONE, MISSING_MATERIALS, NO_SPACE, NO_BED, ALREADY_DONE }
+enum Problem { NONE, MISSING_MATERIALS, NO_SPACE, NO_BED, ALREADY_DONE, NO_RANK }
 
 const PROBLEM_TEXTS: Dictionary[Problem, String] = {
 	Problem.MISSING_MATERIALS: "Il manque des matériaux dans le stock.",
 	Problem.NO_SPACE: "Pas assez de place dans le stock du train.",
 	Problem.NO_BED: "Plus de couchette libre : construis un dortoir.",
 	Problem.ALREADY_DONE: "Déjà fait pendant ce passage.",
+	Problem.NO_RANK: "Il faut être Soldat pour recruter.",
 }
 
 
 ## Peut-on prendre cette offre ? `done` : offre déjà prise pendant ce passage.
 static func problem(offer: RefugeOffer, storage: Dictionary[StringName, int], free_space: int,
-		free_beds: int, done: bool = false) -> Problem:
+		free_beds: int, done: bool = false, can_recruit: bool = true) -> Problem:
+	if offer.recruits() and not can_recruit:
+		return Problem.NO_RANK
 	# `done` : recrue déjà prise pendant ce passage, ou plan déjà connu.
 	if done and (offer.recruits() or offer.reward_plan != &""):
 		return Problem.ALREADY_DONE

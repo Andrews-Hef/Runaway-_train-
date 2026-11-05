@@ -204,6 +204,12 @@ var train_condition: float = 1.0
 var last_repair: float = 0.0
 ## Récit du dernier trajet pour l'équipage (travail, maladie, demandes, pertes).
 var last_crew_events: Array[String] = []
+## Décisions du capitaine pendant le dernier trajet (voie, équipage, construction).
+var captain_notes: Array[String] = []
+## La voie de l'aiguillage a été choisie par le capitaine (le joueur n'est pas Caporal).
+var route_by_captain: bool = false
+## Récit de la dernière mission d'équipage (affiché au trajet suivant).
+var last_mission_lines: Array[String] = []
 ## Dégâts de la horde depuis le dernier trajet : l'équipage à bord est blessé.
 var _horde_damage: float = 0.0
 ## Plans trouvés (pas encore étudiés) et plans étudiés (ids de BlueprintData).
@@ -269,10 +275,19 @@ func prepare_next_stop() -> void:
 	last_production.clear()
 	last_repair = 0.0
 	last_crew_events.clear()
+	captain_notes.clear()
+	route_by_captain = false
 	var scouted: bool = false
 	if stop_number >= 1:
 		last_production = run_machines()
+		# Sans le grade, c'est le capitaine qui dirige l'équipage et fait construire.
+		if not can(&"crew"):
+			captain_notes.append_array(CaptainDecisions.manage_crew(crew, has_wagon(&"infirmary"), QUARANTINE_BEDS))
 		scouted = _crew_trajet((stop_number + 1) % REFUGE_EVERY == 0)
+		if not can(&"build"):
+			var built: String = CaptainDecisions.build(self)
+			if not built.is_empty():
+				captain_notes.append(built)
 	# Le temps passe : une heure en gare refuge si on en repart, puis le trajet.
 	if current_refuge != null and stop_number >= 1:
 		clock_minutes += DayClock.REFUGE_MINUTES
@@ -298,6 +313,12 @@ func prepare_next_stop() -> void:
 				option.horde_spotted = roll_surprise(option.zone.biome, stop_number, option.seed,
 					DayClock.is_night(clock_minutes)) != null
 		_apply_option(route_options[0])
+		# Pas encore Caporal : le capitaine choisit la voie (la plus sûre).
+		if route_options.size() > 1 and not can(&"route"):
+			var index: int = CaptainDecisions.pick_route(route_options, stop_number)
+			_apply_option(route_options[index])
+			route_by_captain = true
+			captain_notes.append("Le capitaine a choisi la voie : %s (la plus sûre)." % current_zone.display_name)
 	career_changed.emit()
 
 
@@ -338,9 +359,9 @@ func _apply_option(option: StopOption) -> void:
 	current_event = option.event
 
 
-## Faut-il choisir sa voie à l'aiguillage avant de descendre ?
+## Faut-il choisir sa voie à l'aiguillage avant de descendre ? (Non si le capitaine l'a fait.)
 func has_route_choice() -> bool:
-	return route_options.size() > 1
+	return route_options.size() > 1 and not route_by_captain
 
 
 ## Prend la voie n° index de l'aiguillage. Renvoie false si elle n'existe pas.
@@ -680,6 +701,43 @@ func _crew_trajet(to_refuge: bool) -> bool:
 	return report.scouted
 
 
+# --- Missions d'équipage (Capitaine) ----------------------------------------------
+
+## Durée d'un arrêt joué par un équipier seul (minutes de jeu).
+const MISSION_MINUTES: int = 90
+
+
+## Envoie un équipier seul à l'arrêt choisi (current_zone) : l'arrêt est simulé, son
+## butin rangé dans le stock. Ensuite, on prépare le trajet suivant comme après un arrêt.
+func run_mission(member: CrewMember) -> MissionSim.Result:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = current_seed + 43
+	var night: bool = DayClock.is_night(clock_minutes)
+	var horde: bool = roll_surprise(current_zone.biome, stop_number, current_seed, night) != null
+	var result: MissionSim.Result = MissionSim.run(member, current_zone, stop_number, rng, horde)
+	var free: int = storage_free()
+	var left: int = 0
+	for id: StringName in result.loot:
+		var kept: int = mini(result.loot[id], free)
+		if kept > 0:
+			storage[id] = storage.get(id, 0) + kept
+			free -= kept
+		left += result.loot[id] - kept
+	if left > 0:
+		result.lines.append("Stock plein : %d objet(s) laissé(s) sur place." % left)
+	if result.died:
+		crew.erase(member)
+		for other: CrewMember in crew:
+			other.trust = clampi(other.trust + CrewLife.TRUST_LOSS, 0, 100)
+	if horde:
+		damage_train(MissionSim.HORDE_TRAIN_DAMAGE)
+	clock_minutes += MISSION_MINUTES
+	last_mission_lines = result.lines
+	storage_changed.emit()
+	crew_changed.emit()
+	return result
+
+
 # --- Soins et ordres à l'équipage ---------------------------------------------------
 
 func can_bandage(member: CrewMember) -> bool:
@@ -768,6 +826,17 @@ func fulfil_request(member: CrewMember) -> bool:
 
 func grade_index() -> int:
 	return Career.grade_index_for(merit)
+
+
+## Le joueur a-t-il le grade pour décider ça (&"route", &"crew", &"build"...) ?
+## Sinon, c'est le capitaine qui décide (voir CaptainDecisions).
+func can(permission: StringName) -> bool:
+	return Career.allows(grade_index(), permission)
+
+
+## « Le capitaine décide (Caporal requis) ».
+func locked_text(permission: StringName) -> String:
+	return "Le capitaine décide (%s requis)" % Career.required_grade(permission)
 
 
 func grade() -> GradeData:
@@ -893,7 +962,8 @@ func build_wagon(wagon: WagonData) -> bool:
 ## Prend une offre de gare refuge (échange ou recrue), payée avec le stock.
 ## `done` : offre déjà prise pendant ce passage. Renvoie false si c'est impossible.
 func use_refuge_offer(offer: RefugeOffer, rng: RandomNumberGenerator, done: bool = false) -> bool:
-	if RefugeRules.problem(offer, storage, storage_free(), free_beds(), done or knows_plan(offer.reward_plan)) != RefugeRules.Problem.NONE:
+	if RefugeRules.problem(offer, storage, storage_free(), free_beds(), done or knows_plan(offer.reward_plan),
+			can(&"recruit")) != RefugeRules.Problem.NONE:
 		return false
 	var recruit: CrewMember = RefugeRules.apply(offer, storage, rng, crew_names())
 	add_plan(offer.reward_plan)
@@ -975,6 +1045,7 @@ func to_save() -> Dictionary:
 			"scouted": option.scouted,
 			"horde_spotted": option.horde_spotted,
 		}),
+		"route_by_captain": route_by_captain,
 		"event": String(current_event.id) if current_event else "",
 	}
 
@@ -1060,6 +1131,7 @@ func load_save(data: Dictionary) -> bool:
 		option.horde_spotted = bool(entry.get("horde_spotted", false))
 		route_options.append(option)
 	current_event = _find_by_id(EVENTS, data.get("event", ""))
+	route_by_captain = bool(data.get("route_by_captain", false))
 	if route_options.is_empty() and current_zone and current_refuge == null:
 		route_options.append(StopOption.new(current_zone, current_seed, current_order, current_event))
 	storage_changed.emit()

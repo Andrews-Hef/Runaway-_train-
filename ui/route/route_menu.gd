@@ -8,6 +8,8 @@ extends CanvasLayer
 signal chosen(index: int)
 ## Fermé sans choisir.
 signal closed
+## Grade Capitaine : un équipier part seul sur cette voie (index), le joueur reste à bord.
+signal mission_chosen(index: int, member: CrewMember)
 
 const GAME_THEME: Theme = preload("res://ui/theme/game_theme.tres")
 const GameStateScript = preload("res://core/game_state.gd")
@@ -82,7 +84,7 @@ func open() -> void:
 	_box.add_child(cancel)
 	_root.visible = true
 	if first_button:
-		first_button.grab_focus.call_deferred()
+		_focus.call_deferred(first_button)
 
 
 func close() -> void:
@@ -130,7 +132,56 @@ func _add_card(option: GameStateScript.StopOption, index: int) -> Button:
 	button.custom_minimum_size = Vector2(0.0, 18.0)
 	button.pressed.connect(func() -> void: _choose(index))
 	lines.add_child(button)
+	if GameState.can(&"missions") and _available_crew().size() > 0:
+		var send := Button.new()
+		send.text = "Envoyer un équipier"
+		send.custom_minimum_size = Vector2(0.0, 18.0)
+		send.pressed.connect(func() -> void: _show_crew_for(index))
+		lines.add_child(send)
 	return button
+
+
+## Focus manette/clavier, si le bouton est encore affiché (le menu a pu changer entre-temps).
+static func _focus(button: Variant) -> void:
+	if is_instance_valid(button) and (button as Button).is_inside_tree():
+		(button as Button).grab_focus()
+
+
+static func _available_crew() -> Array[CrewMember]:
+	var able: Array[CrewMember] = []
+	for member: CrewMember in GameState.crew:
+		if MissionSim.can_go(member):
+			able.append(member)
+	return able
+
+
+## Qui envoyer sur cette voie : les équipiers en état, avec leur vie et leur fatigue.
+func _show_crew_for(index: int) -> void:
+	MenuKit.clear(_box)
+	var zone: ZoneProfile = GameState.route_options[index].zone
+	_box.add_child(MenuKit.label("Envoyer un équipier : %s" % zone.display_name, MenuKit.GOLD))
+	var hint := MenuKit.label("Il descend seul pendant que tu restes à bord : butin selon la zone et son rôle, blessures selon le danger, l'infection peut revenir avec lui.", MenuKit.MUTED)
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.custom_minimum_size = Vector2(420.0, 0.0)
+	_box.add_child(hint)
+	var first: Button
+	for member: CrewMember in _available_crew():
+		var row := MenuKit.row("%s (%s)" % [member.display_name, member.role_label],
+			"Vie %d · fatigue %d · confiance %d" % [member.health, member.fatigue, member.trust], MenuKit.MUTED,
+			"Envoyer", false, func() -> void:
+				if GameState.choose_route(index):
+					_root.visible = false
+					mission_chosen.emit(index, member))
+		_box.add_child(row)
+		if first == null:
+			first = row.get_child(row.get_child_count() - 1) as Button
+	var back := Button.new()
+	back.text = "Retour"
+	back.custom_minimum_size = Vector2(0.0, 18.0)
+	back.pressed.connect(open)
+	_box.add_child(back)
+	if first:
+		_focus.call_deferred(first)
 
 
 func _choose(index: int) -> void:

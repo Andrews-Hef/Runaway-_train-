@@ -89,7 +89,7 @@ func _fill_offers(list: VBoxContainer, offers: Array[RefugeOffer], verb: String)
 	list.add_child(MenuKit.label("Stock du train : %d/%d" % [GameState.storage_total(), GameState.storage_capacity()], MenuKit.GOLD))
 	for offer: RefugeOffer in offers:
 		var problem: RefugeRules.Problem = RefugeRules.problem(offer, GameState.storage, GameState.storage_free(),
-			GameState.free_beds(), offer in _done or GameState.knows_plan(offer.reward_plan))
+			GameState.free_beds(), offer in _done or GameState.knows_plan(offer.reward_plan), GameState.can(&"recruit"))
 		var detail: String = "Donne : " + MenuKit.describe_amounts(offer.cost)
 		if not offer.reward.is_empty():
 			detail += " · Reçois : " + MenuKit.describe_amounts(offer.reward)
@@ -124,9 +124,10 @@ func _fill_depot() -> void:
 			MenuKit.MUTED, "Max", true, Callable()))
 		return
 	var problem: TrainRules.Problem = TrainRules.upgrade_problem(GameState.locomotive_level, GameState.storage)
+	var allowed: bool = GameState.can(&"build")
 	_depot_list.add_child(MenuKit.row(
 		"Renforcer la locomotive : niv. %d, %d voitures" % [next.level, next.max_cars],
-		"Coût : " + MenuKit.describe_amounts(next.cost),
-		MenuKit.GOOD if problem == TrainRules.Problem.NONE else MenuKit.BAD,
-		"Renforcer", problem != TrainRules.Problem.NONE, func() -> void: GameState.upgrade_locomotive()))
+		"Coût : " + MenuKit.describe_amounts(next.cost) + ("" if allowed else " · " + GameState.locked_text(&"build")),
+		MenuKit.GOOD if problem == TrainRules.Problem.NONE and allowed else MenuKit.BAD,
+		"Renforcer", problem != TrainRules.Problem.NONE or not allowed, func() -> void: GameState.upgrade_locomotive()))
 	_depot_list.add_child(MenuKit.label("Les voitures se construisent à bord, sur la table du capitaine.", MenuKit.MUTED))

@@ -63,6 +63,7 @@ func test_le_premier_arret_n_a_pas_d_aiguillage() -> void:
 
 
 func test_l_aiguillage_propose_deux_voies_de_la_region() -> void:
+	GameState.merit = Career.GRADES[Career.AUTHORITY[&"route"]].merit_needed
 	_go_to_stop(7)
 	assert_true(GameState.has_route_choice(), "deux voies")
 	assert_true(GameState.route_options.size() == GameState.ROUTE_CHOICES, "%d voies" % GameState.ROUTE_CHOICES)

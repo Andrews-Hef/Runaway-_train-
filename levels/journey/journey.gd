@@ -125,12 +125,20 @@ func _fill_texts() -> void:
 			_description.text += "\nOrdre du capitaine : %s." % GameState.current_order.text()
 		if GameState.current_event:
 			_description.text += "\n%s." % GameState.current_event.forecast_text
-	# Le récit de l'équipage pendant le trajet (réparations comprises), 4 lignes au plus.
+	var mission_lines: int = GameState.last_mission_lines.size()
+	for line: String in GameState.last_mission_lines:
+		_description.text += "\n" + line
+	GameState.last_mission_lines.clear()
+	for note: String in GameState.captain_notes:
+		_description.text += "\n" + note
+	# Le récit de l'équipage pendant le trajet (réparations comprises) : 4 lignes au plus,
+	# moins après une mission pour que le panneau tienne à l'écran.
 	var events: Array[String] = GameState.last_crew_events
-	for i: int in mini(events.size(), 4):
+	var shown: int = 4 - mini(mission_lines, 2)
+	for i: int in mini(events.size(), shown):
 		_description.text += "\n" + events[i]
-	if events.size() > 4:
-		_description.text += "\n… et %d autre(s) chose(s) : voir l'onglet Équipage." % (events.size() - 4)
+	if events.size() > shown:
+		_description.text += "\n… et %d autre(s) chose(s) : voir l'onglet Équipage." % (events.size() - shown)
 	if GameState.condition() != GameState.Condition.GOOD:
 		_description.text += "\nTrain %s. Répare-le à la cabine." % GameState.describe_condition()
 	if not GameState.last_production.is_empty():

@@ -64,6 +64,11 @@ func _ready() -> void:
 	InputMode.changed.connect(func(_device: int) -> void: _refresh_prompt())
 	_title.text = "Arrêt n°%d : %s" % [GameState.stop_number, refuge.display_name]
 	_subtitle.text = "Partie sauvegardée · Zone sûre, le train attend. Remonte à bord pour repartir."
+	# Pas encore Lieutenant : c'est le capitaine qui passe au dépôt.
+	if not GameState.can(&"build"):
+		var note: String = CaptainDecisions.depot(GameState)
+		if not note.is_empty():
+			_subtitle.text += "\n" + note
 	# L'heure d'arrivée : la gare est éclairée, la nuit y est plus douce que dehors.
 	var light := CanvasModulate.new()
 	light.name = "DayLight"

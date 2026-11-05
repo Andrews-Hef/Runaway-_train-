@@ -26,6 +26,8 @@ class Outcome:
 const NO_SPACE: StringName = &"_space"
 ## Clé spéciale de missing() : plus de couchette libre dans le train pour une recrue.
 const NO_BED: StringName = &"_bed"
+## Pas encore le grade pour recruter (Career.AUTHORITY &"recruit").
+const NO_RANK: StringName = &"_rank"
 
 
 ## Le joueur porte-t-il de quoi payer ce choix (et la place pour ce qu'il rapporte) ?
@@ -39,8 +41,11 @@ static func can_afford(choice: EncounterChoice, result: ExpeditionResult, capaci
 ## NO_BED -> couchettes manquantes. `free_beds` : couchettes libres au début de la sortie
 ## (les recrues de la sortie en cours en prennent).
 static func missing(choice: EncounterChoice, result: ExpeditionResult, capacity: int = -1,
-		free_beds: int = -1) -> Dictionary[StringName, int]:
+		free_beds: int = -1, can_recruit: bool = true) -> Dictionary[StringName, int]:
 	var lacking: Dictionary[StringName, int] = {}
+	if choice.recruits() and not can_recruit:
+		lacking[NO_RANK] = 1
+		return lacking
 	if free_beds >= 0 and choice.recruits() and result.recruits.size() >= free_beds:
 		lacking[NO_BED] = 1
 	for id: StringName in choice.cost:
