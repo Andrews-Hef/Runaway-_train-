@@ -60,6 +60,10 @@ func is_open() -> bool:
 func open(tab: Tab) -> void:
 	_refresh()
 	var linked: bool = GameState.stations_linked()
+	# Tout montrer, choisir l'onglet, puis cacher les autres : on ne peut ni choisir un
+	# onglet caché, ni cacher l'onglet choisi.
+	for i: int in _tabs.get_tab_count():
+		_tabs.set_tab_hidden(i, false)
 	_tabs.current_tab = tab
 	for i: int in _tabs.get_tab_count():
 		_tabs.set_tab_hidden(i, not linked and i != tab)
