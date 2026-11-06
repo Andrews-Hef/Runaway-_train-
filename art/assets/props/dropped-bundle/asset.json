@@ -1,0 +1,109 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/dropped-bundle",
+  "type": "prop",
+  "description": "Ballot de toile noue pose au sol, une planche et une plaque de ferraille appuyees contre lui : ce que le joueur a jete de son sac.",
+  "frame": {
+    "width": 28,
+    "height": 24
+  },
+  "directions": "d1",
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "sphere",
+        "id": "sack",
+        "material": "canvas",
+        "radius": 0.28,
+        "position": [
+          0,
+          0.245,
+          0
+        ],
+        "scale": [
+          1.2,
+          0.88,
+          1.0
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "knot",
+        "material": "canvas",
+        "radius": 0.1,
+        "height": 0.2,
+        "position": [
+          0,
+          0.56,
+          0
+        ]
+      },
+      {
+        "type": "torus",
+        "id": "cord",
+        "material": "dead-wood",
+        "radius": 0.085,
+        "tube": 0.025,
+        "position": [
+          0,
+          0.48,
+          0
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "plank",
+        "material": "wood",
+        "size": [
+          0.12,
+          0.62,
+          0.05
+        ],
+        "position": [
+          -0.36,
+          0.31,
+          0.06
+        ],
+        "rotation": [
+          0,
+          0,
+          24
+        ]
+      },
+      {
+        "type": "box",
+        "id": "scrap",
+        "material": "rust",
+        "size": [
+          0.3,
+          0.24,
+          0.04
+        ],
+        "position": [
+          0.36,
+          0.17,
+          0.14
+        ],
+        "rotation": [
+          -20,
+          0,
+          -20
+        ]
+      }
+    ]
+  }
+}

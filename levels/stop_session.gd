@@ -13,6 +13,8 @@ signal whistle_blown
 signal ended(result: ExpeditionResult)
 signal loot_changed(result: ExpeditionResult)
 signal recruited(member: CrewMember)
+## Le joueur a jeté des ressources de son sac (la zone pose un tas à ses pieds).
+signal dropped(id: StringName, amount: int)
 
 ## Durée de l'arrêt, en secondes.
 @export var duration: float = 90.0
@@ -78,6 +80,20 @@ func add_loot(loot: LootData, amount: int) -> int:
 	result.add_loot(loot.id, taken)
 	loot_changed.emit(result)
 	return taken
+
+
+## Jette `amount` d'une ressource du sac (pour faire de la place). Renvoie la
+## quantité vraiment jetée (pas plus que ce qu'on porte).
+func drop(id: StringName, amount: int) -> int:
+	if state == State.ENDED:
+		return 0
+	var thrown: int = mini(amount, result.get_amount(id))
+	if thrown <= 0:
+		return 0
+	result.remove_loot(id, thrown)
+	loot_changed.emit(result)
+	dropped.emit(id, thrown)
+	return thrown
 
 
 ## Place restante dans le sac (très grand si illimité).

@@ -3,7 +3,8 @@ extends CanvasLayer
 ## partout en jeu sauf sur l'écran titre. Le jeu est en pause tant qu'ils sont ouverts.
 ##
 ## - Pause : reprendre, inventaire, commandes, écran titre, quitter (PC).
-## - Inventaire : équipement porté (icônes), stats, sac de l'arrêt en cours,
+## - Inventaire : équipement porté (icônes), stats, sac de l'arrêt en cours (on peut
+##   y jeter des ressources pour faire de la place : elles restent au sol en tas),
 ##   équipement à bord ; onglet Grade (mérite, ordre, choix des talents).
 ## - Sur téléphone : deux boutons à droite de l'écran, « Sac » et « II ».
 ## - À l'arrivée en zone et dans le train : rappel des touches pendant quelques secondes.
@@ -39,6 +40,8 @@ var _root: Control
 var _pause_panel: PanelContainer
 var _pause_box: VBoxContainer
 var _inventory_panel: PanelContainer
+## Ressource dont la ligne reprend le focus après un « Jeter » (clavier, manette).
+var _focus_after_drop: StringName = &""
 var _inventory_tabs: TabContainer
 var _items_box: HBoxContainer
 var _grade_list: VBoxContainer
@@ -463,16 +466,19 @@ func _bag_column() -> VBoxContainer:
 	if session and scene_kind() == &"zone":
 		var result: ExpeditionResult = session.result
 		column.add_child(MenuKit.label("Sac : %d/%d" % [result.total_items(), session.capacity], MenuKit.GOLD))
-		var grid := GridContainer.new()
-		grid.columns = 2
-		grid.add_theme_constant_override(&"h_separation", 10)
+		var rows: int = 0
 		for loot: LootData in GameState.LOOT_TYPES:
 			var amount: int = result.get_amount(loot.id)
 			if amount > 0:
-				grid.add_child(_icon_line(loot.icon, "%s ×%d" % [loot.display_name, amount]))
-		if grid.get_child_count() == 0:
+				column.add_child(_bag_row(session, loot, amount))
+				rows += 1
+		if rows == 0:
 			column.add_child(MenuKit.label("Vide pour l'instant.", MenuKit.MUTED))
-		column.add_child(grid)
+		else:
+			var tip := MenuKit.label("Jeter fait de la place : le tas reste à tes pieds, tu peux le ramasser.", MenuKit.MUTED)
+			tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			tip.custom_minimum_size = Vector2(190.0, 0.0)
+			column.add_child(tip)
 		for plan_id: StringName in result.plans:
 			column.add_child(MenuKit.label("Plan trouvé : " + BlueprintCatalog.get_plan(plan_id).display_name, MenuKit.GOOD))
 		for member: CrewMember in result.recruits:
@@ -493,6 +499,41 @@ func _bag_column() -> VBoxContainer:
 	for item: ItemData in spare:
 		column.add_child(_icon_line(item.icon, item.display_name))
 	return column
+
+
+## Une ressource du sac, avec « Jeter 1 » et « Tout » (s'il y en a plusieurs).
+func _bag_row(session: StopSession, loot: LootData, amount: int) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override(&"separation", 4)
+	var line := _icon_line(loot.icon, "%s ×%d" % [loot.display_name, amount])
+	line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(line)
+	var one := _drop_button("Jeter 1", func() -> void: _drop(session, loot.id, 1))
+	row.add_child(one)
+	if amount > 1:
+		row.add_child(_drop_button("Tout", func() -> void: _drop(session, loot.id, amount)))
+	if loot.id == _focus_after_drop:
+		MenuKit.focus_later(one)
+	return row
+
+
+static func _drop_button(text: String, action: Callable) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.custom_minimum_size = Vector2(0.0, 16.0)
+	button.add_theme_font_size_override(&"font_size", 7)
+	button.pressed.connect(action)
+	return button
+
+
+## Jette du sac (la zone pose le tas), puis redessine l'inventaire en gardant le focus
+## sur la même ligne si elle existe encore.
+func _drop(session: StopSession, id: StringName, amount: int) -> void:
+	if session.drop(id, amount) <= 0:
+		return
+	_focus_after_drop = id
+	_refresh_inventory()
+	_focus_after_drop = &""
 
 
 static func _icon_line(texture: Texture2D, text: String) -> HBoxContainer:

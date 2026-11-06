@@ -35,6 +35,8 @@ const SCENERY_PIVOTS: Array[Vector2] = [Vector2(20, 51), Vector2(20, 51), Vector
 @onready var _train: Train = $Train
 
 var _leaving: bool = false
+## Intro d'une nouvelle partie, par-dessus le trajet (null sinon).
+var _intro: IntroOverlay
 
 
 func _ready() -> void:
@@ -48,11 +50,35 @@ func _ready() -> void:
 	var blink := create_tween().set_loops()
 	blink.tween_property(_hint, "modulate:a", 0.35, 0.6)
 	blink.tween_property(_hint, "modulate:a", 1.0, 0.6)
+	if GameState.pending_intro:
+		_play_intro()
+	else:
+		_start_countdown()
+
+
+## Nouvelle partie : le contexte du jeu d'abord, le train roule derrière. Le panneau du
+## trajet et le compte à rebours attendent la fin de l'intro.
+func _play_intro() -> void:
+	GameState.pending_intro = false
+	$Ui/Root/Panel.visible = false
+	_hint.visible = false
+	_intro = IntroOverlay.new()
+	_intro.finished.connect(func() -> void:
+		_intro = null
+		$Ui/Root/Panel.visible = true
+		_hint.visible = true
+		_start_countdown())
+	add_child(_intro)
+
+
+func _start_countdown() -> void:
 	# process_always = false : le menu pause arrête aussi le compte à rebours.
 	get_tree().create_timer(auto_continue_after, false).timeout.connect(_continue)
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _intro != null:
+		return
 	var touched: bool = event is InputEventScreenTouch and (event as InputEventScreenTouch).pressed
 	if touched or event.is_action_pressed(&"interact") or event.is_action_pressed(&"attack"):
 		_continue()

@@ -208,6 +208,9 @@ var last_crew_events: Array[String] = []
 var captain_notes: Array[String] = []
 ## La voie de l'aiguillage a été choisie par le capitaine (le joueur n'est pas Caporal).
 var route_by_captain: bool = false
+## Nouvelle partie : l'intro est à montrer au premier trajet (non sauvegardé : une
+## partie reprise ne la rejoue pas).
+var pending_intro: bool = false
 ## Récit de la dernière mission d'équipage (affiché au trajet suivant).
 var last_mission_lines: Array[String] = []
 ## Dégâts de la horde depuis le dernier trajet : l'équipage à bord est blessé.
@@ -253,6 +256,8 @@ func new_run(run_seed: int = 0) -> void:
 	train_condition = 1.0
 	last_repair = 0.0
 	last_crew_events.clear()
+	last_mission_lines.clear()
+	pending_intro = false
 	_horde_damage = 0.0
 	clock_minutes = DayClock.START_MINUTES
 	found_plans.clear()

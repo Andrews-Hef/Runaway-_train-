@@ -18,6 +18,7 @@ const SCENES: Dictionary[String, String] = {
 ## Nouvelle campagne : le départ du train sert de premier point de reprise.
 static func start_new(tree: SceneTree) -> void:
 	GameState.new_run()
+	GameState.pending_intro = true
 	_save(SaveStore.CHECKPOINT, "journey")
 	_save(SaveStore.RESUME, "journey")
 	tree.change_scene_to_file(JOURNEY_SCENE)

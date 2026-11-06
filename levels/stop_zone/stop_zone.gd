@@ -28,6 +28,10 @@ const SCENES: Dictionary[StringName, PackedScene] = {
 }
 
 const ENEMY_SCENE: PackedScene = preload("res://entities/enemy/enemy.tscn")
+## Ce que le joueur jette de son sac (inventaire) : un tas qu'on peut ramasser.
+const PILE_SCENE: PackedScene = preload("res://props/dropped_pile/dropped_pile.tscn")
+## Où tombe ce qu'on jette : juste devant les pieds (visible, et toujours à portée).
+const DROP_OFFSET: Vector2 = Vector2(0.0, 8.0)
 ## Biome des zones qui n'en déclarent pas (zone de test).
 const DEFAULT_BIOME: BiomeData = preload("res://data/biomes/countryside.tres")
 ## Ce qui abrite de la pluie (nom de la scène -> rayon autour, en px).
@@ -575,6 +579,7 @@ func _wire_systems() -> void:
 	_train.boarding_requested.connect(_session.board)
 	_session.whistle_blown.connect(_train.whistle)
 	_session.ended.connect(_on_session_ended)
+	_session.dropped.connect(_on_bag_dropped)
 	_hud.call(&"bind", _session, _player, GameState.LOOT_TYPES)
 	_hud.call(&"show_order", GameState.current_order)
 	var subtitle: String = "%s · %s" % [biome.display_name, biome.rule_text] if not biome.rule_text.is_empty() else ""
@@ -586,6 +591,35 @@ func _wire_systems() -> void:
 	_dialog.connect(&"closed", _on_dialog_closed)
 	_result_screen.connect(&"continue_requested", _continue_journey)
 	_result_screen.connect(&"retry_requested", _retry)
+
+
+# --- Sac : jeter et ramasser --------------------------------------------------------
+
+## Le joueur a jeté des ressources depuis l'inventaire : elles tombent à ses pieds, dans
+## le tas tout proche s'il y en a un.
+func _on_bag_dropped(id: StringName, amount: int) -> void:
+	var at: Vector2 = _player.global_position + DROP_OFFSET
+	var pile := DroppedPile.nearest(get_tree(), at)
+	if pile == null:
+		pile = PILE_SCENE.instantiate() as DroppedPile
+		_world.add_child(pile)
+		pile.global_position = at
+		pile.pick_requested.connect(_pick_up_pile)
+	pile.add(id, amount)
+
+
+## Ramasser un tas : ce qui rentre revient dans le sac, le reste reste au sol.
+func _pick_up_pile(pile: DroppedPile) -> void:
+	var gained: Dictionary[StringName, int] = {}
+	for id: StringName in pile.contents.keys():
+		var taken: int = _session.add_loot(_loot_type(id), pile.contents[id])
+		if taken > 0:
+			pile.take(id, taken)
+			gained[id] = taken
+	if not pile.contents.is_empty():
+		_hud.call(&"toast", "Sac plein : le reste du tas reste au sol.", true)
+	elif not gained.is_empty():
+		_hud.call(&"toast", "Ramassé : " + MenuKit.describe_amounts(gained), false)
 
 
 # --- Combat ------------------------------------------------------------------------

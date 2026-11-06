@@ -1,0 +1,21 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/interaction/dropped_pile.gd" id="1_pile"]
+[ext_resource type="Texture2D" path="res://assets/sprites/props/dropped_bundle.png" id="2_sprite"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_reach"]
+radius = 12.0
+
+[node name="DroppedPile" type="Area2D"]
+script = ExtResource("1_pile")
+prompt = "Ramasser"
+hold_time = 0.3
+indicator_offset = Vector2(0, -20)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_sprite")
+centered = false
+offset = Vector2(-14, -20)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_reach")

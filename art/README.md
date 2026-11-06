@@ -33,6 +33,7 @@ Le train est **noir** (`iron-black`) avec des liserés rouges (`train-red`) et d
 | `props/backpack`, `props/locker` | 1 | — | Petites rencontres : sac abandonné, armoire métallique |
 | `props/station-house`, `props/palisade` | 1 | — | Gare refuge : bâtiment de la gare, palissade de pieux |
 | `props/truck-wreck` | 1 | — | Épave de camion (il faut un chalumeau) |
+| `props/dropped-bundle` | 1 | — | Tas de ce que le joueur a jeté de son sac (ballot de toile, planche, ferraille) |
 | `characters/refugee`, `characters/merchant` | 1 (s) | `idle` | PNJ : réfugié à recruter, marchand |
 | `characters/infected`, `characters/raider` | 4 (s, e, n, w) | `idle`, `walk`, `attack` | Ennemis d'infanterie : infecté (membre de la ruche), pilleur |
 | `characters/infected-crawler`, `characters/raider-lurker` | 4 | `idle`, `walk` (rampe), `attack` (bond) | Rampants : couchés au sol |

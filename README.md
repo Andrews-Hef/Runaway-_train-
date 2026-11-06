@@ -8,6 +8,7 @@ Le design (vision, systèmes, MVP, décisions) est tenu dans le vault Obsidian, 
 
 Un **voyage** d'arrêt en arrêt :
 
+- **Intro** : une nouvelle partie commence par le contexte, en quelques pages par-dessus le premier trajet (la peste et la ruche, les gares fortifiées, le train qui ne s'arrête jamais longtemps, toi la recrue), puis le premier ordre du capitaine. Un appui affiche la page en entier, le suivant passe à la suite ; Échap, le bouton retour ou « Passer » sautent tout. Une partie reprise ne la rejoue pas. Le texte est dans `ui/intro/intro_overlay.gd`.
 - **Trajet** : le train roule, le décor défile. On voit le stock du train et le prochain arrêt.
 - **Dans le train** (vue de dessus, toit retiré) : tu marches de wagon en wagon par les passerelles. **Coffre** du stock, **établi** de l'atelier (fabriquer de l'équipement), **casier** (s'équiper), **couchettes** du dortoir (l'équipage), **table du capitaine** (construire des voitures, renforcer la locomotive) et le **levier** de la cabine pour descendre au prochain arrêt. La voie défile sous le train : on la voit entre les wagons, aux deux bouts et au bas de l'écran.
 - **Régions** : la ligne traverse 5 biomes, un par tronçon entre deux gares refuges : **Campagne** (arrêts 1 à 5) → **Marais infecté** → **Ville en ruine** → **Zone industrielle** → **Toundra gelée**, puis la ligne repart. Chaque biome a son sol, ses décors, son ambiance et **une règle** :
@@ -25,6 +26,7 @@ Un **voyage** d'arrêt en arrêt :
 - **Points d'intérêt** dans les zones : **village abandonné** (maisons en ruine, caisses à fouiller), **refuge** avec un survivant à **recruter**, **marchand ambulant** pour **échanger**, et petites rencontres (sac abandonné, armoire à forcer).
 - **Gare refuge** (arrêts n°5, 10, 15…) : une ville fortifiée sur la ligne, **zone sûre** sans infection ni chrono. **Comptoir** pour échanger le surplus du stock, **bureau de quarantaine** pour recruter des survivants sains, **dépôt** pour renforcer la locomotive. On repart en remontant à bord.
 - **Retour à bord** : le butin et les recrues rejoignent le train et on repart vers l'arrêt suivant.
+- **Jeter du sac** : pendant un arrêt, l'inventaire propose « Jeter 1 » et « Tout » sur chaque ressource du sac, pour faire de la place. Ce qu'on jette tombe en **tas** à ses pieds (un nouveau jet tout près complète le même tas) ; on le ramasse en maintenant Agir, dans la limite de la place du sac, et le reste reste au sol.
 - **Campagne continue et sauvegarde** : chaque gare refuge est un **point de reprise**. **Train raté** : on reprend à la dernière gare (ou au départ du train), tout ce qui s'est passé depuis est perdu. La session est aussi sauvegardée à chaque trajet (`user://saves/`), pour reprendre après avoir fermé le jeu.
 
 **Médicaments et infirmerie** : antiseptique (−10 %) et antibiotiques (−20 %) se trouvent dans les caisses et les armoires, et s'achètent chez les marchands et en gare. Le **sérum de sève** (−35 %) et le **vaccin expérimental** (−60 %) se préparent à l'**infirmerie**, une voiture à construire, avec les plans Pharmacie et Vaccin. On prend ses médicaments dans l'onglet **Infirmerie** du menu du train.
