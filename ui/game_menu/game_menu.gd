@@ -519,48 +519,12 @@ static func _spare_items() -> Array[ItemData]:
 ## piles du sac). `on_press` vide :
 ## case inerte (vide, grisée). `selected` : liseré doré.
 func _slot(texture: Texture2D, amount: int, tip: String, selected: bool, on_press: Callable) -> PanelContainer:
-	var cell := PanelContainer.new()
-	cell.theme_type_variation = &"SlotPanel"
-	if selected:
-		var gold := StyleBoxFlat.new()
-		gold.bg_color = Color(0.18, 0.15, 0.1, 0.9)
-		gold.set_border_width_all(1)
-		gold.border_color = MenuKit.GOLD
-		cell.add_theme_stylebox_override(&"panel", gold)
-	var button := Button.new()
-	button.flat = true
-	button.custom_minimum_size = SLOT_SIZE
-	button.tooltip_text = tip
-	button.focus_mode = Control.FOCUS_ALL if on_press.is_valid() else Control.FOCUS_NONE
-	button.mouse_filter = Control.MOUSE_FILTER_STOP if on_press.is_valid() else Control.MOUSE_FILTER_IGNORE
+	var cell := SlotCell.create(texture, str(amount) if amount > 0 else "", tip, on_press.is_valid(), SLOT_SIZE)
+	cell.set_selected(selected)
 	if on_press.is_valid():
-		button.pressed.connect(on_press)
-	cell.add_child(button)
-	if texture:
-		var center := CenterContainer.new()
-		center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		center.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		var picture := MenuKit.icon(texture, SLOT_ICON)
-		picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		center.add_child(picture)
-		button.add_child(center)
-	if amount > 0:
-		var count := Label.new()
-		count.text = str(amount)
-		count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		count.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-		count.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		count.offset_right = -1.0
-		count.offset_bottom = 1.0
-		count.add_theme_font_override(&"font", BagHotbar.NUMBERS_FONT)
-		count.add_theme_font_size_override(&"font_size", 9)
-		count.add_theme_color_override(&"font_shadow_color", Color(0.06, 0.05, 0.06))
-		count.add_theme_constant_override(&"shadow_offset_x", 1)
-		count.add_theme_constant_override(&"shadow_offset_y", 1)
-		count.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		button.add_child(count)
-	if selected and on_press.is_valid():
-		MenuKit.focus_later(button)
+		cell.chosen.connect(on_press)
+		if selected:
+			MenuKit.focus_later(cell.button)
 	return cell
 
 

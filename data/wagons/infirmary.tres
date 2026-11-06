@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://core/wagon_data.gd" id="1_wagon"]
 [ext_resource type="Script" path="res://core/wagon_upgrade.gd" id="2_upgrade"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/cross.png" id="9_icon"]
 
 [sub_resource type="Resource" id="Resource_up0"]
 script = ExtResource("2_upgrade")
@@ -26,6 +27,7 @@ plan = &"outfitting"
 script = ExtResource("1_wagon")
 id = &"infirmary"
 display_name = "Infirmerie"
+icon = ExtResource("9_icon")
 description = "Une table de soins et une armoire à pharmacie : on y prépare les médicaments spéciaux."
 unique = true
 cost = Dictionary[StringName, int]({

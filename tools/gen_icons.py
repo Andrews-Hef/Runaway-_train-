@@ -660,6 +660,205 @@ def moon() -> Image.Image:
     ], {"m": "#c9d6ff", "M": "#8fa0d8"}))
 
 
+# --- Menus : voitures du train et petits signes -------------------------------------------
+
+def lock() -> Image.Image:
+    return outline(from_map([
+        "............",
+        "....oooo....",
+        "...o....o...",
+        "...o....o...",
+        "...o....o...",
+        "..yyyyyyyy..",
+        "..yYYYYYYy..",
+        "..yYYkkYYy..",
+        "..yYYkkYYy..",
+        "..yYYYYYYy..",
+        "..yyyyyyyy..",
+        "............",
+    ], {"o": "#9a9aa2", "y": "#9e7a2e", "Y": "#e0bf62", "k": "#3a3030"}))
+
+
+def plus() -> Image.Image:
+    return outline(from_map([
+        "............",
+        "............",
+        ".....gg.....",
+        ".....gg.....",
+        ".....gg.....",
+        "..ggggGggg..",
+        "..ggggGggg..",
+        ".....gg.....",
+        ".....gg.....",
+        ".....gg.....",
+        "............",
+        "............",
+    ], {"g": "#9ad97a", "G": "#c8f0b0"}))
+
+
+def arrow() -> Image.Image:
+    return outline(from_map([
+        "............",
+        "............",
+        "............",
+        "......w.....",
+        "......ww....",
+        "..wwwwwww...",
+        "..wwwwwwww..",
+        "..wwwwwww...",
+        "......ww....",
+        "......w.....",
+        "............",
+        "............",
+    ], {"w": "#e6dcc4"}))
+
+
+def check() -> Image.Image:
+    """Petite coche, dans le coin haut-droit : posée sur une case (équipement possédé)."""
+    return outline(from_map([
+        "............",
+        ".........g..",
+        "........gg..",
+        ".g.....gg...",
+        ".gg...gg....",
+        "..gg.gg.....",
+        "...ggg......",
+        "....g.......",
+        "............",
+        "............",
+        "............",
+        "............",
+    ], {"g": "#9ad97a"}))
+
+
+def hammer() -> Image.Image:
+    return outline(from_map([
+        "............",
+        "..hhhhhhh...",
+        "..hHHHHHhh..",
+        "..hhhhhhh...",
+        ".....ww.....",
+        ".....ww.....",
+        ".....ww.....",
+        ".....ww.....",
+        ".....ww.....",
+        ".....WW.....",
+        "............",
+        "............",
+    ], {"h": "#8e93a0", "H": "#c4c8d2", "w": "#9a6b3f", "W": "#6b4a2f"}))
+
+
+def bed() -> Image.Image:
+    return outline(from_map([
+        "............",
+        "............",
+        "..f.........",
+        "..fww.......",
+        "..fwwbbbbbb.",
+        "..fBBBBBBBB.",
+        "..fffffffff.",
+        "..f.......F.",
+        "..f.......F.",
+        "............",
+        "............",
+        "............",
+    ], {"f": "#8a5f3a", "F": "#6b4a2f", "w": "#e8e2cf", "b": "#5a8fc9", "B": "#3f6a99"}))
+
+
+def crate() -> Image.Image:
+    img, d = canvas()
+    d.rectangle((1, 1, 10, 10), fill=rgb("#b07a42"))
+    d.rectangle((1, 1, 10, 10), outline=rgb("#6b4a2f"))
+    d.line((2, 9, 9, 2), fill=rgb("#6b4a2f"))
+    px(img, [(3, 2), (4, 2), (2, 3)], "#d09a5a")
+    return outline(img)
+
+
+def wagon() -> Image.Image:
+    return outline(from_map([
+        "............",
+        "............",
+        ".RRRRRRRRRR.",
+        ".RwwRwwRwwR.",
+        ".RwwRwwRwwR.",
+        ".RRRRRRRRRR.",
+        ".rrrrrrrrrr.",
+        ".DDDDDDDDDD.",
+        "..kk....kk..",
+        "..kk....kk..",
+        "............",
+        "............",
+    ], {"R": "#a04a3a", "r": "#7a3428", "w": "#e8c870", "D": "#4a3a34", "k": "#6a6a72"}))
+
+
+def locomotive() -> Image.Image:
+    return outline(from_map([
+        "............",
+        "..ss........",
+        "..ss..CCCC..",
+        ".BBBBBBCwwC.",
+        ".BBBBBBCwwC.",
+        ".BbbbbbCCCC.",
+        ".BBBBBBBBBB.",
+        ".DDDDDDDDDD.",
+        "..kk.kk..kk.",
+        "..kk.kk..kk.",
+        "............",
+        "............",
+    ], {"s": "#5a5a62", "C": "#2f5f6a", "w": "#e8c870", "B": "#3f7f8a", "b": "#6fb0b8", "D": "#3a3030", "k": "#6a6a72"}))
+
+
+def cross() -> Image.Image:
+    return outline(from_map([
+        "............",
+        "....gggg....",
+        "....gGGg....",
+        "....gGGg....",
+        ".ggggGGgggg.",
+        ".gGGGGGGGGg.",
+        ".gGGGGGGGGg.",
+        ".ggggGGgggg.",
+        "....gGGg....",
+        "....gGGg....",
+        "....gggg....",
+        "............",
+    ], {"g": "#3f9a7a", "G": "#8fe0b8"}))
+
+
+def sprout() -> Image.Image:
+    return outline(from_map([
+        "............",
+        ".ll......ll.",
+        ".lLl....lLl.",
+        "..lLl..lLl..",
+        "...llssll...",
+        ".....ss.....",
+        "..pppppppp..",
+        "..pPPPPPPp..",
+        "...pPPPPp...",
+        "...pPPPPp...",
+        "....pppp....",
+        "............",
+    ], {"l": "#6fbf4a", "L": "#b5e88f", "s": "#3f7a2a", "p": "#a8553a", "P": "#d07a50"}))
+
+
+def tubes() -> Image.Image:
+    return outline(from_map([
+        "............",
+        ".ww..ww..ww.",
+        ".gg..gg..gg.",
+        ".gg..gg..gg.",
+        ".bb..gg..yy.",
+        ".bb..ee..yy.",
+        ".bb..ee..yy.",
+        ".RRRRRRRRRR.",
+        ".R........R.",
+        ".R........R.",
+        "............",
+        "............",
+    ], {"w": "#e8f0f8", "g": "#c9dcf0", "b": "#5aa8e6", "e": "#8fd06a", "y": "#e8c25a", "R": "#8a5f3a"}))
+
+
 ICONS = {
     "health": heart, "infection": spore, "timer": clock, "sun": sun, "moon": moon, "bag": bag, "order": star, "recruit": person, "plan": plan,
     "scrap": scrap, "wood": wood,
@@ -668,6 +867,8 @@ ICONS = {
     "cloth": cloth, "parts": gear, "metal_plate": metal_plate, "chemicals": flask,
     "antiseptic": bottle, "antibiotics": capsule,
     "serum": lambda: vial("#5aa8e6", "#c9e8ff"), "vaccine": syringe,
+    "lock": lock, "plus": plus, "arrow": arrow, "check": check, "hammer": hammer, "bed": bed, "crate": crate,
+    "wagon": wagon, "locomotive": locomotive, "cross": cross, "sprout": sprout, "tubes": tubes,
 }
 
 

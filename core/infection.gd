@@ -20,6 +20,14 @@ const STAGE_COLORS: Array[Color] = [
 ]
 
 
+## Repères des paliers (Fièvre, Contaminé, Critique) pour une jauge.
+static func stage_marks() -> Array[float]:
+	var marks: Array[float] = []
+	for stage: Dictionary in STAGES.slice(1):
+		marks.append(stage["from"])
+	return marks
+
+
 static func stage_for(value: float) -> Stage:
 	if value >= 1.0:
 		return Stage.TURNED

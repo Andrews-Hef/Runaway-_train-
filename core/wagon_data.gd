@@ -7,6 +7,8 @@ extends Resource
 
 @export var id: StringName
 @export var display_name: String
+## Icône 12 px des menus (onglet Train) : lit, caisse, marteau...
+@export var icon: Texture2D
 @export_multiline var description: String
 ## Un seul exemplaire possible dans le train (cabine, atelier).
 @export var unique: bool = false

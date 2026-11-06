@@ -220,6 +220,13 @@ var found_plans: Array[StringName] = []
 var researched_plans: Array[StringName] = []
 ## Ce que les machines du train ont produit pendant le dernier trajet (pour l'afficher).
 var last_production: Dictionary[StringName, int] = {}
+## Ce qu'elles ont consommé pendant ce trajet, et pourquoi certaines n'ont pas tourné.
+var last_consumed: Dictionary[StringName, int] = {}
+var machine_notes: PackedStringArray = []
+## Les derniers trajets des machines, le plus récent d'abord (onglet Machines) :
+## {"stop": arrêt atteint, "produced": {...}, "consumed": {...}, "note": "..."}.
+var production_log: Array[Dictionary] = []
+const PRODUCTION_LOG_SIZE: int = 5
 
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
@@ -263,6 +270,9 @@ func new_run(run_seed: int = 0) -> void:
 	found_plans.clear()
 	researched_plans.clear()
 	last_production.clear()
+	last_consumed.clear()
+	machine_notes.clear()
+	production_log.clear()
 	storage_changed.emit()
 	crew_changed.emit()
 	equipment_changed.emit()
@@ -285,6 +295,7 @@ func prepare_next_stop() -> void:
 	var scouted: bool = false
 	if stop_number >= 1:
 		last_production = run_machines()
+		_log_production(stop_number + 1)
 		# Sans le grade, c'est le capitaine qui dirige l'équipage et fait construire.
 		if not can(&"crew"):
 			captain_notes.append_array(CaptainDecisions.manage_crew(crew, has_wagon(&"infirmary"), QUARANTINE_BEDS))
@@ -594,29 +605,82 @@ func make_recipe(recipe: RecipeData) -> bool:
 
 
 ## Les machines du train (serre, laboratoire) produisent : renvoie ce qui a été produit.
+## Ce qu'elles consomment va dans `last_consumed`, leurs pannes dans `machine_notes`.
 func run_machines() -> Dictionary[StringName, int]:
 	var produced: Dictionary[StringName, int] = {}
-	# Train abîmé : plus de courant pour la serre ni le labo.
+	last_consumed.clear()
+	machine_notes.clear()
 	if train_condition < TRAIN_DAMAGED:
+		if not machine_wagons().is_empty():
+			machine_notes.append("Train abîmé : machines à l'arrêt")
 		return produced
 	for wagon: WagonData in train:
-		var production: Dictionary[StringName, int] = wagon.production_at(wagon_level(wagon.id))
-		if production.is_empty() or not TrainRules.missing(wagon.production_cost, storage).is_empty():
+		if wagon.production_at(wagon_level(wagon.id)).is_empty():
 			continue
-		var gained: int = 0
-		for amount: int in production.values():
-			gained += amount
-		for amount: int in wagon.production_cost.values():
-			gained -= amount
-		if gained > storage_free():
-			continue
-		TrainRules.pay(wagon.production_cost, storage)
-		for id: StringName in production:
-			storage[id] = storage.get(id, 0) + production[id]
-			produced[id] = produced.get(id, 0) + production[id]
+		var problem: String = machine_problem(wagon)
+		if problem.is_empty():
+			var production: Dictionary[StringName, int] = wagon.production_at(wagon_level(wagon.id))
+			var gained: int = 0
+			for amount: int in production.values():
+				gained += amount
+			for amount: int in wagon.production_cost.values():
+				gained -= amount
+			if gained > storage_free():
+				problem = "stock plein"
+			else:
+				TrainRules.pay(wagon.production_cost, storage)
+				for id: StringName in wagon.production_cost:
+					last_consumed[id] = last_consumed.get(id, 0) + wagon.production_cost[id]
+				for id: StringName in production:
+					storage[id] = storage.get(id, 0) + production[id]
+					produced[id] = produced.get(id, 0) + production[id]
+		if not problem.is_empty():
+			var note: String = "%s : %s" % [wagon.display_name, problem]
+			if not note in machine_notes:
+				machine_notes.append(note)
 	if not produced.is_empty():
 		storage_changed.emit()
 	return produced
+
+
+## Pourquoi cette machine ne tournera pas au prochain trajet (vide : elle tournera).
+## Le stock plein ne se sait qu'au moment de produire.
+func machine_problem(wagon: WagonData) -> String:
+	# Train abîmé : plus de courant pour la serre ni le labo.
+	if train_condition < TRAIN_DAMAGED:
+		return "train abîmé, à l'arrêt"
+	var lacking: Dictionary[StringName, int] = TrainRules.missing(wagon.production_cost, storage)
+	if not lacking.is_empty():
+		return "il manque " + MenuKit.describe_amounts(lacking)
+	return ""
+
+
+## Combien de trajets la machine peut encore faire avec le stock (-1 : elle ne consomme rien).
+func machine_runs_left(wagon: WagonData) -> int:
+	if wagon.production_cost.is_empty():
+		return -1
+	var runs: int = 1 << 30
+	for id: StringName in wagon.production_cost:
+		runs = mini(runs, storage_amount(id) / maxi(wagon.production_cost[id], 1))
+	return runs
+
+
+## Les voitures qui produisent (une par type), dans l'ordre du train.
+func machine_wagons() -> Array[WagonData]:
+	var machines: Array[WagonData] = []
+	for wagon: WagonData in train:
+		if not wagon in machines and not wagon.production_at(wagon_level(wagon.id)).is_empty():
+			machines.append(wagon)
+	return machines
+
+
+func _log_production(stop: int) -> void:
+	if machine_wagons().is_empty():
+		return
+	production_log.push_front({"stop": stop, "produced": last_production.duplicate(),
+		"consumed": last_consumed.duplicate(), "note": " · ".join(machine_notes)})
+	if production_log.size() > PRODUCTION_LOG_SIZE:
+		production_log.resize(PRODUCTION_LOG_SIZE)
 
 
 # --- État du train -----------------------------------------------------------------
@@ -769,10 +833,13 @@ func medicine_for_crew() -> LootData:
 	return null
 
 
-## Donner un médicament : l'infection baisse et on sait enfin où il en est.
-func medicate(member: CrewMember) -> bool:
-	var medicine: LootData = medicine_for_crew()
-	if medicine == null or (member.infection_known and member.infection == 0):
+## Donner un médicament (par défaut le plus faible du stock) : l'infection baisse et on
+## sait enfin où il en est.
+func medicate(member: CrewMember, medicine: LootData = null) -> bool:
+	if medicine == null:
+		medicine = medicine_for_crew()
+	if medicine == null or not medicine.is_medicine() or storage_amount(medicine.id) <= 0 \
+			or (member.infection_known and member.infection == 0):
 		return false
 	storage[medicine.id] -= 1
 	member.infection = maxi(member.infection - roundi(medicine.cure * 100.0), 0)
@@ -1039,6 +1106,7 @@ func to_save() -> Dictionary:
 		"clock": clock_minutes,
 		"found_plans": found_plans.map(func(id: StringName) -> String: return String(id)),
 		"researched_plans": researched_plans.map(func(id: StringName) -> String: return String(id)),
+		"production_log": production_log,
 		"order": String(current_order.data.id) if current_order else "",
 		"order_amount": current_order.amount if current_order else 0,
 		"route": route_options.map(func(option: StopOption) -> Dictionary: return {
@@ -1120,6 +1188,11 @@ func load_save(data: Dictionary) -> bool:
 	researched_plans.clear()
 	for id: String in data.get("researched_plans", []):
 		researched_plans.append(StringName(id))
+	production_log.clear()
+	for entry: Variant in data.get("production_log", []):
+		if entry is Dictionary:
+			production_log.append({"stop": int(entry.get("stop", 0)), "produced": _amounts(entry.get("produced", {})),
+				"consumed": _amounts(entry.get("consumed", {})), "note": str(entry.get("note", ""))})
 	var order_data: OrderData = CaptainOrders.find(StringName(data.get("order", "")))
 	current_order = CaptainOrders.Order.new(order_data, int(data.get("order_amount", 0))) if order_data else null
 	# Voies de l'aiguillage (anciennes sauvegardes : la seule voie est l'arrêt enregistré).
@@ -1147,6 +1220,15 @@ func load_save(data: Dictionary) -> bool:
 	infection_changed.emit()
 	plans_changed.emit()
 	return true
+
+
+## Quantités relues d'une sauvegarde (clés texte, nombres flottants du JSON).
+static func _amounts(raw: Variant) -> Dictionary[StringName, int]:
+	var amounts: Dictionary[StringName, int] = {}
+	if raw is Dictionary:
+		for id: Variant in raw:
+			amounts[StringName(str(id))] = int(raw[id])
+	return amounts
 
 
 static func _find_by_id(list: Array, id: String) -> Resource:

@@ -1,12 +1,14 @@
 class_name MenuKit
 extends RefCounted
 ## Petits morceaux d'interface partagés par les menus (train, gare refuge) :
-## libellés colorés, lignes « titre + détail + bouton », coûts lisibles.
+## libellés colorés, pastilles chiffrées, coûts en petites cases, barre de détail.
 
 const GOOD: Color = Color(0.55, 0.85, 0.45)
 const BAD: Color = Color(1.0, 0.45, 0.35)
 const MUTED: Color = Color(0.7, 0.7, 0.74)
 const GOLD: Color = Color(1.0, 0.82, 0.35)
+
+const ARROW: Texture2D = preload("res://assets/ui/icons/arrow.png")
 
 
 static func label(text: String, color: Color = Color.WHITE) -> Label:
@@ -88,3 +90,115 @@ static func loot_name(id: StringName) -> String:
 		if loot.id == id:
 			return loot.display_name
 	return String(id)
+
+
+# --- Menus en cases -----------------------------------------------------------------
+
+## Pastille « icône + nombre » des en-têtes (4/5 voitures, 47/60 places...).
+## L'explication est dans l'infobulle, pas à l'écran.
+static func chip(texture: Texture2D, text: String, color: Color = Color.WHITE, tip: String = "") -> HBoxContainer:
+	var box := HBoxContainer.new()
+	box.add_theme_constant_override(&"separation", 2)
+	box.tooltip_text = tip
+	box.mouse_filter = Control.MOUSE_FILTER_STOP if not tip.is_empty() else Control.MOUSE_FILTER_IGNORE
+	if texture:
+		var picture := icon(texture, 12.0)
+		picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		box.add_child(picture)
+	var value := label(text, color)
+	value.add_theme_font_override(&"font", BagHotbar.NUMBERS_FONT)
+	value.add_theme_font_size_override(&"font_size", 9)
+	value.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(value)
+	return box
+
+
+## Ligne d'en-tête d'un onglet : des pastilles, espacées.
+static func header() -> HBoxContainer:
+	var box := HBoxContainer.new()
+	box.add_theme_constant_override(&"separation", 10)
+	return box
+
+
+## Petit titre de section, doré.
+static func section(text: String) -> Label:
+	return label(text, GOLD)
+
+
+## Une grille de cases qui passe à la ligne toute seule.
+static func grid() -> HFlowContainer:
+	var flow := HFlowContainer.new()
+	flow.add_theme_constant_override(&"h_separation", 2)
+	flow.add_theme_constant_override(&"v_separation", 2)
+	return flow
+
+
+## Des quantités en petites cases : [bois 3] [tissu 2]. Avec `stock`, le nombre passe
+## en rouge quand il en manque (et l'infobulle dit combien on en a).
+static func cost_row(amounts: Dictionary[StringName, int], stock: Variant = null) -> HBoxContainer:
+	var box := HBoxContainer.new()
+	box.add_theme_constant_override(&"separation", 1)
+	# Dans une barre plus haute, les cases gardent leur taille (pas étirées).
+	box.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	for id: StringName in amounts:
+		var data: LootData = loot(id)
+		var tip: String = "%d %s" % [amounts[id], loot_name(id).to_lower()]
+		var cell := SlotCell.create(data.icon if data else null, str(amounts[id]), tip, false, SlotCell.SMALL)
+		if stock is Dictionary:
+			var have: int = (stock as Dictionary).get(id, 0)
+			cell.tooltip_text = "%s (%d en stock)" % [tip, have]
+			if have < amounts[id]:
+				cell.set_count_color(BAD)
+		box.add_child(cell)
+	return box
+
+
+## Une recette en cases : ce qu'on donne → ce qu'on obtient.
+static func recipe_row(cost: Dictionary[StringName, int], output: Dictionary[StringName, int], stock: Variant = null) -> HBoxContainer:
+	var box := HBoxContainer.new()
+	box.add_theme_constant_override(&"separation", 2)
+	box.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	if not cost.is_empty():
+		box.add_child(cost_row(cost, stock))
+		box.add_child(icon(ARROW, 12.0))
+	box.add_child(cost_row(output))
+	return box
+
+
+## Le titre et la ligne d'explication de la barre de détail, avec l'icône à gauche.
+static func detail_info(box: Container, texture: Texture2D, title: String, text: String = "",
+		text_color: Color = MUTED) -> VBoxContainer:
+	if texture:
+		box.add_child(icon(texture, SlotCell.ICON))
+	var info := VBoxContainer.new()
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	info.add_theme_constant_override(&"separation", 0)
+	info.add_child(label(title))
+	if not text.is_empty():
+		var line := label(text, text_color)
+		line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		info.add_child(line)
+	box.add_child(info)
+	return info
+
+
+## Bouton d'action de la barre de détail (Fabriquer, Construire...). `why` : la raison
+## quand il est grisé, en infobulle.
+static func action(text: String, on_press: Callable, disabled: bool = false, why: String = "") -> Button:
+	var button := Button.new()
+	button.text = text
+	button.disabled = disabled
+	button.tooltip_text = why
+	button.custom_minimum_size = Vector2(0.0, 18.0)
+	button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	if on_press.is_valid():
+		button.pressed.connect(on_press)
+	return button
+
+
+static func loot(id: StringName) -> LootData:
+	for data: LootData in GameState.LOOT_TYPES:
+		if data.id == id:
+			return data
+	return null

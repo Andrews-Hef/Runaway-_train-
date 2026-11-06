@@ -1,10 +1,12 @@
 [gd_resource type="Resource" script_class="WagonData" format=3]
 
 [ext_resource type="Script" path="res://core/wagon_data.gd" id="1_wagon"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/locomotive.png" id="9_icon"]
 
 [resource]
 script = ExtResource("1_wagon")
 id = &"cabin"
 display_name = "Cabine"
+icon = ExtResource("9_icon")
 description = "La tête du train : chaudière, levier et table du capitaine."
 unique = true

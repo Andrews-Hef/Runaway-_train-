@@ -72,10 +72,7 @@ var _exposure_value: float = 0.0
 func _ready() -> void:
 	_outline_labels($Root)
 	# Repères des paliers d'infection (Fièvre, Contaminé, Critique) sur la jauge.
-	var marks: Array[float] = []
-	for stage: Dictionary in Infection.STAGES.slice(1):
-		marks.append(stage["from"])
-	_exposure_bar.marks = marks
+	_exposure_bar.marks = Infection.stage_marks()
 	var clock_row := HBoxContainer.new()
 	clock_row.name = "ClockRow"
 	clock_row.add_theme_constant_override(&"separation", 3)

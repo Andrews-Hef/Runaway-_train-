@@ -28,9 +28,10 @@ Un **voyage** d'arrêt en arrêt :
 - **Retour à bord** : le butin et les recrues rejoignent le train et on repart vers l'arrêt suivant.
 - **Sac en cases, façon Minecraft** : chaque case contient une **pile de 5** d'une seule ressource ; mélanger les ressources remplit vite les cases. **Petit sac 4 cases, sac de randonnée 6, sac militaire 8** ; talents Glaneur +1 case, Intendant +2 (sans sac : 2 cases). Les cases s'affichent en bas au centre du HUD, avec « Sac plein » en rouge.
 - **Inventaire** (I, ou le bouton Sac) : ton personnage et ses **5 cases d'équipement**, le **sac** (les cases grisées montrent ce qu'un sac plus grand ajouterait) et le **casier**. On touche une case : l'objet s'affiche en bas avec ce qu'on peut en faire. Pendant un arrêt : **Jeter 1** ou **Jeter la pile** (ce qu'on jette tombe en **tas** à ses pieds ; on le ramasse en maintenant Agir, dans la limite du sac). **Dans le train seulement** : toucher un objet du casier puis **Équiper** (il remplace celui qu'on porte, qui revient au casier). Le casier de l'atelier ouvre directement l'inventaire.
+- **Menus du train en cases** : chaque onglet montre des **cases** (ressources, recettes, voitures, plans, équipiers) et, en haut, des **pastilles chiffrées** (voitures, couchettes, stock, état du train). On touche une case : elle s'explique dans la **barre du bas**, avec son coût en petites cases (nombre en rouge s'il en manque) et son bouton (Fabriquer, Construire, Agrandir, Réparer, Étudier, Prendre, Donner à…). Les détails sont en infobulle. Onglet **Machines** : ce que la serre et le laboratoire consomment → produisent, s'ils tournent, et les **5 derniers trajets** (produit, consommé, pourquoi une machine s'est arrêtée). Onglet **Plans** : une feuille de plan d'atelier, chaque plan montre ce qu'il débloque (coche : étudié, « ! » : à étudier, cadenas : à trouver).
 - **Campagne continue et sauvegarde** : chaque gare refuge est un **point de reprise**. **Train raté** : on reprend à la dernière gare (ou au départ du train), tout ce qui s'est passé depuis est perdu. La session est aussi sauvegardée à chaque trajet (`user://saves/`), pour reprendre après avoir fermé le jeu.
 
-**Médicaments et infirmerie** : antiseptique (−10 %) et antibiotiques (−20 %) se trouvent dans les caisses et les armoires, et s'achètent chez les marchands et en gare. Le **sérum de sève** (−35 %) et le **vaccin expérimental** (−60 %) se préparent à l'**infirmerie**, une voiture à construire, avec les plans Pharmacie et Vaccin. On prend ses médicaments dans l'onglet **Infirmerie** du menu du train.
+**Médicaments et infirmerie** : antiseptique (−10 %) et antibiotiques (−20 %) se trouvent dans les caisses et les armoires, et s'achètent chez les marchands et en gare. Le **sérum de sève** (−35 %) et le **vaccin expérimental** (−60 %) se préparent à l'**infirmerie**, une voiture à construire, avec les plans Pharmacie et Vaccin. Dans l'onglet **Infirmerie** du menu du train, on choisit le **patient** (toi ou un équipier) puis le médicament : **Prendre** ou **Donner à…**. Les lits de quarantaine y sont aussi.
 
 **Plans et recherche** : les recettes avancées sont dans des **plans**. On les trouve en fouillant (caisses, armoires, sacs), on les achète aux marchands et en gare, puis on les **étudie** à l'atelier (table des plans) en payant des ressources. Les plans ont des prérequis : c'est un arbre.
 
@@ -199,13 +200,15 @@ Le forçage est ignoré dans un build release.
 | `Infection` | `core/infection.gd` | Paliers de l'infection (PV, vitesse), 100 % = la ruche |
 | `BlueprintData` / `BlueprintCatalog` | `core/` | Plans (`data/plans/*.tres`) : prérequis, coût d'étude, ce qu'ils débloquent |
 | `RecipeData` / `RecipeCatalog` | `core/` | Transformations et médicaments (`data/recipes/*.tres`), à l'atelier ou à l'infirmerie |
-| `MenuKit` | `ui/common/menu_kit.gd` | Morceaux d'interface partagés par les menus (lignes, coûts, couleurs) |
+| `MenuKit` | `ui/common/menu_kit.gd` | Morceaux d'interface partagés par les menus (pastilles, coûts en cases, barre de détail, couleurs) |
+| `SlotCell` | `ui/common/slot_cell.gd` | Une case façon inventaire (icône, nombre, liseré doré quand choisie) : inventaire, menu du train |
+| `BlueprintPaper` | `ui/common/blueprint_paper.gd` | Feuille de plan quadrillée de l'onglet Plans |
 
 **Ajouter une rencontre** : créer un `EncounterData` dans `data/encounters/` (titre, texte, choix réglés dans l'inspecteur), puis l'ajouter à `BY_ID` et à un pool dans `core/encounter_library.gd`. Chaque rencontre doit proposer un choix « Partir » (vérifié par les tests).
 
 **Ajouter un équipement** : créer un `ItemData` dans `data/items/` (emplacement, effets, recette), puis l'ajouter à `ALL` dans `core/item_catalog.gd`. Il apparaît tout seul à l'atelier.
 
-**Ajouter un type de voiture** : créer un `WagonData` dans `data/wagons/` (effets, coût), l'ajouter à `BUILDABLE_WAGONS` dans `core/game_state.gd`, puis placer ses meubles dans `LAYOUTS` (`levels/train_interior/train_interior.gd`), sous le même id.
+**Ajouter un type de voiture** : créer un `WagonData` dans `data/wagons/` (effets, coût, icône de `assets/ui/icons/`), l'ajouter à `BUILDABLE_WAGONS` dans `core/game_state.gd`, puis placer ses meubles dans `LAYOUTS` (`levels/train_interior/train_interior.gd`), sous le même id.
 
 **Régler la traction** : `max_cars` et le coût de chaque niveau dans `data/locomotive/level_*.tres`.
 

@@ -1,6 +1,9 @@
 class_name BlueprintCatalog
 ## Tous les plans, et les règles pour les étudier. Pur.
 
+const PLAN_ICON: Texture2D = preload("res://assets/ui/icons/plan.png")
+const WAGON_ICON: Texture2D = preload("res://assets/ui/icons/wagon.png")
+
 const ALL: Array[BlueprintData] = [
 	preload("res://data/plans/metallurgy.tres"),
 	preload("res://data/plans/chemistry.tres"),
@@ -59,3 +62,24 @@ static func unlocks(plan_id: StringName) -> PackedStringArray:
 			if wagon.upgrade_to(level).plan == plan_id:
 				names.append("%s niv. %d" % [wagon.display_name, level])
 	return names
+
+
+## L'icône de ce que le plan débloque : l'équipement, le produit, la voiture (une voiture
+## générique pour un agrandissement), sinon un plan.
+static func icon(plan_id: StringName) -> Texture2D:
+	for item: ItemData in ItemCatalog.ALL:
+		if item.plan == plan_id and item.icon:
+			return item.icon
+	for recipe: RecipeData in RecipeCatalog.ALL:
+		if recipe.plan == plan_id:
+			for id: StringName in recipe.output:
+				for loot: LootData in GameState.LOOT_TYPES:
+					if loot.id == id and loot.icon:
+						return loot.icon
+	for wagon: WagonData in GameState.WAGON_TYPES:
+		if wagon.plan == plan_id and wagon.icon:
+			return wagon.icon
+		for level: int in range(2, wagon.max_level() + 1):
+			if wagon.upgrade_to(level).plan == plan_id:
+				return WAGON_ICON
+	return PLAN_ICON
