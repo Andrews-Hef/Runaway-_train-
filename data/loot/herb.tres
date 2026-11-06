@@ -7,5 +7,6 @@
 script = ExtResource("1_6rgwe")
 id = &"herb"
 display_name = "Plantes"
+description = "Plantes saines : pansements et médicaments."
 color = Color(0.43529412, 0.68235296, 0.2901961, 1)
 icon = ExtResource("2_icon")

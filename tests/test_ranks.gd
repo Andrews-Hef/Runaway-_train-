@@ -113,3 +113,22 @@ func test_une_recrue_ne_recrute_pas_en_sortie() -> void:
 	var lacking := EncounterResolver.missing(choice, ExpeditionResult.new(), -1, 3, false)
 	assert_true(lacking.has(EncounterResolver.NO_RANK), "il faut être Soldat")
 	assert_true(EncounterResolver.missing(choice, ExpeditionResult.new(), -1, 3, true).is_empty(), "soldat : possible")
+
+
+func test_la_progression_vers_le_grade_suivant() -> void:
+	assert_true(is_equal_approx(Career.progress(0), 0.0), "Recrue sans mérite : 0")
+	assert_true(is_equal_approx(Career.progress(12), 12.0 / 25.0), "12 / 25 avant Soldat")
+	assert_true(is_equal_approx(Career.progress(25), 0.0), "Soldat tout juste : on repart de 0")
+	assert_true(is_equal_approx(Career.progress(500), 1.0), "Capitaine : barre pleine")
+	assert_true(Career.UNLOCKS.size() == Career.GRADES.size(), "un texte par grade")
+
+
+func test_l_onglet_grade_montre_la_barre() -> void:
+	GameState.new_run(2)
+	GameState.merit = 12
+	var list := VBoxContainer.new()
+	tree.root.add_child(list)
+	GradeView.fill(list)
+	var bar := list.get_node("GradeProgress") as StageBar
+	assert_true(bar != null and is_equal_approx(bar.value, 12.0 / 25.0), "barre à 12/25")
+	list.free()

@@ -2,6 +2,10 @@ extends CanvasLayer
 ## Interface en jeu : temps d'arrêt restant, vie, infection, butin et consignes.
 ##
 ## Elle n'a aucune logique de jeu : elle affiche ce que les systèmes lui signalent.
+## En haut à gauche, un seul encart qui grandit vers le bas (temps, heure, vie,
+## infection, météo, état du train) ; en haut au centre, l'ordre du capitaine ; en
+## bas au centre, les cases du sac façon Minecraft (BagHotbar), la consigne au-dessus.
+## Le haut à droite reste libre pour les boutons tactiles « Sac » et « II ».
 ## Icônes 12 px (assets/ui/icons/), chiffres en gras plus gros, ombre sous les textes :
 ## lisible sur un petit écran. Style : plaques de fer du thème (HudPanel), ordre du
 ## capitaine sur un télégramme (PaperPanel), vie en segments, infection à paliers.
@@ -9,7 +13,6 @@ extends CanvasLayer
 const NORMAL_TIME_COLOR: Color = Color(1.0, 1.0, 1.0)
 const WHISTLE_TIME_COLOR: Color = Color(1.0, 0.45, 0.35)
 const OUTLINE_COLOR: Color = Color(0.06, 0.05, 0.06)
-const BAG_ICON: Texture2D = preload("res://assets/ui/icons/bag.png")
 const RECRUIT_ICON: Texture2D = preload("res://assets/ui/icons/recruit.png")
 const PLAN_ICON: Texture2D = preload("res://assets/ui/icons/plan.png")
 const SUN_ICON: Texture2D = preload("res://assets/ui/icons/sun.png")
@@ -20,8 +23,6 @@ const NUMBERS_SIZE: int = 11
 ## Encre du télégramme (ordre du capitaine) : en cours, puis rempli.
 const INK: Color = Color(0.17, 0.12, 0.08)
 const INK_DONE: Color = Color(0.16, 0.42, 0.14)
-const BAG_FILL: Color = Color(0.85, 0.68, 0.3)
-const BAG_FULL: Color = Color(0.9, 0.3, 0.25)
 ## État du train : bon, abîmé, critique.
 const TRAIN_GOOD: Color = Color(0.8, 0.82, 0.86)
 const TRAIN_DAMAGED: Color = Color(1.0, 0.7, 0.3)
@@ -41,18 +42,14 @@ const TRAIN_CRITICAL: Color = Color(1.0, 0.35, 0.3)
 @onready var _exposure_label: Label = %ExposureLabel
 @onready var _exposure_bar: StageBar = %ExposureBar
 @onready var _zone_warning: Label = %ZoneWarning
-@onready var _loot_list: VBoxContainer = %LootList
 @onready var _banner: Label = %Banner
 @onready var _prompt: Label = %Prompt
 @onready var _zone_title: Label = %ZoneTitle
 
-var _loot_labels: Dictionary[StringName, Label] = {}
 var _loot_types: Array[LootData] = []
 var _target: Interactable
 var _interactor: Interactor
 var _session: StopSession
-var _bag_label: Label
-var _bag_bar: StageBar
 ## Météo (pluie infectée) : compte à rebours et abri, sous l'infection.
 var _weather_label: Label
 ## Horloge : jour et heure, icône soleil ou lune (sous le temps d'arrêt).
@@ -61,8 +58,10 @@ var _clock_label: Label
 ## État du train (pendant une horde) : texte et jauge.
 var _train_label: Label
 var _train_bar: StageBar
-var _loot_grid: GridContainer
-var _extras: VBoxContainer
+## Cases du sac, en bas au centre.
+var _hotbar: BagHotbar
+## Recrues et plans trouvés pendant l'arrêt, à côté des cases.
+var _extras: HBoxContainer
 var _shown_plans: Array[StringName] = []
 var _banner_tween: Tween
 var _toast_tween: Tween
@@ -77,10 +76,6 @@ func _ready() -> void:
 	for stage: Dictionary in Infection.STAGES.slice(1):
 		marks.append(stage["from"])
 	_exposure_bar.marks = marks
-	# Équipement porté, sous la vie et l'infection.
-	var bar := EquipmentBar.new()
-	bar.name = "EquipmentBar"
-	%HealthBar.get_parent().add_child(bar)
 	var clock_row := HBoxContainer.new()
 	clock_row.name = "ClockRow"
 	clock_row.add_theme_constant_override(&"separation", 3)
@@ -249,35 +244,30 @@ static func format_time(seconds: float) -> String:
 	return "%d:%02d" % [total / 60, total % 60]
 
 
-## Le sac : icône + nombre pour chaque ressource, en deux colonnes ; puis recrues et plans.
+## Le sac en bas au centre : ses cases, puis les recrues et les plans de l'arrêt.
 func _build_loot_list() -> void:
-	for child: Node in _loot_list.get_children():
-		_loot_list.remove_child(child)
-		child.queue_free()
-	_loot_labels.clear()
-	var bag_row := _icon_row(BAG_ICON)
-	_bag_label = bag_row.get_child(1) as Label
-	_loot_list.add_child(bag_row)
-	# Remplissage du sac : une jauge qui rougit quand il est plein.
-	_bag_bar = StageBar.new()
-	_bag_bar.custom_minimum_size = Vector2(0.0, 4.0)
-	_bag_bar.fill_color = BAG_FILL
-	_bag_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_loot_list.add_child(_bag_bar)
-	_loot_grid = GridContainer.new()
-	_loot_grid.columns = 2
-	_loot_grid.add_theme_constant_override(&"h_separation", 6)
-	_loot_grid.add_theme_constant_override(&"v_separation", 1)
-	_loot_list.add_child(_loot_grid)
-	for loot: LootData in _loot_types:
-		var row := _icon_row(loot.icon)
-		row.tooltip_text = loot.display_name
-		_loot_grid.add_child(row)
-		_loot_labels[loot.id] = row.get_child(1) as Label
-	_extras = VBoxContainer.new()
-	_extras.add_theme_constant_override(&"separation", 1)
-	_loot_list.add_child(_extras)
-	_outline_labels(_loot_list)
+	if _hotbar == null:
+		var bottom := HBoxContainer.new()
+		bottom.name = "Bottom"
+		bottom.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		bottom.alignment = BoxContainer.ALIGNMENT_CENTER
+		bottom.add_theme_constant_override(&"separation", 6)
+		bottom.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+		bottom.offset_left = -200.0
+		bottom.offset_right = 200.0
+		bottom.offset_top = -26.0
+		bottom.offset_bottom = -4.0
+		bottom.grow_horizontal = Control.GROW_DIRECTION_BOTH
+		$Root.add_child(bottom)
+		_hotbar = BagHotbar.new()
+		bottom.add_child(_hotbar)
+		_extras = HBoxContainer.new()
+		_extras.name = "Extras"
+		_extras.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_extras.add_theme_constant_override(&"separation", 4)
+		bottom.add_child(_extras)
+	_hotbar.set_loot_types(_loot_types)
+	_outline_labels(_hotbar)
 
 
 static func _icon_row(icon: Texture2D) -> HBoxContainer:
@@ -312,11 +302,7 @@ func _on_whistle_blown() -> void:
 
 
 func _on_loot_changed(result: ExpeditionResult) -> void:
-	for loot: LootData in _loot_types:
-		var amount: int = result.get_amount(loot.id)
-		_loot_labels[loot.id].text = str(amount)
-		# Les matériaux rares n'apparaissent qu'une fois trouvés, pour garder le HUD lisible.
-		_loot_labels[loot.id].get_parent().visible = amount > 0 or not loot.rare
+	_hotbar.show_bag(result.loot, _session.capacity if _session else -1)
 	# Plans trouvés pendant la sortie.
 	for plan_id: StringName in result.plans:
 		if plan_id in _shown_plans:
@@ -330,11 +316,6 @@ func _on_loot_changed(result: ExpeditionResult) -> void:
 		_extras.add_child(row)
 		_outline_labels(row)
 	_refresh_order()
-	if _session and _session.capacity >= 0:
-		_bag_label.text = "%d/%d" % [result.total_items(), _session.capacity]
-		_bag_label.add_theme_color_override(&"font_color", Color(1.0, 0.45, 0.35) if _session.is_bag_full() else Color(0.85, 0.85, 0.88))
-		_bag_bar.value = float(result.total_items()) / maxf(_session.capacity, 1.0)
-		_bag_bar.fill_color = BAG_FULL if _session.is_bag_full() else BAG_FILL
 	_refresh_prompt()
 
 

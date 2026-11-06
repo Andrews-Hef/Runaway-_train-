@@ -16,7 +16,7 @@ script = ExtResource("1_perk")
 id = &"quartermaster"
 display_name = "Intendant"
 description = "Rien ne se perd dans ton sac."
-capacity = 6
+capacity = 2
 harvest_speed = 0.2
 
 [resource]

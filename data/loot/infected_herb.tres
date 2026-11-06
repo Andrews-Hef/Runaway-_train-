@@ -7,6 +7,7 @@
 script = ExtResource("1_levgv")
 id = &"infected_herb"
 display_name = "Plantes infectées"
+description = "Le dispensaire des gares les achète ; le laboratoire en tire des remèdes."
 color = Color(0.7529412, 0.41960785, 1, 1)
 infected = true
 icon = ExtResource("2_icon")

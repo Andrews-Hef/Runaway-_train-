@@ -37,7 +37,7 @@ static func can_afford(choice: EncounterChoice, result: ExpeditionResult, capaci
 	return missing(choice, result, capacity, free_beds).is_empty()
 
 
-## Ce qui manque : id -> quantité manquante, NO_SPACE -> place manquante dans le sac,
+## Ce qui manque : id -> quantité manquante, NO_SPACE -> cases manquantes dans le sac,
 ## NO_BED -> couchettes manquantes. `free_beds` : couchettes libres au début de la sortie
 ## (les recrues de la sortie en cours en prennent).
 static func missing(choice: EncounterChoice, result: ExpeditionResult, capacity: int = -1,
@@ -53,7 +53,7 @@ static func missing(choice: EncounterChoice, result: ExpeditionResult, capacity:
 		if short > 0:
 			lacking[id] = short
 	if capacity >= 0 and lacking.is_empty():
-		var overflow: int = result.total_items() + max_gain(choice) - _cost_total(choice) - capacity
+		var overflow: int = slots_after(choice, result) - capacity
 		if overflow > 0:
 			lacking[NO_SPACE] = overflow
 	return lacking
@@ -67,6 +67,20 @@ static func max_gain(choice: EncounterChoice) -> int:
 	if not choice.random_reward_pool.is_empty():
 		total += choice.random_reward_amount.y
 	return total
+
+
+## Cases occupées après le choix, au pire : le prix payé, le gain fixe ajouté, et le
+## gain aléatoire compté comme une ressource de plus (de nouvelles piles).
+static func slots_after(choice: EncounterChoice, result: ExpeditionResult) -> int:
+	var after: Dictionary[StringName, int] = result.loot.duplicate()
+	for id: StringName in choice.cost:
+		after[id] = after.get(id, 0) - choice.cost[id]
+	for id: StringName in choice.reward:
+		after[id] = after.get(id, 0) + choice.reward[id]
+	var slots: int = BagSlots.used(after)
+	if not choice.random_reward_pool.is_empty():
+		slots += ceili(float(choice.random_reward_amount.y) / BagSlots.STACK_SIZE)
+	return slots
 
 
 static func _cost_total(choice: EncounterChoice) -> int:

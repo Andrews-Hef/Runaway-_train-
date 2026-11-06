@@ -26,7 +26,7 @@ var remaining: float = 0.0
 var result: ExpeditionResult = ExpeditionResult.new()
 ## Source de l'exposition à recopier dans le résultat à la fin (injectée par la zone).
 var exposure_source: ExposureComponent
-## Nombre de ressources que le joueur peut porter (son sac). < 0 = illimité.
+## Cases du sac (piles de BagSlots.STACK_SIZE). < 0 = illimité.
 var capacity: int = -1
 ## Couchettes libres dans le train au début de l'arrêt (-1 = illimité) : limite les recrues.
 var free_beds: int = -1
@@ -74,7 +74,7 @@ func tick(delta: float) -> void:
 func add_loot(loot: LootData, amount: int) -> int:
 	if state == State.ENDED or loot == null:
 		return 0
-	var taken: int = amount if capacity < 0 else mini(amount, free_space())
+	var taken: int = amount if capacity < 0 else mini(amount, room_for(loot.id))
 	if taken <= 0:
 		return 0
 	result.add_loot(loot.id, taken)
@@ -96,15 +96,29 @@ func drop(id: StringName, amount: int) -> int:
 	return thrown
 
 
-## Place restante dans le sac (très grand si illimité).
-func free_space() -> int:
+## Combien de cette ressource peut encore entrer (la fin de sa pile, plus les cases
+## libres ; très grand si le sac est illimité).
+func room_for(id: StringName) -> int:
 	if capacity < 0:
 		return 1 << 30
-	return maxi(capacity - result.total_items(), 0)
+	return BagSlots.room_for(result.loot, id, capacity)
 
 
+## Cases occupées (piles de BagSlots.STACK_SIZE).
+func used_slots() -> int:
+	return BagSlots.used(result.loot)
+
+
+## Cases libres (très grand si illimité).
+func free_slots() -> int:
+	if capacity < 0:
+		return 1 << 30
+	return maxi(capacity - used_slots(), 0)
+
+
+## Plus aucune case libre (on peut encore compléter une pile entamée).
 func is_bag_full() -> bool:
-	return free_space() <= 0
+	return free_slots() <= 0
 
 
 ## Applique un choix de rencontre (échange, recrutement...) au butin de la sortie.

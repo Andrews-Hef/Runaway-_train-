@@ -15,7 +15,7 @@ script = ExtResource("1_perk")
 id = &"forager"
 display_name = "Glaneur"
 description = "Tu sais où chercher et comment ranger ton sac."
-capacity = 4
+capacity = 1
 
 [resource]
 script = ExtResource("2_grade")

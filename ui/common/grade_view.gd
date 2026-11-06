@@ -1,7 +1,10 @@
 class_name GradeView
 extends RefCounted
-## Le grade du joueur : mérite, ordre du capitaine, talents (et choix du talent
-## après une promotion). Affiché dans l'inventaire (touche I).
+## Le grade du joueur : barre de progression vers le grade suivant, échelle des grades
+## (ce que chacun débloque), ordre du capitaine, talents (et choix du talent après une
+## promotion). Affiché dans l'onglet Grade de l'inventaire (I, ou le bouton Sac).
+
+const PROGRESS_COLOR: Color = Color(0.47, 0.75, 0.29)
 
 
 static func fill(list: VBoxContainer) -> void:
@@ -9,10 +12,27 @@ static func fill(list: VBoxContainer) -> void:
 	var grade: GradeData = GameState.grade()
 	var next: GradeData = Career.next_grade(GameState.grade_index())
 	list.add_child(MenuKit.label("%s — %s" % [grade.display_name, grade.description], MenuKit.GOLD))
+	# Barre de progression vers le grade suivant.
+	var bar := StageBar.new()
+	bar.name = "GradeProgress"
+	bar.custom_minimum_size = Vector2(240.0, 6.0)
+	bar.fill_color = PROGRESS_COLOR
+	bar.value = Career.progress(GameState.merit)
+	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	list.add_child(bar)
 	if next:
-		list.add_child(MenuKit.label("Mérite : %d/%d avant %s" % [GameState.merit, next.merit_needed, next.display_name], MenuKit.MUTED))
+		list.add_child(MenuKit.label("Mérite : %d / %d avant %s (%s)" % [GameState.merit, next.merit_needed, next.display_name,
+			Career.UNLOCKS[GameState.grade_index() + 1].to_lower()], PROGRESS_COLOR))
 	else:
-		list.add_child(MenuKit.label("Mérite : %d (grade le plus haut)" % GameState.merit, MenuKit.MUTED))
+		list.add_child(MenuKit.label("Mérite : %d · grade le plus haut" % GameState.merit, PROGRESS_COLOR))
+	# L'échelle des grades : atteints, suivant, à venir.
+	for i: int in Career.GRADES.size():
+		var step: GradeData = Career.GRADES[i]
+		var reached: bool = i <= GameState.grade_index()
+		var color: Color = MenuKit.GOOD if reached else (MenuKit.GOLD if i == GameState.grade_index() + 1 else MenuKit.MUTED)
+		var line := MenuKit.label("%s (%d) : %s" % [step.display_name, step.merit_needed, Career.UNLOCKS[i]], color)
+		line.add_theme_font_size_override(&"font_size", 7)
+		list.add_child(line)
 	var order: CaptainOrders.Order = GameState.current_order
 	list.add_child(MenuKit.label("Ordre pour l'arrêt n°%d : %s (+%d mérite)" % [GameState.stop_number, order.text(), order.data.merit] if order \
 		else "Pas d'ordre : le prochain arrêt est une gare refuge.", Color.WHITE))

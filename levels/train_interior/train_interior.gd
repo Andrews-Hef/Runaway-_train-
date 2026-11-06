@@ -455,6 +455,11 @@ func _use_station(station: StringName, spot: Interactable = null) -> void:
 		# Il reste au poste, au travail, tant que le menu est ouvert.
 		_player.hold_pose(spot.animation, spot.global_position)
 	_prompt.visible = false
+	if station == &"equipment":
+		# Le casier ouvre l'inventaire : c'est là qu'on s'équipe.
+		GameMenu.closed.connect(_on_menu_closed, CONNECT_ONE_SHOT)
+		GameMenu.open_inventory()
+		return
 	_menu.call(&"open", STATION_TABS[station])
 
 

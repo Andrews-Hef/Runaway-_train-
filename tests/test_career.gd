@@ -48,7 +48,7 @@ func test_le_talent_glaneur_agrandit_le_sac() -> void:
 	var before: int = GameState.bag_capacity()
 	GameState.add_merit(Career.GRADES[1].merit_needed)
 	GameState.choose_perk(Career.find_perk(&"forager"))
-	assert_true(GameState.bag_capacity() == before + 4, "sac +4")
+	assert_true(GameState.bag_capacity() == before + 1, "sac +1 case")
 
 
 func test_le_premier_ordre_est_simple() -> void:

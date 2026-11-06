@@ -63,7 +63,7 @@ func describe_effects() -> String:
 	if protection > 0.0:
 		parts.append("Protection %d %%" % roundi(protection * 100.0))
 	if capacity > 0:
-		parts.append("Sac %d" % capacity)
+		parts.append("Sac %d cases" % capacity)
 	if not harvest_tags.is_empty() and harvest_speed > 1.0:
 		parts.append("Récolte +%d %%" % roundi((harvest_speed - 1.0) * 100.0))
 	if damage > 0:

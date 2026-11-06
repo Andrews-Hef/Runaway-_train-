@@ -7,5 +7,6 @@
 script = ExtResource("1_tieyh")
 id = &"wood"
 display_name = "Bois"
+description = "Planches et branches : construire, réparer, fabriquer."
 color = Color(0.65882355, 0.45882353, 0.2901961, 1)
 icon = ExtResource("2_icon")

@@ -36,7 +36,7 @@ func test_une_partie_se_relit_a_l_identique() -> void:
 	assert_true(GameState.stop_number == 4, "arrêt n°4")
 	assert_true(GameState.storage_amount(&"scrap") == 7 and GameState.storage_amount(&"parts") == 2, "stock")
 	assert_true(GameState.crew.size() == 1 and GameState.crew[0].display_name == "Léa" and GameState.crew[0].infected, "équipage, infection cachée comprise")
-	assert_true(GameState.loadout.capacity() == 20, "sac de randonnée porté")
+	assert_true(GameState.loadout.capacity() == 6, "sac de randonnée porté")
 	assert_true(GameState.train.size() == 5 and GameState.locomotive_level == 2, "train et locomotive")
 	assert_true(JSON.stringify(GameState.to_save()) == JSON.stringify(saved), "rien n'a changé")
 

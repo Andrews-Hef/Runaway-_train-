@@ -155,37 +155,18 @@ func _fill_workshop() -> void:
 
 func _fill_equipment() -> void:
 	MenuKit.clear(_equipment_list)
-	var loadout: Loadout = GameState.loadout
-	_equipment_list.add_child(MenuKit.label(loadout.describe(), GOLD))
-	for slot: int in ItemData.Slot.values():
-		var options: Array[ItemData] = GameState.owned_for_slot(slot)
-		var current: ItemData = loadout.get_item(slot)
-		var row := HBoxContainer.new()
-		var picture := MenuKit.icon(current.icon if current else null, 24.0)
-		row.add_child(picture)
-		var info := VBoxContainer.new()
-		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		info.add_theme_constant_override(&"separation", 0)
-		var name_text: String = current.display_name if current else "rien"
-		info.add_child(MenuKit.label("%s : %s" % [ItemData.SLOT_NAMES[slot], name_text]))
-		info.add_child(MenuKit.label(current.describe_effects() if current else "Fabrique-en un à l'atelier.", MUTED))
-		row.add_child(info)
-		var button := Button.new()
-		button.custom_minimum_size = Vector2(64.0, 18.0)
-		button.text = "Changer (%d)" % options.size()
-		button.disabled = options.size() < 2
-		button.pressed.connect(func() -> void: _cycle(slot))
-		row.add_child(button)
-		_equipment_list.add_child(row)
-
-
-## Passe à l'équipement suivant possédé pour cet emplacement.
-func _cycle(slot: int) -> void:
-	var options: Array[ItemData] = GameState.owned_for_slot(slot)
-	if options.is_empty():
-		return
-	var index: int = options.find(GameState.loadout.get_item(slot))
-	GameState.equip(options[(index + 1) % options.size()])
+	_equipment_list.add_child(MenuKit.label(GameState.loadout.describe(), GOLD))
+	var tip := MenuKit.label("L'équipement se change dans l'inventaire (I, ou le bouton Sac) : touche un objet du casier, puis « Équiper ».", MUTED)
+	tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	tip.custom_minimum_size = Vector2(300.0, 0.0)
+	_equipment_list.add_child(tip)
+	var open_inventory := Button.new()
+	open_inventory.text = "Ouvrir l'inventaire"
+	open_inventory.custom_minimum_size = Vector2(0.0, 18.0)
+	open_inventory.pressed.connect(func() -> void:
+		close()
+		GameMenu.open_inventory())
+	_equipment_list.add_child(open_inventory)
 
 
 # --- Équipage ---------------------------------------------------------------------

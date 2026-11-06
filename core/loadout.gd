@@ -6,8 +6,8 @@ extends RefCounted
 
 ## Protection maximale : même bien équipé, sortir n'est jamais sans risque.
 const MAX_PROTECTION: float = 0.8
-## Capacité de transport sans sac.
-const BASE_CAPACITY: int = 6
+## Cases de transport sans sac (piles de BagSlots.STACK_SIZE).
+const BASE_CAPACITY: int = 2
 
 ## Emplacement (ItemData.Slot) -> équipement porté.
 var equipped: Dictionary[int, ItemData] = {}
@@ -73,4 +73,4 @@ func damage() -> int:
 
 ## Résumé d'une ligne pour l'interface.
 func describe() -> String:
-	return "Armure %d · Protection %d %% · Sac %d · Dégâts %d" % [armor(), roundi(protection() * 100.0), capacity(), damage()]
+	return "Armure %d · Protection %d %% · Sac %d cases · Dégâts %d" % [armor(), roundi(protection() * 100.0), capacity(), damage()]

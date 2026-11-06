@@ -10,7 +10,7 @@ display_name = "Sac militaire"
 icon = ExtResource("9_icon")
 description = "Armature métallique, sangles renforcées."
 slot = 2
-capacity = 30
+capacity = 8
 recipe = Dictionary[StringName, int]({
 &"cloth": 5,
 &"parts": 1,

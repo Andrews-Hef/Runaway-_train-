@@ -7,6 +7,7 @@
 script = ExtResource("1_r35bo")
 id = &"parts"
 display_name = "Pièces mécaniques"
+description = "Pour la locomotive, les outils et les machines."
 color = Color(0.56078434, 0.6901961, 0.78431374, 1)
 rare = true
 icon = ExtResource("2_icon")

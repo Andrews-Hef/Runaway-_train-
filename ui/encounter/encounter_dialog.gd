@@ -110,7 +110,7 @@ static func _describe(amounts: Dictionary[StringName, int]) -> String:
 	if amounts.has(EncounterResolver.NO_BED):
 		return "une couchette libre dans le train"
 	if amounts.has(EncounterResolver.NO_SPACE):
-		return "de la place dans ton sac"
+		return "une case libre dans ton sac"
 	var parts: PackedStringArray = []
 	for id: StringName in amounts:
 		parts.append("%d %s" % [amounts[id], loot_name(id).to_lower()])

@@ -7,5 +7,6 @@
 script = ExtResource("1_0jpjw")
 id = &"scrap"
 display_name = "Ferraille"
+description = "Métal de récupération : construire, réparer, fabriquer."
 color = Color(0.5529412, 0.5294118, 0.49411765, 1)
 icon = ExtResource("2_icon")

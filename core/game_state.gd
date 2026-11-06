@@ -331,7 +331,7 @@ func prepare_next_stop() -> void:
 func _make_option(zone: ZoneProfile, option_seed: int) -> StopOption:
 	var order_rng := RandomNumberGenerator.new()
 	order_rng.seed = option_seed + 7
-	var order: CaptainOrders.Order = CaptainOrders.pick(zone, stop_number, order_rng, bag_capacity())
+	var order: CaptainOrders.Order = CaptainOrders.pick(zone, stop_number, order_rng, BagSlots.max_items(bag_capacity()))
 	return StopOption.new(zone, option_seed, order, roll_event(zone.biome, stop_number, option_seed))
 
 
@@ -892,7 +892,7 @@ func max_health() -> int:
 	return maxi(BASE_HEALTH + int(perk_bonus(&"max_health")) - Infection.health_malus(infection), 1)
 
 
-## Taille du sac : celle du sac porté, plus les talents.
+## Cases du sac : celles du sac porté, plus les talents (piles de BagSlots.STACK_SIZE).
 func bag_capacity() -> int:
 	return loadout.capacity() + int(perk_bonus(&"capacity"))
 

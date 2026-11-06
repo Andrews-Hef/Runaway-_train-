@@ -42,7 +42,7 @@ func test_jeter_retire_du_sac_et_previent_la_zone() -> void:
 	assert_true(thrown == [[&"scrap", 2]], "la zone pose le tas")
 	assert_true(session.drop(&"scrap", 10) == 3, "pas plus que ce qu'on porte")
 	assert_true(session.drop(&"wood", 1) == 0, "rien à jeter")
-	assert_true(session.free_space() == 12, "le sac est vide")
+	assert_true(session.free_slots() == 12, "le sac est vide")
 
 
 func test_on_ne_jette_plus_une_fois_l_arret_fini() -> void:
@@ -95,14 +95,16 @@ func test_dans_la_zone_le_tas_tombe_aux_pieds_et_se_ramasse() -> void:
 	var pile := piles[0] as DroppedPile
 	assert_true(pile.global_position.distance_to(player.global_position) < 12.0, "aux pieds du joueur")
 	assert_true(pile.contents[&"scrap"] == 4, "tout est dedans")
-	# Sac presque plein : on ne reprend que ce qui rentre.
-	session.add_loot(WOOD, session.free_space() - 1)
+	# Sac plein, sauf une place dans une pile de ferraille : on ne reprend que ça.
+	session.capacity = 2
+	session.add_loot(SCRAP, 4)
+	session.add_loot(WOOD, 5)
 	pile.interact(player)
-	assert_true(session.result.get_amount(&"scrap") == 1, "1 ferraille reprise (sac plein)")
+	assert_true(session.result.get_amount(&"scrap") == 5, "1 ferraille reprise (sac plein)")
 	assert_true(pile.contents[&"scrap"] == 3, "le reste reste au sol")
 	session.drop(&"wood", 5)
 	pile.interact(player)
-	assert_true(session.result.get_amount(&"scrap") == 4, "tout repris une fois la place faite")
+	assert_true(session.result.get_amount(&"scrap") == 8, "tout repris une fois la place faite")
 
 
 func test_l_inventaire_propose_jeter_pendant_un_arret() -> void:
@@ -111,12 +113,13 @@ func test_l_inventaire_propose_jeter_pendant_un_arret() -> void:
 	tree.current_scene = zone
 	session.add_loot(SCRAP, 3)
 	GameMenu.open_inventory()
+	assert_true(_find_label(GameMenu, "Ferraille ×3") != null, "la pile est choisie d'office")
 	var one: Button = _find_button(GameMenu, "Jeter 1")
-	assert_true(one != null and _find_button(GameMenu, "Tout") != null, "Jeter 1 et Tout")
+	assert_true(one != null and _find_button(GameMenu, "Jeter la pile (3)") != null, "Jeter 1 et Jeter la pile")
 	one.pressed.emit()
 	assert_true(session.result.get_amount(&"scrap") == 2, "une ferraille en moins")
 	assert_true(_find_label(GameMenu, "Ferraille ×2") != null, "l'inventaire se met à jour")
-	_find_button(GameMenu, "Tout").pressed.emit()
+	_find_button(GameMenu, "Jeter la pile (2)").pressed.emit()
 	assert_true(session.result.get_amount(&"scrap") == 0, "tout jeté")
 	assert_true(_find_button(GameMenu, "Jeter 1") == null, "plus rien à jeter")
 	tree.current_scene = null

@@ -1,6 +1,7 @@
 extends TestCase
 ## Équipement : effets, fabrication à l'atelier, capacité du sac, objets trouvés.
 
+const WOOD: LootData = preload("res://data/loot/wood.tres")
 const SCRAP: LootData = preload("res://data/loot/scrap.tres")
 
 
@@ -20,7 +21,7 @@ func test_une_nouvelle_partie_equipe_le_materiel_de_depart() -> void:
 	var loadout: Loadout = GameState.loadout
 	assert_true(loadout.get_item(ItemData.Slot.OUTFIT) == _item(&"outfit_worn"), "tenue de départ")
 	assert_true(loadout.get_item(ItemData.Slot.WEAPON) == _item(&"weapon_pipe"), "barre de fer")
-	assert_true(loadout.capacity() == 12, "petit sac : 12, obtenu %d" % loadout.capacity())
+	assert_true(loadout.capacity() == 4, "petit sac : 4 cases, obtenu %d" % loadout.capacity())
 	assert_almost(loadout.protection(), 0.1, "masque usé")
 
 
@@ -57,7 +58,7 @@ func test_fabriquer_prend_les_materiaux_du_stock() -> void:
 	assert_true(GameState.storage_amount(&"wood") == 0, "bois consommé")
 	assert_true(bag in GameState.owned_items, "sac possédé")
 	GameState.equip(bag)
-	assert_true(GameState.loadout.capacity() == 20, "sac de randonnée porté")
+	assert_true(GameState.loadout.capacity() == 6, "sac de randonnée porté (6 cases)")
 
 
 func test_on_ne_fabrique_pas_sans_les_materiaux_ni_deux_fois() -> void:
@@ -81,11 +82,12 @@ func test_le_sac_limite_le_butin_d_une_sortie() -> void:
 	tree.root.add_child(session)
 	session.set_process(false)
 	session.start(60.0)
-	session.capacity = 5
-	assert_true(session.add_loot(SCRAP, 3) == 3, "3 ferrailles prises")
-	assert_true(session.add_loot(SCRAP, 4) == 2, "seulement 2 de plus")
-	assert_true(session.is_bag_full(), "sac plein")
-	assert_true(session.add_loot(SCRAP, 1) == 0, "plus rien ne rentre")
+	session.capacity = 2
+	assert_true(session.add_loot(SCRAP, 3) == 3, "3 ferrailles prises (1 case)")
+	assert_true(session.add_loot(SCRAP, 4) == 4, "la pile se complète, puis une 2e case")
+	assert_true(session.is_bag_full(), "2 cases sur 2")
+	assert_true(session.add_loot(SCRAP, 5) == 3, "il reste 3 places dans la 2e pile")
+	assert_true(session.add_loot(WOOD, 1) == 0, "plus de case pour le bois")
 	session.free()
 
 
@@ -94,9 +96,9 @@ func test_une_rencontre_ne_donne_pas_plus_que_le_sac_ne_contient() -> void:
 	choice.reward[&"herb"] = 3
 	var result := ExpeditionResult.new()
 	result.add_loot(&"scrap", 4)
-	assert_true(EncounterResolver.can_afford(choice, result, 10), "4 + 3 <= 10")
-	var lacking := EncounterResolver.missing(choice, result, 6)
-	assert_true(lacking.get(EncounterResolver.NO_SPACE, 0) == 1, "il manque 1 place")
+	assert_true(EncounterResolver.can_afford(choice, result, 2), "ferraille + plantes : 2 cases")
+	var lacking := EncounterResolver.missing(choice, result, 1)
+	assert_true(lacking.get(EncounterResolver.NO_SPACE, 0) == 1, "il manque 1 case")
 
 
 func test_un_echange_libere_la_place_qu_il_coute() -> void:

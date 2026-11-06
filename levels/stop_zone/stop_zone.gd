@@ -561,7 +561,10 @@ func _wire_systems() -> void:
 		var needed: StringName = (target as Harvestable).required_tag
 		if needed != &"" and not _tool_has_tag(needed):
 			return "Il faut : " + _tool_name_for(needed)
-		return "Sac plein !" if _session.is_bag_full() else ""
+		var harvest := target as Harvestable
+		if harvest.loot != null and _session.room_for(harvest.loot.id) <= 0:
+			return "Sac plein !"
+		return "Sac plein !" if harvest.loot == null and _session.is_bag_full() else ""
 	_session.capacity = GameState.bag_capacity()
 	_session.free_beds = GameState.free_beds()
 	_session.plan_pool = GameState.unfound_plans()

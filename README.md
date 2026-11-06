@@ -10,7 +10,7 @@ Un **voyage** d'arrêt en arrêt :
 
 - **Intro** : une nouvelle partie commence par le contexte, en quelques pages par-dessus le premier trajet (la peste et la ruche, les gares fortifiées, le train qui ne s'arrête jamais longtemps, toi la recrue), puis le premier ordre du capitaine. Un appui affiche la page en entier, le suivant passe à la suite ; Échap, le bouton retour ou « Passer » sautent tout. Une partie reprise ne la rejoue pas. Le texte est dans `ui/intro/intro_overlay.gd`.
 - **Trajet** : le train roule, le décor défile. On voit le stock du train et le prochain arrêt.
-- **Dans le train** (vue de dessus, toit retiré) : tu marches de wagon en wagon par les passerelles. **Coffre** du stock, **établi** de l'atelier (fabriquer de l'équipement), **casier** (s'équiper), **couchettes** du dortoir (l'équipage), **table du capitaine** (construire des voitures, renforcer la locomotive) et le **levier** de la cabine pour descendre au prochain arrêt. La voie défile sous le train : on la voit entre les wagons, aux deux bouts et au bas de l'écran.
+- **Dans le train** (vue de dessus, toit retiré) : tu marches de wagon en wagon par les passerelles. **Coffre** du stock, **établi** de l'atelier (fabriquer de l'équipement), **casier** (ouvre l'inventaire pour s'équiper), **couchettes** du dortoir (l'équipage), **table du capitaine** (construire des voitures, renforcer la locomotive) et le **levier** de la cabine pour descendre au prochain arrêt. La voie défile sous le train : on la voit entre les wagons, aux deux bouts et au bas de l'écran.
 - **Régions** : la ligne traverse 5 biomes, un par tronçon entre deux gares refuges : **Campagne** (arrêts 1 à 5) → **Marais infecté** → **Ville en ruine** → **Zone industrielle** → **Toundra gelée**, puis la ligne repart. Chaque biome a son sol, ses décors, son ambiance et **une règle** :
   - Marais : l'eau stagnante **ralentit**.
   - Toundra : le **froid** fait perdre 1 PV toutes les 15 s sans tenue chaude (veste rembourrée), et la **glace** fait glisser.
@@ -26,7 +26,8 @@ Un **voyage** d'arrêt en arrêt :
 - **Points d'intérêt** dans les zones : **village abandonné** (maisons en ruine, caisses à fouiller), **refuge** avec un survivant à **recruter**, **marchand ambulant** pour **échanger**, et petites rencontres (sac abandonné, armoire à forcer).
 - **Gare refuge** (arrêts n°5, 10, 15…) : une ville fortifiée sur la ligne, **zone sûre** sans infection ni chrono. **Comptoir** pour échanger le surplus du stock, **bureau de quarantaine** pour recruter des survivants sains, **dépôt** pour renforcer la locomotive. On repart en remontant à bord.
 - **Retour à bord** : le butin et les recrues rejoignent le train et on repart vers l'arrêt suivant.
-- **Jeter du sac** : pendant un arrêt, l'inventaire propose « Jeter 1 » et « Tout » sur chaque ressource du sac, pour faire de la place. Ce qu'on jette tombe en **tas** à ses pieds (un nouveau jet tout près complète le même tas) ; on le ramasse en maintenant Agir, dans la limite de la place du sac, et le reste reste au sol.
+- **Sac en cases, façon Minecraft** : chaque case contient une **pile de 5** d'une seule ressource ; mélanger les ressources remplit vite les cases. **Petit sac 4 cases, sac de randonnée 6, sac militaire 8** ; talents Glaneur +1 case, Intendant +2 (sans sac : 2 cases). Les cases s'affichent en bas au centre du HUD, avec « Sac plein » en rouge.
+- **Inventaire** (I, ou le bouton Sac) : ton personnage et ses **5 cases d'équipement**, le **sac** (les cases grisées montrent ce qu'un sac plus grand ajouterait) et le **casier**. On touche une case : l'objet s'affiche en bas avec ce qu'on peut en faire. Pendant un arrêt : **Jeter 1** ou **Jeter la pile** (ce qu'on jette tombe en **tas** à ses pieds ; on le ramasse en maintenant Agir, dans la limite du sac). **Dans le train seulement** : toucher un objet du casier puis **Équiper** (il remplace celui qu'on porte, qui revient au casier). Le casier de l'atelier ouvre directement l'inventaire.
 - **Campagne continue et sauvegarde** : chaque gare refuge est un **point de reprise**. **Train raté** : on reprend à la dernière gare (ou au départ du train), tout ce qui s'est passé depuis est perdu. La session est aussi sauvegardée à chaque trajet (`user://saves/`), pour reprendre après avoir fermé le jeu.
 
 **Médicaments et infirmerie** : antiseptique (−10 %) et antibiotiques (−20 %) se trouvent dans les caisses et les armoires, et s'achètent chez les marchands et en gare. Le **sérum de sève** (−35 %) et le **vaccin expérimental** (−60 %) se préparent à l'**infirmerie**, une voiture à construire, avec les plans Pharmacie et Vaccin. On prend ses médicaments dans l'onglet **Infirmerie** du menu du train.
@@ -47,7 +48,7 @@ Un **voyage** d'arrêt en arrêt :
 
 **Extraction** : des outils ouvrent de nouvelles ressources (chalumeau sur les épaves de camion, kit de chimie qui tire des produits chimiques des plantes infectées), l'atelier transforme (ferraille → plaques), et les machines du train (serre, laboratoire) produisent pendant les trajets.
 
-**Grades et ordres du capitaine** : à chaque arrêt (sauf en gare), le capitaine donne un **ordre** adapté à la zone : « Ramène 6 ferrailles », « Élimine 2 pilleurs », « Reviens avec moins de 25 % d'exposition »… Il est suivi en haut de l'écran. Ordre rempli et ennemis éliminés rapportent du **mérite**. Au fil du mérite, tu montes en grade : **Recrue → Soldat → Caporal → Sergent → Lieutenant → Capitaine**. À chaque promotion, tu choisis **un talent parmi deux** (+2 PV, sac +4, dégâts +1, se dégager plus vite, récolte plus rapide, armure…). Onglet **Grade** du menu du train : grade, mérite, ordre en cours, talents.
+**Grades et ordres du capitaine** : à chaque arrêt (sauf en gare), le capitaine donne un **ordre** adapté à la zone : « Ramène 6 ferrailles », « Élimine 2 pilleurs », « Reviens avec moins de 25 % d'exposition »… Il est suivi en haut de l'écran. Ordre rempli et ennemis éliminés rapportent du **mérite**. Au fil du mérite, tu montes en grade : **Recrue → Soldat → Caporal → Sergent → Lieutenant → Capitaine**. À chaque promotion, tu choisis **un talent parmi deux** (+2 PV, sac +1 case, dégâts +1, se dégager plus vite, récolte plus rapide, armure…). Onglet **Grade** de l'inventaire : **barre de progression** vers le grade suivant, échelle des grades avec ce que chacun débloque, ordre en cours, talents.
 
 **Responsabilités par grade** : tu commences recrue, et le capitaine (PNJ) décide de ce qui dépasse ton grade. Tu vois tout, mais c'est lui qui agit, et le trajet le raconte (« Le capitaine a choisi la voie… », « Le capitaine met Malik au repos »).
 
@@ -85,7 +86,7 @@ Un **voyage** d'arrêt en arrêt :
 | Emplacement | Effet |
 |---|---|
 | Tenue, masque | **Protection** : l'exposition monte moins vite (plafonnée à 80 %). **Armure** : dégâts en moins par coup (il en reste toujours 1) — gilet en kevlar (armure 2, acheté au ferrailleur), plastron en tôle (armure 1, fabriqué). Tenue anti-infection ou anti-coups : à choisir selon la zone. |
-| Sac | Capacité : nombre de ressources rapportées par sortie (« Sac plein ! ») |
+| Sac | Nombre de cases (piles de 5) : petit sac 4, randonnée 6, militaire 8 (« Sac plein ! ») |
 | Outil | Récolte plus rapide d'un type d'objet (pied-de-biche, hachette, sécateur) |
 | Arme | Dégâts, pour le futur combat |
 
@@ -127,8 +128,8 @@ Ouvrir `project.godot` dans Godot puis **F5**. Le jeu démarre sur l'écran titr
 | Se déplacer | ZQSD en AZERTY (WASD en QWERTY) ou flèches | Stick gauche, croix directionnelle | Joystick : toucher la moitié gauche de l'écran |
 | Agir (maintenir) : récolter, monter à bord | E | A (Xbox) / Croix (PlayStation) | Bouton « Agir » |
 | Frapper | Espace ou clic gauche | X (Xbox) / Carré (PlayStation) | Bouton « Coup » |
-| Inventaire | I ou Tab | Y (Xbox) / Triangle (PlayStation) | Bouton « Sac », à droite |
-| Pause, retour | Échap | Start (pause), B (retour) | Bouton « II », à droite, ou bouton retour du téléphone |
+| Inventaire | I ou Tab | Y (Xbox) / Triangle (PlayStation) | Bouton « Sac », en haut à droite |
+| Pause, retour | Échap | Start (pause), B (retour) | Bouton « II », en haut à droite, ou bouton retour du téléphone |
 
 **Android** : le bouton retour fait comme Échap (il ferme le menu ouvert, sinon il ouvre la pause) et ne quitte le jeu que depuis l'écran titre. Quand l'app passe en arrière-plan (appel, notification, bouton accueil), le jeu se met en pause et se sauvegarde s'il est dans le train ou en trajet : Android peut fermer une app en arrière-plan. Sur PC, quitter la fenêtre met aussi en pause. La version du jeu s'affiche sur l'écran titre et dans le menu pause.
 
@@ -182,6 +183,7 @@ Le forçage est ignoré dans un build release.
 | `CrewMember` | `core/crew_member.gd` | Une recrue : prénom, rôle, infection cachée |
 | `ItemData` / `ItemCatalog` | `core/` | Un équipement (`data/items/*.tres`) et le catalogue complet |
 | `Loadout` | `core/loadout.gd` | Ce que le joueur porte et les effets cumulés (protection, sac, récolte, dégâts) |
+| `BagSlots` | `core/bag_slots.gd` | Le sac en cases : piles de 5, place pour une ressource, rangement des piles |
 | `Crafting` | `core/crafting.gd` | Fabrication avec les matériaux du stock (pur, testable) |
 | `WagonData` / `LocomotiveLevel` | `core/` | Un type de voiture (`data/wagons/*.tres`) et un niveau de locomotive (`data/locomotive/*.tres`) |
 | `TrainRules` | `core/train_rules.gd` | Règles du train : traction, construction, couchettes, places (pur, testable) |

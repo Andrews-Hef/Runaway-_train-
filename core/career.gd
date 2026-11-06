@@ -28,6 +28,27 @@ const AUTHORITY: Dictionary[StringName, int] = {
 }
 
 
+## Ce que chaque grade débloque, pour l'interface (même ordre que GRADES).
+const UNLOCKS: Array[String] = [
+	"Sorties, fabrication de ton équipement, étude des plans",
+	"Recruter les survivants rencontrés",
+	"Choisir la voie à l'aiguillage",
+	"Diriger l'équipage : soins, repos, quarantaine, renvoi",
+	"Construire et agrandir les voitures, dépôt de la gare",
+	"Envoyer un équipier en mission à ta place",
+]
+
+
+## Avancement vers le grade suivant, de 0 à 1 (1 au dernier grade).
+static func progress(merit: int) -> float:
+	var index: int = grade_index_for(merit)
+	var next: GradeData = next_grade(index)
+	if next == null:
+		return 1.0
+	var from: int = GRADES[index].merit_needed
+	return clampf(float(merit - from) / float(maxi(next.merit_needed - from, 1)), 0.0, 1.0)
+
+
 ## Ce grade permet-il cette décision ?
 static func allows(grade_index: int, permission: StringName) -> bool:
 	return grade_index >= AUTHORITY.get(permission, 0)

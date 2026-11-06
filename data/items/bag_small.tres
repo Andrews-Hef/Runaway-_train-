@@ -10,5 +10,5 @@ display_name = "Petit sac"
 icon = ExtResource("9_icon")
 description = "Un sac d'écolier rapiécé."
 slot = 2
-capacity = 12
+capacity = 4
 starter = true
