@@ -36,12 +36,6 @@ const SPORE: Texture2D = preload("res://assets/ui/icons/infection.png")
 const OUTFIT: Texture2D = preload("res://assets/ui/icons/items/outfit_padded.png")
 const MACHINE_ICONS: Array[Texture2D] = [preload("res://assets/ui/icons/sprout.png"), preload("res://assets/ui/icons/tubes.png")]
 
-## Portraits teintés selon le rôle : on reconnaît le mécano du soigneur sans lire.
-const ROLE_COLORS: Dictionary[StringName, Color] = {
-	&"mechanic": Color(1.0, 0.78, 0.5),
-	&"medic": Color(0.62, 1.0, 0.82),
-	&"scout": Color(0.7, 0.85, 1.0),
-}
 const MISSING_MATERIALS: String = "Il manque des matériaux dans le stock."
 
 @onready var _root: Control = $Root
@@ -398,7 +392,7 @@ func _crew_tile(member: CrewMember) -> VBoxContainer:
 	tile.add_theme_constant_override(&"separation", 1)
 	tile.custom_minimum_size = Vector2(46.0, 0.0)
 	var cell := _cell(Tab.CREW, PERSON, member, "%s (%s)" % [member.display_name, member.role_label])
-	cell.set_tint(ROLE_COLORS.get(member.role, Color.WHITE))
+	cell.set_tint(MenuKit.role_color(member.role))
 	cell.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	var mark: Texture2D = _crew_mark(member)
 	if mark:
@@ -433,7 +427,7 @@ func _detail_crew(key: Variant) -> void:
 		return
 	var member: CrewMember = key
 	var portrait := MenuKit.icon(PERSON, SlotCell.ICON)
-	portrait.self_modulate = ROLE_COLORS.get(member.role, Color.WHITE)
+	portrait.self_modulate = MenuKit.role_color(member.role)
 	_detail.add_child(portrait)
 	var column := VBoxContainer.new()
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -857,7 +851,7 @@ func _fill_infirmary() -> void:
 		for i: int in GameState.QUARANTINE_BEDS:
 			if i < isolated.size():
 				beds.add_child(_cell(Tab.INFIRMARY, PERSON, isolated[i], isolated[i].display_name + " (isolé)")
-					.set_tint(ROLE_COLORS.get(isolated[i].role, Color.WHITE)))
+					.set_tint(MenuKit.role_color(isolated[i].role)))
 			else:
 				beds.add_child(_cell(Tab.INFIRMARY, BED, &"bed", "Lit libre").set_dim(true))
 		_infirmary_list.add_child(beds)

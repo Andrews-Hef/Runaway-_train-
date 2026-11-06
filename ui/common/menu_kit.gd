@@ -9,6 +9,12 @@ const MUTED: Color = Color(0.7, 0.7, 0.74)
 const GOLD: Color = Color(1.0, 0.82, 0.35)
 
 const ARROW: Texture2D = preload("res://assets/ui/icons/arrow.png")
+## Portraits d'équipiers teintés selon le rôle : on reconnaît le mécano du soigneur sans lire.
+const ROLE_COLORS: Dictionary[StringName, Color] = {
+	&"mechanic": Color(1.0, 0.78, 0.5),
+	&"medic": Color(0.62, 1.0, 0.82),
+	&"scout": Color(0.7, 0.85, 1.0),
+}
 
 
 static func label(text: String, color: Color = Color.WHITE) -> Label:
@@ -195,6 +201,10 @@ static func action(text: String, on_press: Callable, disabled: bool = false, why
 	if on_press.is_valid():
 		button.pressed.connect(on_press)
 	return button
+
+
+static func role_color(role: StringName) -> Color:
+	return ROLE_COLORS.get(role, Color.WHITE)
 
 
 static func loot(id: StringName) -> LootData:

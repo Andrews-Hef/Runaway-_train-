@@ -1,6 +1,9 @@
 extends CanvasLayer
 ## Écran de fin de sortie : bilan du butin, de l'exposition et du risque d'infection.
 ## Il reste actif quand le jeu est en pause.
+##
+## Peu de texte : le butin en cases, les chiffres en pastilles (infection, stock,
+## couchettes), le grade avec sa barre. Les explications sont en infobulle.
 
 ## Sortie réussie : on continue vers le prochain arrêt.
 signal continue_requested
@@ -11,12 +14,19 @@ const RISK_LOW: Color = Color(0.55, 0.85, 0.45)
 const RISK_MEDIUM: Color = Color(1.0, 0.8, 0.35)
 const RISK_HIGH: Color = Color(1.0, 0.45, 0.35)
 
+const SPORE: Texture2D = preload("res://assets/ui/icons/infection.png")
+const CRATE: Texture2D = preload("res://assets/ui/icons/crate.png")
+const BED: Texture2D = preload("res://assets/ui/icons/bed.png")
+const HAMMER: Texture2D = preload("res://assets/ui/icons/hammer.png")
+const STAR: Texture2D = preload("res://assets/ui/icons/order.png")
+const PLAN: Texture2D = preload("res://assets/ui/icons/plan.png")
+const PERSON: Texture2D = preload("res://assets/ui/icons/recruit.png")
+const WEAPON: Texture2D = preload("res://assets/ui/icons/items/weapon_pipe.png")
+
 @onready var _root: Control = $Root
 @onready var _title: Label = %Title
 @onready var _subtitle: Label = %Subtitle
 @onready var _loot_list: VBoxContainer = %LootList
-@onready var _exposure: Label = %Exposure
-@onready var _risk: Label = %Risk
 @onready var _storage: Label = %Storage
 @onready var _button: Button = %Restart
 @onready var _career: VBoxContainer = %Career
@@ -38,45 +48,18 @@ func _on_button_pressed() -> void:
 
 
 func show_result(result: ExpeditionResult, loot_types: Array[LootData]) -> void:
-	for child: Node in _loot_list.get_children():
-		child.queue_free()
-
-	_exposure.text = "Infection : " + Infection.describe(result.exposure)
-	_exposure.add_theme_color_override(&"font_color", Infection.color(result.exposure))
-
+	MenuKit.clear(_loot_list)
 	_boarded = result.boarded
 	if result.boarded:
 		_title.text = "De retour à bord"
 		_subtitle.text = "Le capitaine attend ton rapport."
-		if result.total_items() == 0 and result.recruits.is_empty() and result.items.is_empty():
-			_add_line("Tu reviens les mains vides.", Color(0.7, 0.7, 0.7))
-		# Le butin sur une seule ligne : la place est comptée sur un écran de téléphone.
-		var loot_parts: PackedStringArray = []
-		for loot: LootData in loot_types:
-			var amount: int = result.get_amount(loot.id)
-			if amount > 0:
-				loot_parts.append("%s %d" % [loot.display_name, amount])
-		if not loot_parts.is_empty():
-			_add_line(" · ".join(loot_parts), Color(0.9, 0.9, 0.92))
-		for member: CrewMember in result.recruits:
-			_add_line("Recrue : " + member.describe(), Color(1.0, 0.82, 0.35))
-		for item: ItemData in result.items:
-			_add_line("Trouvé : " + item.display_name, Color(0.55, 0.85, 0.45))
-		for plan_id: StringName in result.plans:
-			_add_line("Plan trouvé : %s (à étudier à l'atelier)" % BlueprintCatalog.get_plan(plan_id).display_name, Color(1.0, 0.82, 0.35))
-		var left: int = 0
-		for amount: int in result.left_behind.values():
-			left += amount
-		if left > 0:
-			_add_line("Stock du train plein : %d ressource(s) laissée(s) sur le quai" % left, RISK_HIGH)
-		# L'infection ne redescend pas toute seule : seuls les médicaments la soignent.
-		var gained: float = result.exposure_gained()
-		_risk.text = "+%d %% d'infection pendant la sortie · seuls les médicaments la font baisser" % roundi(gained * 100.0)
-		_risk.add_theme_color_override(&"font_color", _risk_color(gained * 3.0))
-		_risk.visible = true
-		_storage.text = "Stock du train : %d/%d · Équipage : %d/%d couchettes" % [
-			GameState.storage_total(), GameState.storage_capacity(), GameState.crew.size(), GameState.beds()]
-		_storage.visible = true
+		var haul: HFlowContainer = _haul(result, loot_types)
+		if haul.get_child_count() == 0:
+			_add_line("Tu reviens les mains vides.", MenuKit.MUTED)
+		else:
+			_loot_list.add_child(haul)
+		_loot_list.add_child(_stats(result))
+		_storage.visible = false
 		_button.text = "Continuer le voyage"
 		_fill_career(result)
 	else:
@@ -94,7 +77,6 @@ func show_result(result: ExpeditionResult, loot_types: Array[LootData]) -> void:
 		_add_line("Butin perdu", RISK_HIGH)
 		if not result.recruits.is_empty():
 			_add_line("%d recrue(s) perdue(s) avec toi" % result.recruits.size(), RISK_HIGH)
-		_risk.visible = false
 		_storage.text = "Reprise : %s" % Campaign.retry_place()
 		_storage.visible = true
 		_button.text = "Reprendre"
@@ -104,6 +86,44 @@ func show_result(result: ExpeditionResult, loot_types: Array[LootData]) -> void:
 		_button.grab_focus()
 
 
+## Ce que tu rapportes, en cases : ressources, recrues, équipements, plans.
+func _haul(result: ExpeditionResult, loot_types: Array[LootData]) -> HFlowContainer:
+	var haul := MenuKit.grid()
+	for loot: LootData in loot_types:
+		var amount: int = result.get_amount(loot.id)
+		if amount > 0:
+			haul.add_child(SlotCell.create(loot.icon, str(amount), "%s ×%d" % [loot.display_name, amount], false))
+	for member: CrewMember in result.recruits:
+		haul.add_child(SlotCell.create(PERSON, "", "Recrue : " + member.describe(), false).set_tint(MenuKit.role_color(member.role)))
+	for item: ItemData in result.items:
+		haul.add_child(SlotCell.create(item.icon, "", "Trouvé : %s (%s)" % [item.display_name, item.describe_effects()], false))
+	for plan_id: StringName in result.plans:
+		haul.add_child(SlotCell.create(BlueprintCatalog.icon(plan_id), "",
+			"Plan trouvé : %s (à étudier à la table des plans)" % BlueprintCatalog.get_plan(plan_id).display_name, false).set_corner(PLAN))
+	return haul
+
+
+## Les chiffres du retour : infection (et ce que la sortie a coûté), stock, couchettes.
+func _stats(result: ExpeditionResult) -> HBoxContainer:
+	var stats := MenuKit.header()
+	# L'infection ne redescend pas toute seule : seuls les médicaments la soignent.
+	stats.add_child(MenuKit.chip(SPORE, "%d %% · %s" % [roundi(result.exposure * 100.0), Infection.stage_name(Infection.stage_for(result.exposure))],
+		Infection.color(result.exposure), Infection.describe(result.exposure)))
+	var gained: float = result.exposure_gained()
+	stats.add_child(MenuKit.chip(null, "+%d %% pendant la sortie" % roundi(gained * 100.0), _risk_color(gained * 3.0),
+		"Seuls les médicaments font baisser l'infection."))
+	var left: int = 0
+	for amount: int in result.left_behind.values():
+		left += amount
+	stats.add_child(MenuKit.chip(CRATE, "%d/%d" % [GameState.storage_total(), GameState.storage_capacity()],
+		RISK_HIGH if left > 0 else Color.WHITE,
+		"Stock du train" + (" plein : %d ressource(s) laissée(s) sur le quai" % left if left > 0 else "")))
+	if left > 0:
+		stats.add_child(MenuKit.chip(null, "−%d laissée(s)" % left, RISK_HIGH, "Stock plein : laissées sur le quai"))
+	stats.add_child(MenuKit.chip(BED, "%d/%d" % [GameState.crew.size(), GameState.beds()], Color.WHITE, "Couchettes"))
+	return stats
+
+
 # --- Rapport au capitaine -----------------------------------------------------------
 
 ## L'ordre du capitaine, le mérite gagné, et le choix d'un talent en cas de promotion.
@@ -111,22 +131,32 @@ func _fill_career(result: ExpeditionResult) -> void:
 	_clear_career()
 	var order: CaptainOrders.Order = GameState.current_order
 	if order:
-		if result.order_completed:
-			_career_line("Ordre du capitaine : %s — réussi ! +%d mérite" % [order.text(), order.data.merit], RISK_LOW)
-		else:
-			_career_line("Ordre du capitaine : %s — raté" % order.text(), RISK_HIGH)
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override(&"separation", 4)
+		row.add_child(MenuKit.icon(STAR, 12.0))
+		var text := MenuKit.label(order.text(), Color(0.9, 0.9, 0.92))
+		text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(text)
+		row.add_child(MenuKit.chip(null, "réussi · +%d" % order.data.merit, RISK_LOW, "Ordre du capitaine rempli : mérite gagné")
+			if result.order_completed else MenuKit.chip(null, "raté", RISK_HIGH, "Ordre du capitaine pas rempli"))
+		_career.add_child(row)
+	var facts := MenuKit.header()
 	var kills: int = 0
 	for amount: int in result.kills.values():
 		kills += amount
 	if kills > 0:
-		_career_line("Ennemis éliminés : %d (+%d mérite)" % [kills, result.kill_merit()], Color(0.85, 0.85, 0.88))
+		facts.add_child(MenuKit.chip(WEAPON, "%d · +%d" % [kills, result.kill_merit()], Color(0.85, 0.85, 0.88), "Ennemis éliminés : mérite gagné"))
+	if result.horde_repelled:
+		facts.add_child(MenuKit.chip(STAR, "Horde repoussée · +%d" % GameState.HORDE_MERIT, RISK_LOW))
+	if GameState.train_condition < 1.0:
+		facts.add_child(MenuKit.chip(HAMMER, "%d %%" % roundi(GameState.train_condition * 100.0),
+			RISK_HIGH if GameState.condition() != GameState.Condition.GOOD else Color(0.85, 0.85, 0.88),
+			"Train : %s · à réparer à la cabine" % GameState.describe_condition()))
+	if facts.get_child_count() > 0:
+		_career.add_child(facts)
 	for thanks: String in result.crew_thanks:
 		_career_line(thanks, RISK_LOW)
-	if result.horde_repelled:
-		_career_line("Horde repoussée : +%d mérite" % GameState.HORDE_MERIT, RISK_LOW)
-	if GameState.train_condition < 1.0:
-		var color: Color = RISK_HIGH if GameState.condition() != GameState.Condition.GOOD else Color(0.85, 0.85, 0.88)
-		_career_line("Train : %s · à réparer à la cabine" % GameState.describe_condition(), color)
 	_fill_promotion()
 
 
@@ -135,11 +165,22 @@ func _fill_promotion() -> void:
 		if child.has_meta(&"promotion"):
 			_career.remove_child(child)
 			child.queue_free()
+	# Le grade : son nom, la barre vers le suivant, le mérite.
 	var next: GradeData = Career.next_grade(GameState.grade_index())
-	var standing: String = "%s · mérite %d" % [GameState.grade().display_name, GameState.merit]
+	var standing := HBoxContainer.new()
+	standing.set_meta(&"promotion", true)
+	standing.add_theme_constant_override(&"separation", 6)
+	standing.add_child(MenuKit.label(GameState.grade().display_name, MenuKit.GOLD))
+	var bar := StageBar.new()
+	bar.custom_minimum_size = Vector2(100.0, 5.0)
+	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	bar.fill_color = MenuKit.GOOD
+	bar.value = Career.progress(GameState.merit)
+	standing.add_child(bar)
+	standing.add_child(MenuKit.chip(null, "%d/%d" % [GameState.merit, next.merit_needed] if next else str(GameState.merit), Color.WHITE, "Mérite"))
 	if next:
-		standing += "/%d (prochain grade : %s)" % [next.merit_needed, next.display_name]
-	_career_line(standing, Color(1.0, 0.82, 0.35)).set_meta(&"promotion", true)
+		standing.add_child(MenuKit.label("avant " + next.display_name, MenuKit.MUTED))
+	_career.add_child(standing)
 	_button.disabled = not GameState.pending_promotions.is_empty()
 	if GameState.pending_promotions.is_empty():
 		return
@@ -184,10 +225,7 @@ func _clear_career() -> void:
 
 
 func _add_line(text: String, color: Color) -> void:
-	var label := Label.new()
-	label.text = text
-	label.add_theme_color_override(&"font_color", color)
-	_loot_list.add_child(label)
+	_loot_list.add_child(MenuKit.label(text, color))
 
 
 static func _risk_color(risk: float) -> Color:
