@@ -1,6 +1,6 @@
 extends CanvasLayer
 ## Menu du train : stock, atelier (fabrication), équipement, équipage, train (construction),
-## machines, plans, infirmerie.
+## machines, plans, infirmerie, chaudière.
 ##
 ## Un seul panneau à onglets. Chaque meuble du train l'ouvre sur SON onglet, seul :
 ## l'établi ne donne que l'atelier. Une fois le plan Interphone étudié, les postes
@@ -13,7 +13,7 @@ extends CanvasLayer
 
 signal closed
 
-enum Tab { STOCK, WORKSHOP, EQUIPMENT, CREW, TRAIN, MACHINES, PLANS, INFIRMARY }
+enum Tab { STOCK, WORKSHOP, EQUIPMENT, CREW, TRAIN, MACHINES, PLANS, INFIRMARY, BOILER }
 
 const GOOD: Color = MenuKit.GOOD
 const BAD: Color = MenuKit.BAD
@@ -34,6 +34,7 @@ const STAR: Texture2D = preload("res://assets/ui/icons/order.png")
 const HEALTH: Texture2D = preload("res://assets/ui/icons/health.png")
 const SPORE: Texture2D = preload("res://assets/ui/icons/infection.png")
 const OUTFIT: Texture2D = preload("res://assets/ui/icons/items/outfit_padded.png")
+const COAL: Texture2D = preload("res://assets/ui/icons/coal.png")
 const MACHINE_ICONS: Array[Texture2D] = [preload("res://assets/ui/icons/sprout.png"), preload("res://assets/ui/icons/tubes.png")]
 
 const MISSING_MATERIALS: String = "Il manque des matériaux dans le stock."
@@ -48,6 +49,7 @@ const MISSING_MATERIALS: String = "Il manque des matériaux dans le stock."
 @onready var _machines_list: VBoxContainer = %MachinesList
 @onready var _plans_list: VBoxContainer = %PlansList
 @onready var _infirmary_list: VBoxContainer = %InfirmaryList
+@onready var _boiler_list: VBoxContainer = %BoilerList
 @onready var _detail_panel: PanelContainer = %DetailPanel
 @onready var _detail: HBoxContainer = %Detail
 @onready var _close: Button = %Close
@@ -65,7 +67,7 @@ func _ready() -> void:
 	_root.visible = false
 	_close.pressed.connect(close)
 	for signal_name: StringName in [&"storage_changed", &"equipment_changed", &"crew_changed", &"train_changed", &"career_changed",
-			&"infection_changed", &"plans_changed", &"condition_changed"]:
+			&"infection_changed", &"plans_changed", &"condition_changed", &"energy_changed"]:
 		# Différé : un bouton ne doit pas être détruit pendant son propre clic.
 		GameState.connect(signal_name, _refresh, CONNECT_DEFERRED)
 	_tabs.tab_changed.connect(func(_tab: int) -> void: _fill_detail())
@@ -77,6 +79,7 @@ func _ready() -> void:
 	_tabs.set_tab_title(Tab.MACHINES, "Machines")
 	_tabs.set_tab_title(Tab.PLANS, "Plans")
 	_tabs.set_tab_title(Tab.INFIRMARY, "Infirmerie")
+	_tabs.set_tab_title(Tab.BOILER, "Chaudière")
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -135,6 +138,7 @@ func _refresh() -> void:
 	_fill_machines()
 	_fill_plans()
 	_fill_infirmary()
+	_fill_boiler()
 	_fill_detail()
 	if focus_on_cell:
 		_focus_cell(_tabs.current_tab, focus_key)
@@ -213,6 +217,8 @@ func _fill_detail() -> void:
 			_detail_plan(key)
 		Tab.INFIRMARY:
 			_detail_infirmary(key)
+		Tab.BOILER:
+			_detail_boiler(key)
 	_detail_panel.visible = _detail.get_child_count() > 0
 
 
@@ -916,3 +922,53 @@ func _detail_medicine(medicine: LootData) -> void:
 	_detail.add_child(MenuKit.action("Donner à " + member.display_name, func() -> void: GameState.medicate(member, medicine),
 		not command or amount <= 0 or (member.infection_known and member.infection == 0),
 		GameState.locked_text(&"crew") if not command else ("Plus en stock" if amount <= 0 else "Il n'est pas infecté")))
+
+
+# --- Chaudière -----------------------------------------------------------------------
+
+## La réserve d'énergie, les trajets qu'elle permet, le risque de panne ; on y charge le
+## bois et le charbon du stock.
+func _fill_boiler() -> void:
+	MenuKit.clear(_boiler_list)
+	var trips: int = GameState.trips_left()
+	var color: Color = GOOD if trips >= 2 else (GOLD if trips == 1 else BAD)
+	var head := MenuKit.header()
+	head.add_child(MenuKit.chip(COAL, "%d/%d" % [GameState.energy, GameState.energy_capacity()], color,
+		"Énergie dans la chaudière"))
+	head.add_child(_bar(float(GameState.energy) / maxf(GameState.energy_capacity(), 1.0), color, 90.0))
+	head.add_child(MenuKit.chip(WAGON, "%d trajet(s)" % trips, color,
+		"Un trajet brûle %d d'énergie (%d voitures). Sans assez d'énergie : panne sèche en pleine voie." % [
+			GameState.trip_energy(), GameState.train.size()]))
+	var chance: int = roundi(GameState.breakdown_chance() * 100.0)
+	head.add_child(MenuKit.chip(HAMMER, "panne %d %%" % chance, BAD if chance >= 15 else MUTED,
+		"Risque de panne moteur au prochain trajet : plus le train est abîmé, plus il casse. Chaque mécanicien au travail le réduit."))
+	_boiler_list.add_child(head)
+	if GameState.is_incident_stop():
+		var warning := MenuKit.label(GameState.incident_text(), BAD)
+		warning.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_boiler_list.add_child(warning)
+	elif trips == 0:
+		_boiler_list.add_child(MenuKit.label("Pas assez pour le prochain trajet : charge la chaudière !", BAD))
+	_boiler_list.add_child(MenuKit.section("Charger"))
+	var grid := MenuKit.grid()
+	for fuel: LootData in GameState.fuel_types():
+		var amount: int = GameState.storage_amount(fuel.id)
+		grid.add_child(_cell(Tab.BOILER, fuel.icon, fuel, "%s : %d en stock" % [fuel.display_name, amount],
+			str(amount) if amount > 0 else "").set_dim(amount == 0))
+	_boiler_list.add_child(grid)
+	_ensure_selection(Tab.BOILER)
+
+
+func _detail_boiler(key: Variant) -> void:
+	if not key is LootData:
+		return
+	var fuel: LootData = key
+	var amount: int = GameState.storage_amount(fuel.id)
+	var room: int = GameState.loadable_fuel(fuel)
+	var full: bool = GameState.energy >= GameState.energy_capacity()
+	MenuKit.detail_info(_detail, fuel.icon, "%s ×%d" % [fuel.display_name, amount],
+		"+%d d'énergie chacun%s" % [fuel.fuel, " · chaudière pleine" if full else (" · place pour %d" % room if room < amount else "")])
+	var why: String = "Chaudière pleine" if full else ("Plus en stock" if amount == 0 else "Pas assez de place")
+	_detail.add_child(MenuKit.action("Charger 1", func() -> void: GameState.load_fuel(fuel, 1), room <= 0, why))
+	_detail.add_child(MenuKit.action("Charger %d" % room if room > 1 else "Tout charger", func() -> void: GameState.load_fuel(fuel, room),
+		room <= 1, why))

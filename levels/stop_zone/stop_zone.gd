@@ -25,6 +25,7 @@ const SCENES: Dictionary[StringName, PackedScene] = {
 	&"backpack": preload("res://props/backpack/backpack.tscn"),
 	&"locker": preload("res://props/locker/locker.tscn"),
 	&"barrel": preload("res://props/barrel/barrel.tscn"),
+	&"coal_pile": preload("res://props/coal_pile/coal_pile.tscn"),
 }
 
 const ENEMY_SCENE: PackedScene = preload("res://entities/enemy/enemy.tscn")
@@ -117,10 +118,22 @@ var _base_friction: float = 0.0
 var _infection_stage: int = -1
 ## Rencontre en cours (null si aucune fenêtre ouverte).
 var _active_spot: EncounterSpot
+## Arrêt forcé (panne) : le poste de la locomotive, et la réparation en cours (secondes
+## restantes, < 0 tant qu'elle n'a pas commencé ou une fois finie).
+var _engine_spot: Interactable
+var _repair_left: float = -1.0
+var _repair_shown: int = -1
+
+## Poste de la locomotive pendant une panne, dans le repère du train.
+const ENGINE_SPOT_POSITION: Vector2 = Vector2(262.0, 16.0)
+## Panne moteur : les épaves cachent plus souvent des pièces (on fouille pour ça).
+const BREAKDOWN_PARTS_CHANCE: float = 0.7
 
 
 func _ready() -> void:
 	zone = zone_override if zone_override else GameState.current_zone
+	if GameState.is_incident_stop():
+		zone = incident_zone(zone, GameState.incident)
 	biome = zone.biome if zone.biome else DEFAULT_BIOME
 	var zone_seed: int = seed_override if seed_override != 0 else GameState.current_seed
 	var player_spawn: Vector2 = ZoneGenerator.TRAIN_POSITION + _train.door.position + Vector2(0.0, 40.0)
@@ -138,6 +151,8 @@ func _ready() -> void:
 	_setup_horde(zone_seed)
 	# Train critique : il repart plus tôt.
 	_session.start(roundf(layout.stop_duration * GameState.stop_time_factor()))
+	if GameState.is_incident_stop():
+		_setup_incident()
 
 
 # --- Application du plan --------------------------------------------------------
@@ -165,6 +180,8 @@ func _physics_process(delta: float) -> void:
 		_show_rain_time()
 	if horde:
 		horde.tick(delta)
+	if _repair_left >= 0.0:
+		_tick_repair(delta)
 	_update_daylight()
 
 
@@ -477,12 +494,151 @@ func _update_daylight(force: bool = false) -> void:
 		_hud.call(&"set_clock", DayClock.describe(now), night)
 
 
+# --- Arrêt forcé (panne) ------------------------------------------------------------
+
+## La zone d'une panne : de quoi s'en sortir à portée (bois et charbon, ou épaves).
+static func incident_zone(base: ZoneProfile, kind: StringName) -> ZoneProfile:
+	var zone_copy: ZoneProfile = base.duplicate()
+	var extras: Dictionary[StringName, Vector2i] = base.extras.duplicate()
+	if kind == EngineRules.DRY:
+		zone_copy.dead_trees = Vector2i(maxi(base.dead_trees.x, 3), maxi(base.dead_trees.y, 4))
+		var coal: Vector2i = extras.get(&"coal_pile", Vector2i.ZERO)
+		extras[&"coal_pile"] = Vector2i(maxi(coal.x, 1), maxi(coal.y, 2))
+	else:
+		zone_copy.wrecks = Vector2i(maxi(base.wrecks.x, 4), maxi(base.wrecks.y, 5))
+	zone_copy.extras = extras
+	return zone_copy
+
+
+## La horde d'un arrêt forcé : celle du jeu, qui arrive plus vite.
+static func incident_horde() -> EventData:
+	for event: EventData in GameState.EVENTS:
+		if event.id == &"horde":
+			var horde_copy: EventData = event.duplicate()
+			horde_copy.horde_delay = EngineRules.HORDE_DELAY
+			return horde_copy
+	return null
+
+
+func _setup_incident() -> void:
+	_session.hold()
+	_train.set_boiler_lit(GameState.incident != EngineRules.DRY)
+	_engine_spot = Interactable.new()
+	_engine_spot.name = "EngineSpot"
+	_engine_spot.hold_time = 0.6
+	_engine_spot.animation = &"harvest"
+	_engine_spot.indicator_offset = Vector2(0.0, -46.0)
+	_engine_spot.position = ENGINE_SPOT_POSITION
+	var shape := CollisionShape2D.new()
+	var rect := RectangleShape2D.new()
+	rect.size = Vector2(34.0, 18.0)
+	shape.shape = rect
+	_engine_spot.add_child(shape)
+	_engine_spot.interacted.connect(func(_actor: Node2D) -> void: feed_engine())
+	_train.add_child(_engine_spot)
+	if GameState.incident == EngineRules.BREAKDOWN:
+		for node: Node in _world.get_children():
+			if node is Harvestable and (node as Harvestable).bonus_loot and (node as Harvestable).bonus_loot.id == &"parts":
+				(node as Harvestable).bonus_chance = maxf((node as Harvestable).bonus_chance, BREAKDOWN_PARTS_CHANCE)
+	_refresh_engine_spot()
+
+
+## Ce qu'il faut faire, en une ligne (annonce, poste de la locomotive, porte du train).
+func _incident_goal() -> String:
+	var left: int = GameState.incident_left()
+	if GameState.incident == EngineRules.DRY:
+		return "Rapporte du bois ou du charbon à la locomotive (encore %d d'énergie)." % left
+	return "Rapporte %d pièce(s) mécanique(s) à la locomotive." % left
+
+
+func _refresh_engine_spot() -> void:
+	if _engine_spot == null:
+		return
+	var left: int = GameState.incident_left()
+	if _repair_left >= 0.0:
+		_engine_spot.prompt = "Réparation en cours..." if GameState.incident == EngineRules.BREAKDOWN else "La pression remonte..."
+	elif GameState.incident == EngineRules.DRY:
+		_engine_spot.prompt = "Charger la chaudière (encore %d d'énergie)" % left
+	else:
+		_engine_spot.prompt = "Réparer la locomotive (encore %d pièce(s))" % left
+	_hud.call(&"show_status", _status_text(), true)
+
+
+func _status_text() -> String:
+	if _repair_left >= 0.0:
+		return "%s %d s" % ["Réparation" if GameState.incident == EngineRules.BREAKDOWN else "Pression", ceili(_repair_left)]
+	if GameState.incident == EngineRules.DRY:
+		return "Panne : %d énergie" % GameState.incident_left()
+	return "Panne : %d pièce(s)" % GameState.incident_left()
+
+
+## Le joueur rapporte à la locomotive ce qu'il a dans son sac ; le stock du train complète.
+## Tout y est : la réparation (ou la montée en pression) commence.
+func feed_engine() -> void:
+	if not _session.is_held() or _repair_left >= 0.0:
+		return
+	var used: Dictionary = GameState.feed_incident(_session.result)
+	var bag: Dictionary = used["bag"]
+	var stock: Dictionary = used["stock"]
+	if not bag.is_empty():
+		_session.loot_changed.emit(_session.result)
+	var parts: PackedStringArray = []
+	if not bag.is_empty():
+		parts.append(MenuKit.describe_amounts(bag) + " du sac")
+	if not stock.is_empty():
+		parts.append(MenuKit.describe_amounts(stock) + " du stock")
+	if GameState.incident_left() > 0:
+		_hud.call(&"toast", ("Tu donnes %s. " % " et ".join(parts) if not parts.is_empty() else "") + _incident_goal(), parts.is_empty())
+		_refresh_engine_spot()
+		return
+	_repair_left = GameState.incident_repair_seconds()
+	# Plus rien à faire au poste : il disparaît des cibles (et son invite avec).
+	_engine_spot.set_deferred(&"monitorable", false)
+	var done: String = "Tu donnes %s : " % " et ".join(parts) if not parts.is_empty() else ""
+	if GameState.incident == EngineRules.DRY:
+		_train.set_boiler_lit(true)
+		_hud.call(&"toast", done + "la chaudière repart, la pression remonte. Tiens bon !", false)
+	else:
+		_hud.call(&"toast", done + "on répare la locomotive. Tiens bon !", false)
+	_refresh_engine_spot()
+
+
+func _tick_repair(delta: float) -> void:
+	_repair_left -= delta
+	if _repair_left <= 0.0:
+		_repair_left = -1.0
+		_engine_ready()
+		return
+	if ceili(_repair_left) != _repair_shown:
+		_repair_shown = ceili(_repair_left)
+		_hud.call(&"show_status", _status_text(), true)
+
+
+## Réparé : le train siffle, on a peu de temps pour monter.
+func _engine_ready() -> void:
+	if _engine_spot:
+		_engine_spot.queue_free()
+		_engine_spot = null
+	_session.release(EngineRules.DEPARTURE_SECONDS)
+	_hud.call(&"toast", "La locomotive est prête : monte à bord, le train repart !", false)
+
+
+func _on_boarding_requested() -> void:
+	if _session.is_held():
+		_hud.call(&"toast", "Le train est en panne. " + _incident_goal(), true)
+		return
+	_session.board()
+
+
 # --- Horde --------------------------------------------------------------------------
 
 ## Une horde peut surgir peu après l'arrivée : jamais annoncée, tirée de la graine de l'arrêt.
 func _setup_horde(zone_seed: int) -> void:
 	_horde_event = surprise_override if surprise_override else GameState.roll_surprise(biome, GameState.stop_number, zone_seed,
 		DayClock.is_night(_start_minutes))
+	# Arrêt forcé : le train immobile attire toujours une horde, et vite.
+	if GameState.is_incident_stop() and surprise_override == null:
+		_horde_event = incident_horde()
 	if _horde_event == null or _horde_event.id != &"horde":
 		return
 	var rng := RandomNumberGenerator.new()
@@ -522,7 +678,8 @@ func _on_train_hit(enemy: Enemy) -> void:
 	if not _train_attacked:
 		_train_attacked = true
 		_hud.call(&"toast", "La horde frappe le train !", true)
-	if left <= 0.0:
+	# En panne, il ne peut pas démarrer en catastrophe : il faut le réparer quand même.
+	if left <= 0.0 and not _session.is_held():
 		_train_broke_down = true
 		_hud.call(&"toast", "Le train est à bout : il démarre en catastrophe ! Remonte vite !", true)
 		_session.remaining = minf(_session.remaining, _session.whistle_time)
@@ -579,7 +736,7 @@ func _wire_systems() -> void:
 		if by is Enemy:
 			(by as Enemy).release_grab())
 	_session.exposure_source = _player.exposure
-	_train.boarding_requested.connect(_session.board)
+	_train.boarding_requested.connect(_on_boarding_requested)
 	_session.whistle_blown.connect(_train.whistle)
 	_session.ended.connect(_on_session_ended)
 	_session.dropped.connect(_on_bag_dropped)
@@ -589,7 +746,11 @@ func _wire_systems() -> void:
 	var event: EventData = event_override if event_override else GameState.current_event
 	if event:
 		subtitle = (subtitle + " · " if not subtitle.is_empty() else "") + event.forecast_text
-	_hud.call(&"announce_zone", GameState.stop_number, zone.display_name, subtitle)
+	if GameState.is_incident_stop():
+		_hud.call(&"announce_zone", GameState.stop_number, zone.display_name, _incident_goal(),
+			("Panne sèche" if GameState.incident == EngineRules.DRY else "Panne moteur") + " : " + zone.display_name)
+	else:
+		_hud.call(&"announce_zone", GameState.stop_number, zone.display_name, subtitle)
 	_dialog.connect(&"choice_selected", _on_choice_selected)
 	_dialog.connect(&"closed", _on_dialog_closed)
 	_result_screen.connect(&"continue_requested", _continue_journey)

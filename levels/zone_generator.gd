@@ -37,6 +37,7 @@ const RULES: Dictionary[StringName, Array] = {
 	&"infected_herb": [Placement.INFECTED, 18.0],
 	&"barrel": [Placement.HEALTHY, 20.0],
 	&"cache": [Placement.HEALTHY, 30.0],
+	&"coal_pile": [Placement.HEALTHY, 28.0],
 }
 
 

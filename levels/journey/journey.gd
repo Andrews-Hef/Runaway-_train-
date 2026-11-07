@@ -123,7 +123,10 @@ static func _ground_tile(rng: RandomNumberGenerator) -> int:
 
 
 func _fill_texts() -> void:
-	if GameState.stop_number == 1:
+	if GameState.is_incident_stop():
+		_title.text = "Panne sèche !" if GameState.incident == EngineRules.DRY else "Panne moteur !"
+		_subtitle.text = "Le train s'arrête en pleine voie, loin de tout."
+	elif GameState.stop_number == 1:
 		_title.text = "Tu viens d'être recruté."
 		_subtitle.text = "Le capitaine t'envoie au premier arrêt. Rapporte ce que tu peux."
 	elif GameState.is_refuge_stop():
@@ -144,6 +147,9 @@ func _fill_texts() -> void:
 		_description.text = "Deux voies possibles : %s.\nChoisis la tienne au levier de la cabine." % " ou ".join(names)
 		if GameState.stop_number == GameState.region_stops().x and GameState.stop_number > 1:
 			_subtitle.text = "Nouvelle région : %s. %s" % [GameState.region().display_name, GameState.region().description]
+	elif GameState.is_incident_stop():
+		_next_stop.text = "En pleine voie : %s" % GameState.stop_name()
+		_description.text = "Le train immobile attire la ruche : fais vite."
 	else:
 		_next_stop.text = "Arrêt n°%d : %s" % [GameState.stop_number, GameState.stop_name()]
 		_description.text = GameState.stop_description()
@@ -167,13 +173,17 @@ func _fill_texts() -> void:
 		_description.text += "\n… et %d autre(s) chose(s) : voir l'onglet Équipage." % (events.size() - shown)
 	if GameState.condition() != GameState.Condition.GOOD:
 		_description.text += "\nTrain %s. Répare-le à la cabine." % GameState.describe_condition()
+	if not GameState.is_incident_stop() and GameState.trips_left() <= 1:
+		_description.text += "\nChaudière : %d d'énergie, %s. Charge-la à la soute de la cabine." % [
+			GameState.energy, "de quoi faire un seul trajet" if GameState.trips_left() == 1 else "pas assez pour le prochain trajet"]
 	if not GameState.last_production.is_empty():
 		_description.text += "\nPendant le trajet, les machines du train ont produit : %s." % MenuKit.describe_amounts(GameState.last_production)
 	_description.text += "\nArrivée vers %s, %s (%s)." % [DayClock.time_text(GameState.clock_minutes),
 		"jour %d" % DayClock.day(GameState.clock_minutes), DayClock.period_name(GameState.clock_minutes)]
 	if DayClock.is_night(GameState.clock_minutes) and not GameState.is_refuge_stop():
 		_description.text += " La nuit, la ruche chasse et les pilleurs somnolent."
-	_storage.text = _storage_summary() + "\n" + _crew_summary()
+	_storage.text = _storage_summary() + "\n" + _crew_summary() + "\nÉnergie : %d/%d (%d trajet(s))" % [
+		GameState.energy, GameState.energy_capacity(), GameState.trips_left()]
 
 
 static func _storage_summary() -> String:

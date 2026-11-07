@@ -66,6 +66,7 @@ const FURNITURE: Dictionary[StringName, Array] = {
 	&"med_cabinet": [preload("res://assets/sprites/interior/med_cabinet.png"), Vector2(22, 42), Vector2(36, 8)],
 	&"planter": [preload("res://assets/sprites/interior/planter.png"), Vector2(22, 36), Vector2(36, 8)],
 	&"still": [preload("res://assets/sprites/interior/still.png"), Vector2(20, 44), Vector2(30, 8)],
+	&"coal_bin": [preload("res://assets/sprites/interior/coal_bin.png"), Vector2(13, 16), Vector2(20, 6)],
 }
 ## Les meubles sont contre le mur du fond.
 const FURNITURE_Y: float = -12.0
@@ -80,7 +81,8 @@ const LAYOUTS: Dictionary[StringName, Array] = {
 	&"greenhouse": [[&"planter", -30.0, &"machines", "Serre : voir la production"], [&"planter", 22.0, &"", ""]],
 	&"laboratory": [[&"still", -26.0, &"machines", "Laboratoire : voir la production"], [&"planter", 28.0, &"", ""]],
 	&"stock": [[&"chest", 0.0, &"stock", "Ouvrir le stock"]],
-	&"cabin": [[&"plan_table", -30.0, &"train", "Plans du train"], [&"engine", 24.0, &"lever", "Descendre au prochain arrêt"]],
+	&"cabin": [[&"plan_table", -36.0, &"train", "Plans du train"], [&"coal_bin", -6.0, &"boiler", "Charger la chaudière"],
+		[&"engine", 28.0, &"lever", "Descendre au prochain arrêt"]],
 }
 ## Meubles en plus quand une voiture est agrandie : type -> niveau -> meubles.
 const LEVEL_EXTRAS: Dictionary[StringName, Dictionary] = {
@@ -110,6 +112,7 @@ const STATION_TABS: Dictionary[StringName, int] = {
 	&"plans": TrainMenu.Tab.PLANS,
 	&"infirmary": TrainMenu.Tab.INFIRMARY,
 	&"machines": TrainMenu.Tab.MACHINES,
+	&"boiler": TrainMenu.Tab.BOILER,
 }
 ## Animation du joueur à chaque poste : debout au travail (&"work") par défaut ;
 ## il fouille le coffre du stock et reste simplement debout devant les couchettes.
@@ -161,7 +164,7 @@ func _ready() -> void:
 	_player.interactor.target_changed.connect(_on_target_changed)
 	_menu.connect(&"closed", _on_menu_closed)
 	for signal_name: StringName in [&"storage_changed", &"crew_changed", &"equipment_changed", &"train_changed", &"career_changed",
-			&"infection_changed", &"condition_changed"]:
+			&"infection_changed", &"condition_changed", &"energy_changed"]:
 		GameState.connect(signal_name, _refresh_texts)
 	GameState.train_changed.connect(_build_train)
 	GameState.crew_changed.connect(_place_crew)
@@ -318,7 +321,9 @@ func _add_furniture(wagon_x: float, entry: Array) -> void:
 	var spot := Interactable.new()
 	spot.name = "Station_" + String(station)
 	spot.prompt = entry[3]
-	if station == &"lever" and GameState.is_refuge_stop():
+	if station == &"lever" and GameState.is_incident_stop():
+		spot.prompt = "Descendre : le train est en panne"
+	elif station == &"lever" and GameState.is_refuge_stop():
 		spot.prompt = "Descendre à la gare refuge"
 	elif station == &"lever" and GameState.has_route_choice():
 		spot.prompt = "Aiguillage : choisir le prochain arrêt"
@@ -502,7 +507,11 @@ func next_scene() -> String:
 
 func _refresh_texts() -> void:
 	var order: CaptainOrders.Order = GameState.current_order
-	if GameState.has_route_choice():
+	if GameState.is_incident_stop():
+		_destination.text = "%s · %s : rapporte ce qu'il faut à la locomotive" % [
+			"Panne sèche" if GameState.incident == EngineRules.DRY else "Panne moteur", GameState.stop_name()]
+		_order.text = "%s · Pas d'ordre : il faut repartir" % GameState.grade().display_name
+	elif GameState.has_route_choice():
 		_destination.text = "%s · aiguillage avant l'arrêt n°%d : choisis ta voie au levier de la cabine" % [
 			GameState.region().display_name, GameState.stop_number]
 		_order.text = "%s · Ordre du capitaine : selon la voie choisie" % GameState.grade().display_name
@@ -517,11 +526,11 @@ func _refresh_texts() -> void:
 			("Ordre du capitaine : " + order.text()) if order else "Pas d'ordre en gare"]
 	if not GameState.pending_promotions.is_empty():
 		_order.text += " · Talent à choisir (%s : inventaire)" % InputMode.label_for(&"inventory")
-	_summary.text = "Arrivée %s · Infection %d %% · Stock %d/%d · Équipage %d/%d · Voitures %d/%d · Train %d %%" % [
+	_summary.text = "Arrivée %s · Infection %d %% · Stock %d/%d · Équipage %d/%d · Voitures %d/%d · Train %d %% · Énergie %d/%d (%d trajet(s))" % [
 		DayClock.time_text(GameState.clock_minutes),
 		roundi(GameState.infection * 100.0), GameState.storage_total(), GameState.storage_capacity(),
 		GameState.crew.size(), GameState.beds(), GameState.train.size(), GameState.max_cars(),
-		roundi(GameState.train_condition * 100.0)]
+		roundi(GameState.train_condition * 100.0), GameState.energy, GameState.energy_capacity(), GameState.trips_left()]
 
 
 func _on_target_changed(target: Interactable) -> void:

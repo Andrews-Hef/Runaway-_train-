@@ -6,6 +6,7 @@
 script = ExtResource("1_loco")
 level = 3
 max_cars = 7
+tender = 42
 cost = Dictionary[StringName, int]({
 &"scrap": 14,
 &"parts": 6,

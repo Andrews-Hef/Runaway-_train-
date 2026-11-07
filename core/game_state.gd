@@ -19,10 +19,14 @@ signal infection_changed
 signal plans_changed
 ## L'état du train a changé (horde, réparation).
 signal condition_changed
+## La réserve de la chaudière a changé, ou une panne arrête le train.
+signal energy_changed
 
 ## Plan qui relie les postes du train (voir stations_linked()).
 const INTERCOM_PLAN: StringName = &"intercom"
 const FIXED_SEED_SETTING: String = "game/debug/fixed_seed"
+## Débogage (et tests des autres systèmes) : false = ni consommation d'énergie ni panne.
+const ENGINE_TROUBLE_SETTING: String = "game/debug/engine_trouble"
 ## Le premier arrêt est toujours celui-ci : une zone simple pour commencer.
 const FIRST_ZONE: ZoneProfile = preload("res://data/zones/plains.tres")
 ## Tous les types d'arrêt. Chacun appartient à un biome (sa région).
@@ -104,6 +108,7 @@ const REFUGES: Array[RefugeData] = [
 const LOOT_TYPES: Array[LootData] = [
 	preload("res://data/loot/scrap.tres"),
 	preload("res://data/loot/wood.tres"),
+	preload("res://data/loot/coal.tres"),
 	preload("res://data/loot/herb.tres"),
 	preload("res://data/loot/infected_herb.tres"),
 	preload("res://data/loot/cloth.tres"),
@@ -202,6 +207,17 @@ var clock_minutes: int = DayClock.START_MINUTES
 var train_condition: float = 1.0
 ## Réparé par les mécaniciens pendant le dernier trajet.
 var last_repair: float = 0.0
+## Réserve d'énergie de la chaudière (voir EngineRules) : chaque trajet en brûle.
+var energy: int = EngineRules.START_ENERGY
+## Énergie et pannes actives (voir ENGINE_TROUBLE_SETTING).
+var engine_trouble: bool = true
+## Arrêt forcé en cours ou à venir : &"" (aucun), EngineRules.DRY ou EngineRules.BREAKDOWN.
+var incident: StringName = &""
+## Panne sèche : énergie à avoir dans la chaudière pour repartir. Panne moteur : pièces
+## mécaniques qu'il reste à rapporter à la locomotive.
+var incident_need: int = 0
+## Énergie qu'il restera à brûler pour finir le trajet interrompu.
+var incident_rest: int = 0
 ## Récit du dernier trajet pour l'équipage (travail, maladie, demandes, pertes).
 var last_crew_events: Array[String] = []
 ## Décisions du capitaine pendant le dernier trajet (voie, équipage, construction).
@@ -229,6 +245,8 @@ var production_log: Array[Dictionary] = []
 const PRODUCTION_LOG_SIZE: int = 5
 
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
+## On repart d'un arrêt forcé : la moitié du trajet est déjà faite.
+var _resumed: bool = false
 
 
 func _ready() -> void:
@@ -262,6 +280,11 @@ func new_run(run_seed: int = 0) -> void:
 	infection = 0.0
 	train_condition = 1.0
 	last_repair = 0.0
+	engine_trouble = ProjectSettings.get_setting(ENGINE_TROUBLE_SETTING, true)
+	energy = EngineRules.START_ENERGY
+	incident = &""
+	incident_need = 0
+	incident_rest = 0
 	last_crew_events.clear()
 	last_mission_lines.clear()
 	pending_intro = false
@@ -277,6 +300,7 @@ func new_run(run_seed: int = 0) -> void:
 	crew_changed.emit()
 	equipment_changed.emit()
 	train_changed.emit()
+	energy_changed.emit()
 	prepare_next_stop()
 	career_changed.emit()
 	infection_changed.emit()
@@ -285,29 +309,43 @@ func new_run(run_seed: int = 0) -> void:
 
 ## Prépare le prochain arrêt : gare refuge (tous les REFUGE_EVERY arrêts), ou deux voies
 ## à l'aiguillage, tirées parmi les types d'arrêt de la région en cours.
+##
+## Le trajet brûle l'énergie de la chaudière. Panne sèche ou panne moteur : le prochain
+## arrêt est un arrêt forcé en pleine voie (le numéro d'arrêt ne change pas) ; en
+## repartir finit le trajet interrompu, sans refaire travailler machines et équipage.
 func prepare_next_stop() -> void:
-	# On quitte un arrêt : les machines travaillent et les mécaniciens réparent pendant le trajet.
+	route_by_captain = false
+	var scouted: bool = false
+	# Le récit du trajet précédent a été montré : on repart d'une page blanche.
 	last_production.clear()
 	last_repair = 0.0
 	last_crew_events.clear()
 	captain_notes.clear()
-	route_by_captain = false
-	var scouted: bool = false
-	if stop_number >= 1:
-		last_production = run_machines()
-		_log_production(stop_number + 1)
-		# Sans le grade, c'est le capitaine qui dirige l'équipage et fait construire.
-		if not can(&"crew"):
-			captain_notes.append_array(CaptainDecisions.manage_crew(crew, has_wagon(&"infirmary"), QUARANTINE_BEDS))
-		scouted = _crew_trajet((stop_number + 1) % REFUGE_EVERY == 0)
-		if not can(&"build"):
-			var built: String = CaptainDecisions.build(self)
-			if not built.is_empty():
-				captain_notes.append(built)
-	# Le temps passe : une heure en gare refuge si on en repart, puis le trajet.
+	if incident != &"":
+		_finish_incident()
+	else:
+		# On quitte un arrêt : les machines travaillent et les mécaniciens réparent pendant le trajet.
+		if stop_number >= 1:
+			last_production = run_machines()
+			_log_production(stop_number + 1)
+			# Sans le grade, c'est le capitaine qui dirige l'équipage et fait construire.
+			if not can(&"crew"):
+				captain_notes.append_array(CaptainDecisions.manage_crew(crew, has_wagon(&"infirmary"), QUARANTINE_BEDS))
+			scouted = _crew_trajet((stop_number + 1) % REFUGE_EVERY == 0)
+			if not can(&"build"):
+				var built: String = CaptainDecisions.build(self)
+				if not built.is_empty():
+					captain_notes.append(built)
+			if _burn_trip_energy():
+				_prepare_incident_stop()
+				career_changed.emit()
+				return
+	# Le temps passe : une heure en gare refuge si on en repart, puis le trajet (sa
+	# deuxième moitié seulement après un arrêt forcé : la première est déjà comptée).
 	if current_refuge != null and stop_number >= 1:
 		clock_minutes += DayClock.REFUGE_MINUTES
-	clock_minutes += DayClock.TRAVEL_MINUTES
+	clock_minutes += DayClock.TRAVEL_MINUTES if not _resumed else DayClock.TRAVEL_MINUTES / 2
+	_resumed = false
 	stop_number += 1
 	route_options.clear()
 	if stop_number % REFUGE_EVERY == 0:
@@ -336,6 +374,180 @@ func prepare_next_stop() -> void:
 			route_by_captain = true
 			captain_notes.append("Le capitaine a choisi la voie : %s (la plus sûre)." % current_zone.display_name)
 	career_changed.emit()
+
+
+# --- Énergie de la chaudière et pannes ----------------------------------------------
+
+func energy_capacity() -> int:
+	return TrainRules.tender(locomotive_level)
+
+
+## Énergie que brûle un trajet avec le train actuel.
+func trip_energy() -> int:
+	return EngineRules.trip_cost(train.size())
+
+
+## Trajets complets possibles avec la réserve actuelle.
+func trips_left() -> int:
+	return energy / maxi(trip_energy(), 1)
+
+
+## Les ressources qui brûlent dans la chaudière (bois, charbon).
+func fuel_types() -> Array[LootData]:
+	var fuels: Array[LootData] = []
+	for loot: LootData in LOOT_TYPES:
+		if loot.fuel > 0:
+			fuels.append(loot)
+	return fuels
+
+
+## Combien d'unités de ce combustible du stock tiennent dans la chaudière.
+func loadable_fuel(loot: LootData) -> int:
+	return EngineRules.loadable(loot.fuel, energy_capacity() - energy, storage_amount(loot.id))
+
+
+## Charge la chaudière avec du combustible du stock. Renvoie la quantité chargée.
+func load_fuel(loot: LootData, amount: int) -> int:
+	var count: int = mini(amount, loadable_fuel(loot))
+	if count <= 0:
+		return 0
+	storage[loot.id] -= count
+	if storage[loot.id] <= 0:
+		storage.erase(loot.id)
+	energy += count * loot.fuel
+	storage_changed.emit()
+	energy_changed.emit()
+	return count
+
+
+## Mécaniciens au travail (ni au repos ni isolés) : ils évitent les pannes, réparent vite.
+func working_mechanics() -> int:
+	var count: int = 0
+	for member: CrewMember in crew:
+		if member.role == &"mechanic" and CrewLife.can_work(member):
+			count += 1
+	return mini(count, MAX_MECHANICS)
+
+
+## Chance qu'une panne moteur arrête le prochain trajet.
+func breakdown_chance() -> float:
+	return EngineRules.breakdown_chance(train_condition, working_mechanics())
+
+
+## Le trajet brûle son énergie. Renvoie true s'il s'arrête en pleine voie (panne).
+func _burn_trip_energy() -> bool:
+	if not engine_trouble:
+		return false
+	var cost: int = trip_energy()
+	if energy < cost:
+		# Panne sèche : la chaudière s'éteint à mi-chemin.
+		incident = EngineRules.DRY
+		incident_rest = EngineRules.rest_of_trip(cost)
+		incident_need = incident_rest
+		energy = 0
+	elif stop_number + 1 >= EngineRules.BREAKDOWN_FROM_STOP and _engine_roll() < breakdown_chance():
+		incident = EngineRules.BREAKDOWN
+		incident_rest = EngineRules.rest_of_trip(cost)
+		incident_need = EngineRules.parts_needed(condition() == Condition.CRITICAL)
+		energy -= cost - incident_rest
+	else:
+		energy -= cost
+	energy_changed.emit()
+	return incident != &""
+
+
+## Hasard de la panne moteur : tiré de la partie et du trajet, sans toucher au hasard
+## des voies (une panne ne change pas les arrêts qui suivent).
+func _engine_roll() -> float:
+	var roll := RandomNumberGenerator.new()
+	roll.seed = hash([_rng.seed, stop_number, "moteur"])
+	return roll.randf()
+
+
+## L'arrêt forcé : une zone de la région où va le train, sans ordre ni gare.
+func _prepare_incident_stop() -> void:
+	clock_minutes += DayClock.TRAVEL_MINUTES / 2
+	current_refuge = null
+	current_order = null
+	current_event = null
+	route_options.clear()
+	var zones: Array[ZoneProfile] = _pick_zones(region_for(stop_number + 1), current_zone, 1)
+	current_zone = zones[0]
+	current_seed = _rng.randi()
+	route_options.append(StopOption.new(current_zone, current_seed, null, null))
+	captain_notes.append(incident_text())
+
+
+## Le train repart de l'arrêt forcé : il brûle la fin du trajet.
+func _finish_incident() -> void:
+	energy = maxi(energy - incident_rest, 0)
+	incident = &""
+	incident_need = 0
+	incident_rest = 0
+	_resumed = true
+	energy_changed.emit()
+
+
+func is_incident_stop() -> bool:
+	return incident != &""
+
+
+## Temps de réparation (panne moteur) ou de montée en pression (panne sèche).
+func incident_repair_seconds() -> float:
+	return EngineRules.repair_seconds(incident, working_mechanics())
+
+
+## Ce qui manque encore à la locomotive (0 : on peut réparer ou faire monter la pression).
+func incident_left() -> int:
+	if incident == EngineRules.DRY:
+		return maxi(incident_need - energy, 0)
+	return incident_need if incident == EngineRules.BREAKDOWN else 0
+
+
+## Rapporte à la locomotive ce qui manque : d'abord ce qu'il y a dans le sac, puis le
+## stock du train. Renvoie ce qui a été utilisé, par source : {"bag": {...}, "stock": {...}}.
+func feed_incident(bag: ExpeditionResult) -> Dictionary:
+	var used: Dictionary = {"bag": {} as Dictionary[StringName, int], "stock": {} as Dictionary[StringName, int]}
+	if incident == &"":
+		return used
+	for source: String in ["bag", "stock"]:
+		var left: int = incident_left()
+		if left <= 0:
+			break
+		if source == "bag" and bag == null:
+			continue
+		var have: Dictionary[StringName, int] = bag.loot if source == "bag" else storage
+		var take: Dictionary[StringName, int] = {}
+		if incident == EngineRules.DRY:
+			take = EngineRules.fuel_for(left, have, fuel_types())
+			# La chaudière ne déborde pas : l'énergie en trop est perdue au-delà de la réserve.
+			energy = mini(energy + EngineRules.energy_of(take, fuel_types()), energy_capacity())
+		else:
+			var parts: int = mini(have.get(&"parts", 0), left)
+			if parts > 0:
+				take[&"parts"] = parts
+				incident_need -= parts
+		for id: StringName in take:
+			if source == "bag":
+				bag.remove_loot(id, take[id])
+			else:
+				storage[id] -= take[id]
+				if storage[id] <= 0:
+					storage.erase(id)
+		(used[source] as Dictionary).merge(take)
+	if not (used["stock"] as Dictionary).is_empty():
+		storage_changed.emit()
+	energy_changed.emit()
+	return used
+
+
+## Ce que dit le capitaine (trajet, HUD) d'un arrêt forcé.
+func incident_text() -> String:
+	if incident == EngineRules.DRY:
+		return "Panne sèche ! La chaudière est vide : le train s'arrête en pleine voie. Rapporte du bois ou du charbon à la locomotive."
+	if incident == EngineRules.BREAKDOWN:
+		return "Panne moteur ! Le train s'arrête en pleine voie. Rapporte %d pièces mécaniques à la locomotive." % incident_need
+	return ""
 
 
 ## Une voie : l'ordre et l'événement ont leur propre hasard, tiré de la graine de l'arrêt.
@@ -1103,6 +1315,10 @@ func to_save() -> Dictionary:
 		"pending_promotions": pending_promotions.map(func(g: GradeData) -> String: return String(g.id)),
 		"infection": infection,
 		"train_condition": train_condition,
+		"energy": energy,
+		"incident": String(incident),
+		"incident_need": incident_need,
+		"incident_rest": incident_rest,
 		"clock": clock_minutes,
 		"found_plans": found_plans.map(func(id: StringName) -> String: return String(id)),
 		"researched_plans": researched_plans.map(func(id: StringName) -> String: return String(id)),
@@ -1181,6 +1397,12 @@ func load_save(data: Dictionary) -> bool:
 			pending_promotions.append(promotion)
 	infection = clampf(float(data.get("infection", 0.0)), 0.0, 1.0)
 	train_condition = clampf(float(data.get("train_condition", 1.0)), 0.0, 1.0)
+	energy = clampi(int(data.get("energy", EngineRules.START_ENERGY)), 0, energy_capacity())
+	incident = StringName(str(data.get("incident", "")))
+	if incident != EngineRules.DRY and incident != EngineRules.BREAKDOWN:
+		incident = &""
+	incident_need = maxi(int(data.get("incident_need", 0)), 0)
+	incident_rest = maxi(int(data.get("incident_rest", 0)), 0)
 	clock_minutes = maxi(int(data.get("clock", DayClock.START_MINUTES)), 0)
 	found_plans.clear()
 	for id: String in data.get("found_plans", []):
@@ -1219,6 +1441,7 @@ func load_save(data: Dictionary) -> bool:
 	career_changed.emit()
 	infection_changed.emit()
 	plans_changed.emit()
+	energy_changed.emit()
 	return true
 
 

@@ -150,8 +150,8 @@ func bind(session: StopSession, player: Player, loot_types: Array[LootData]) -> 
 
 ## Affiche « Arrêt n°X : nom de la zone » quelques secondes au début de l'arrêt,
 ## avec en dessous le biome et sa règle (« Toundra gelée · Le froid… »).
-func announce_zone(stop_number: int, zone_name: String, subtitle: String = "") -> void:
-	_zone_title.text = "Arrêt n°%d : %s" % [stop_number, zone_name]
+func announce_zone(stop_number: int, zone_name: String, subtitle: String = "", title: String = "") -> void:
+	_zone_title.text = title if not title.is_empty() else "Arrêt n°%d : %s" % [stop_number, zone_name]
 	_zone_title.visible = true
 	_zone_title.modulate.a = 1.0
 	var rule_label: Label = null
@@ -288,6 +288,15 @@ static func _icon_row(icon: Texture2D) -> HBoxContainer:
 
 func _on_time_changed(remaining: float) -> void:
 	_timer_label.text = format_time(remaining)
+
+
+## À la place du compte à rebours (arrêt forcé) : « Panne : 2 pièces », « Réparation 12 s ».
+func show_status(text: String, bad: bool = false) -> void:
+	_timer_label.text = text
+	if bad:
+		_timer_label.add_theme_color_override(&"font_color", WHISTLE_TIME_COLOR)
+	else:
+		_timer_label.remove_theme_color_override(&"font_color")
 
 
 func _on_whistle_blown() -> void:

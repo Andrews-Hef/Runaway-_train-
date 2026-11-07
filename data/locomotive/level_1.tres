@@ -6,3 +6,4 @@
 script = ExtResource("1_loco")
 level = 1
 max_cars = 5
+tender = 30

@@ -33,5 +33,6 @@ enemies = Dictionary[StringName, Vector2i]({
 })
 heavy_wrecks = Vector2i(3, 4)
 extras = Dictionary[StringName, Vector2i]({
-&"barrel": Vector2i(1, 2)
+&"barrel": Vector2i(1, 2),
+&"coal_pile": Vector2i(2, 3)
 })

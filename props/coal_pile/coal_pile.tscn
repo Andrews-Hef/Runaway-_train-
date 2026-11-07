@@ -1,0 +1,34 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/interaction/harvestable.gd" id="1_harvest"]
+[ext_resource type="Resource" path="res://data/loot/coal.tres" id="2_loot"]
+[ext_resource type="Texture2D" path="res://assets/sprites/props/coal_pile.png" id="3_sprite"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_reach"]
+radius = 17.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(22, 5)
+
+[node name="CoalPile" type="Area2D"]
+script = ExtResource("1_harvest")
+harvest_tag = &"coal"
+loot = ExtResource("2_loot")
+amount_min = 1
+amount_max = 2
+prompt = "Ramasser du charbon"
+hold_time = 1.5
+indicator_offset = Vector2(0, -24)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("3_sprite")
+centered = false
+offset = Vector2(-16, -16)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_reach")
+
+[node name="Blocker" type="StaticBody2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Blocker"]
+shape = SubResource("RectangleShape2D_body")

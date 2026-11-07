@@ -105,6 +105,11 @@ func set_running(value: bool) -> void:
 	_smoke.initial_velocity_max = 28.0 if value else 10.0
 
 
+## Panne sèche : chaudière éteinte, plus de fumée. False : elle se rallume.
+func set_boiler_lit(value: bool) -> void:
+	_smoke.emitting = value
+
+
 ## Le sifflet : le train tremble et crache un jet de vapeur.
 func whistle() -> void:
 	if _shake_tween:
@@ -113,6 +118,7 @@ func whistle() -> void:
 	_shake_tween.tween_property(_cars, "position:x", 1.0, 0.05)
 	_shake_tween.tween_property(_cars, "position:x", -1.0, 0.05)
 	_shake_tween.finished.connect(func() -> void: _cars.position.x = 0.0)
+	_smoke.emitting = true
 	_smoke.restart()
 	_smoke.amount = 24
 

@@ -2,10 +2,14 @@ class_name StopSession
 extends Node
 ## Un arrêt du train : compte à rebours, sifflet, butin et fin de la sortie.
 ##
+## Arrêt forcé (panne) : la session est bloquée (HELD), sans compte à rebours ; on ne
+## monte pas à bord. Une fois la locomotive réparée, release() fait siffler le train
+## et lance le départ.
+##
 ## Logique pure, sans affichage : le HUD, le train et l'écran de bilan
 ## écoutent ses signaux. Le temps avance via tick(), testable sans attendre.
 
-enum State { RUNNING, WHISTLE, ENDED }
+enum State { RUNNING, WHISTLE, ENDED, HELD }
 
 signal time_changed(remaining: float)
 ## Le train siffle : il reste whistle_time secondes pour remonter.
@@ -59,7 +63,7 @@ func _process(delta: float) -> void:
 
 
 func tick(delta: float) -> void:
-	if state == State.ENDED:
+	if state == State.ENDED or state == State.HELD:
 		return
 	remaining = maxf(remaining - delta, 0.0)
 	time_changed.emit(remaining)
@@ -68,6 +72,27 @@ func tick(delta: float) -> void:
 		whistle_blown.emit()
 	if remaining <= 0.0:
 		_finish(false)
+
+
+## Arrêt forcé : le train est en panne, pas de compte à rebours tant qu'il n'est pas réparé.
+func hold() -> void:
+	if state != State.ENDED:
+		state = State.HELD
+		remaining = 0.0
+
+
+## La locomotive est réparée : le train siffle et part dans `seconds` secondes.
+func release(seconds: float) -> void:
+	if state != State.HELD:
+		return
+	remaining = seconds
+	state = State.WHISTLE
+	time_changed.emit(remaining)
+	whistle_blown.emit()
+
+
+func is_held() -> bool:
+	return state == State.HELD
 
 
 ## Ajoute du butin dans la limite du sac. Renvoie la quantité vraiment prise.
@@ -190,9 +215,9 @@ func fall() -> void:
 		_finish(false)
 
 
-## Le joueur remonte à bord : la sortie se termine tout de suite.
+## Le joueur remonte à bord : la sortie se termine tout de suite (sauf train en panne).
 func board() -> void:
-	if state != State.ENDED:
+	if state != State.ENDED and state != State.HELD:
 		_finish(true)
 
 

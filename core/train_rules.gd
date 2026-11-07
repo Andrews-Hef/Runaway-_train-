@@ -42,6 +42,11 @@ static func max_cars(level: int) -> int:
 	return LEVELS[clampi(level, 1, LEVELS.size()) - 1].max_cars
 
 
+## Réserve d'énergie de la chaudière à ce niveau.
+static func tender(level: int) -> int:
+	return LEVELS[clampi(level, 1, LEVELS.size()) - 1].tender
+
+
 ## Le niveau suivant, ou null si la locomotive est au maximum.
 static func next_level(level: int) -> LocomotiveLevel:
 	return LEVELS[level] if level >= 1 and level < LEVELS.size() else null

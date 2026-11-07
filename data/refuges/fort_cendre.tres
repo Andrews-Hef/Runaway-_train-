@@ -91,10 +91,20 @@ cost = Dictionary[StringName, int]({
 })
 reward_plan = &"horticulture"
 
+[sub_resource type="Resource" id="Resource_fc_coal"]
+script = ExtResource("1_offer")
+label = "Le dépôt vend du charbon"
+cost = Dictionary[StringName, int]({
+&"scrap": 4
+})
+reward = Dictionary[StringName, int]({
+&"coal": 2
+})
+
 [resource]
 script = ExtResource("2_refuge")
 id = &"fort_cendre"
 display_name = "Gare refuge de Fort-Cendre"
 description = "Une ancienne gare de triage derrière une palissade. On y échange, on y soigne, et le dépôt répare les locomotives."
-trades = Array[ExtResource("1_offer")]([SubResource("Resource_t0"), SubResource("Resource_t1"), SubResource("Resource_t2"), SubResource("Resource_t3"), SubResource("Resource_fc_meds"), SubResource("Resource_fc_plan_metal"), SubResource("Resource_fc_plan_green")])
+trades = Array[ExtResource("1_offer")]([SubResource("Resource_t0"), SubResource("Resource_t1"), SubResource("Resource_t2"), SubResource("Resource_fc_coal"), SubResource("Resource_t3"), SubResource("Resource_fc_meds"), SubResource("Resource_fc_plan_metal"), SubResource("Resource_fc_plan_green")])
 recruits = Array[ExtResource("1_offer")]([SubResource("Resource_r0"), SubResource("Resource_r1")])

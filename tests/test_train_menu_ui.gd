@@ -180,3 +180,16 @@ func test_chaque_plan_montre_ce_qu_il_debloque() -> void:
 		assert_true(BlueprintCatalog.icon(plan.id) != null, "%s a une icône" % plan.display_name)
 	assert_true(BlueprintCatalog.icon(&"horticulture") == GREENHOUSE.icon, "Horticulture : la serre")
 	assert_true(BlueprintCatalog.icon(&"intercom") == BlueprintCatalog.PLAN_ICON, "Interphone : rien à montrer, un plan")
+
+
+func test_la_chaudiere_se_charge_depuis_son_onglet() -> void:
+	var wood: LootData = MenuKit.loot(&"wood")
+	GameState.storage[&"wood"] = 3
+	GameState.energy = 10
+	_open(TrainMenu.Tab.BOILER)
+	_menu.call(&"_select", TrainMenu.Tab.BOILER, wood)
+	var one := _detail_button("Charger 1")
+	assert_true(one != null and not one.disabled, "Charger 1 est prêt")
+	one.pressed.emit()
+	assert_true(GameState.energy == 10 + wood.fuel, "un bois dans la chaudière")
+	assert_true(GameState.storage_amount(&"wood") == 2, "pris dans le stock")

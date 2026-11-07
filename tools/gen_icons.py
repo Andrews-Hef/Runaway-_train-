@@ -660,6 +660,24 @@ def moon() -> Image.Image:
     ], {"m": "#c9d6ff", "M": "#8fa0d8"}))
 
 
+def coal() -> Image.Image:
+    """Trois gros morceaux de charbon, reflets bleutés."""
+    return outline(from_map([
+        "............",
+        "............",
+        "............",
+        ".....kkk....",
+        "....kHhkk...",
+        "....khkkk...",
+        "..kkkkkkkk..",
+        ".kHhkkkHhkk.",
+        ".khkkkkhkkk.",
+        ".kkkkk.kkkk.",
+        "..kkk...kk..",
+        "............",
+    ], {"k": "#2c2d33", "h": "#4d5260", "H": "#8a93a8"}))
+
+
 # --- Menus : voitures du train et petits signes -------------------------------------------
 
 def lock() -> Image.Image:
@@ -861,7 +879,7 @@ def tubes() -> Image.Image:
 
 ICONS = {
     "health": heart, "infection": spore, "timer": clock, "sun": sun, "moon": moon, "bag": bag, "order": star, "recruit": person, "plan": plan,
-    "scrap": scrap, "wood": wood,
+    "scrap": scrap, "wood": wood, "coal": coal,
     "herb": lambda: leaf("#6fbf4a", "#3f7a2a", "#b5e88f"),
     "infected_herb": lambda: leaf("#a04fd0", "#5e2585", "#d9a6ff", dots=True),
     "cloth": cloth, "parts": gear, "metal_plate": metal_plate, "chemicals": flask,

@@ -38,6 +38,7 @@ const SUITES: Array[String] = [
 	"res://tests/test_inventory.gd",
 	"res://tests/test_train_menu_ui.gd",
 	"res://tests/test_trade_menus.gd",
+	"res://tests/test_engine.gd",
 ]
 
 
@@ -64,6 +65,10 @@ func _initialize() -> void:
 func _run_all() -> void:
 	# Les tests n'écrivent jamais dans les vraies sauvegardes du joueur.
 	SaveStore.directory = "user://test_saves"
+	# Énergie et pannes coupées : les autres systèmes se testent trajet après trajet sans
+	# arrêt forcé. Les tests de la chaudière (test_engine.gd) les rallument.
+	ProjectSettings.set_setting("game/debug/engine_trouble", false)
+	root.get_node("/root/GameState").set(&"engine_trouble", false)
 	var catcher := ErrorCatcher.new()
 	OS.add_logger(catcher)
 	var passed: int = 0

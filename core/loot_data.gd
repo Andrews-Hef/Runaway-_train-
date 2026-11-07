@@ -18,15 +18,21 @@ extends Resource
 @export var rare: bool = false
 ## Médicament : infection retirée quand on le prend (0.2 = −20 points). 0 = pas un médicament.
 @export_range(0.0, 1.0) var cure: float = 0.0
+## Énergie qu'une unité donne en brûlant dans la chaudière (0 : ne brûle pas). Voir EngineRules.
+@export var fuel: int = 0
 
 
 func is_medicine() -> bool:
 	return cure > 0.0
 
 
-## Texte de l'inventaire : la description, ou l'effet du médicament.
+## Texte de l'inventaire : la description, puis l'effet du médicament ou du combustible.
 func describe() -> String:
+	var effect: String = ""
 	if cure > 0.0:
-		var effect: String = "Médicament : l'infection baisse de %d %%." % roundi(cure * 100.0)
-		return effect if description.is_empty() else description + " " + effect
-	return description
+		effect = "Médicament : l'infection baisse de %d %%." % roundi(cure * 100.0)
+	elif fuel > 0:
+		effect = "Chaudière : %d d'énergie." % fuel
+	if effect.is_empty():
+		return description
+	return effect if description.is_empty() else description + " " + effect
