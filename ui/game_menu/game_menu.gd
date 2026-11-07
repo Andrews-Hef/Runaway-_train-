@@ -63,6 +63,9 @@ var _selected: Dictionary = {}
 var _detail_box: HBoxContainer
 var _inventory_tabs: TabContainer
 var _items_box: HBoxContainer
+## Qui on équipe (dans le train) : toi ou un équipier. Rangée de portraits en haut.
+var _wearers_box: HBoxContainer
+var _wearer: CrewMember
 var _grade_list: VBoxContainer
 var _touch_buttons: HBoxContainer
 var _hint: Label
@@ -189,10 +192,11 @@ func open_pause() -> void:
 	_show_pause_buttons()
 
 
-func open_inventory(tab: InventoryTab = InventoryTab.ITEMS) -> void:
+func open_inventory(tab: InventoryTab = InventoryTab.ITEMS, wearer: CrewMember = null) -> void:
 	if not is_available():
 		return
 	_pause()
+	_wearer = wearer
 	view = View.INVENTORY
 	_pause_panel.visible = false
 	_selected = _default_selection()
@@ -259,7 +263,7 @@ func _build() -> void:
 	_inventory_panel.add_child(inventory_box)
 	_inventory_tabs = TabContainer.new()
 	_inventory_tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_inventory_tabs.custom_minimum_size = Vector2(0.0, 206.0)
+	_inventory_tabs.custom_minimum_size = Vector2(0.0, 178.0)
 	inventory_box.add_child(_inventory_tabs)
 	var items_scroll := _scroll("Inventaire")
 	_inventory_tabs.add_child(items_scroll)
@@ -267,24 +271,32 @@ func _build() -> void:
 	items_page.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	items_page.add_theme_constant_override(&"separation", 6)
 	items_scroll.add_child(items_page)
+	_wearers_box = HBoxContainer.new()
+	_wearers_box.name = "Wearers"
+	_wearers_box.add_theme_constant_override(&"separation", 2)
+	items_page.add_child(_wearers_box)
 	_items_box = HBoxContainer.new()
 	_items_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_items_box.add_theme_constant_override(&"separation", 12)
 	items_page.add_child(_items_box)
-	var detail_panel := PanelContainer.new()
-	detail_panel.theme_type_variation = &"InsetPanel"
-	items_page.add_child(detail_panel)
-	_detail_box = HBoxContainer.new()
-	_detail_box.name = "Detail"
-	_detail_box.add_theme_constant_override(&"separation", 6)
-	_detail_box.custom_minimum_size = Vector2(0.0, 26.0)
-	detail_panel.add_child(_detail_box)
+
 	var grade_scroll := _scroll("Grade")
 	_inventory_tabs.add_child(grade_scroll)
 	_grade_list = VBoxContainer.new()
 	_grade_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_grade_list.add_theme_constant_override(&"separation", 3)
 	grade_scroll.add_child(_grade_list)
+	# L'objet choisi et ses actions : sous les onglets, toujours visible (pas dans le défilement).
+	var detail_panel := PanelContainer.new()
+	detail_panel.name = "DetailPanel"
+	detail_panel.theme_type_variation = &"InsetPanel"
+	inventory_box.add_child(detail_panel)
+	_detail_box = HBoxContainer.new()
+	_detail_box.name = "Detail"
+	_detail_box.add_theme_constant_override(&"separation", 6)
+	_detail_box.custom_minimum_size = Vector2(0.0, 26.0)
+	detail_panel.add_child(_detail_box)
+	_inventory_tabs.tab_changed.connect(func(tab: int) -> void: detail_panel.visible = tab == InventoryTab.ITEMS)
 	inventory_box.add_child(_button("Fermer", close))
 
 	# Boutons tactiles et rappel des touches : sur un calque à part, au-dessus des
@@ -456,6 +468,9 @@ func _go_to_title() -> void:
 func _refresh_inventory() -> void:
 	if view != View.INVENTORY:
 		return
+	if _wearer and (not _wearer in GameState.crew or not can_change_equipment()):
+		_wearer = null
+	_fill_wearers()
 	MenuKit.clear(_items_box)
 	_items_box.add_child(_equipment_column())
 	_items_box.add_child(_bag_column())
@@ -487,7 +502,7 @@ func _default_selection() -> Dictionary:
 		if not stacks.is_empty():
 			return {"kind": &"bag", "id": stacks[0].id}
 	if can_change_equipment():
-		var spare := _spare_items()
+		var spare := GameState.spare_items()
 		if not spare.is_empty():
 			return {"kind": &"locker", "item": spare[0]}
 	return {}
@@ -507,12 +522,42 @@ static func _loot(id: StringName) -> LootData:
 	return null
 
 
-static func _spare_items() -> Array[ItemData]:
-	var spare: Array[ItemData] = []
-	for item: ItemData in GameState.owned_items:
-		if GameState.loadout.get_item(item.slot) != item:
-			spare.append(item)
-	return spare
+## Ce que porte la personne qu'on équipe.
+func _wearer_loadout() -> Loadout:
+	return _wearer.loadout if _wearer else GameState.loadout
+
+
+## Les portraits en haut : toi, puis chaque équipier. On touche : on l'équipe.
+func _fill_wearers() -> void:
+	MenuKit.clear(_wearers_box)
+	_wearers_box.visible = can_change_equipment() and not GameState.crew.is_empty()
+	if not _wearers_box.visible:
+		return
+	_wearers_box.add_child(MenuKit.label("Équiper :", MenuKit.MUTED))
+	_wearers_box.add_child(_wearer_cell(null))
+	for member: CrewMember in GameState.crew:
+		_wearers_box.add_child(_wearer_cell(member))
+
+
+func _wearer_cell(member: CrewMember) -> SlotCell:
+	var texture: Texture2D = CrewLooks.portrait(member.look) if member else _player_portrait()
+	var cell := SlotCell.create(texture, "", "Toi" if member == null else member.full_name() + " (%s)" % member.role_label)
+	cell.set_selected(_wearer == member)
+	cell.chosen.connect(_set_wearer.bind(member))
+	return cell
+
+
+static func _player_portrait() -> Texture2D:
+	var atlas := AtlasTexture.new()
+	atlas.atlas = PORTRAIT
+	atlas.region = Rect2(12.0, 7.0, 12.0, 12.0)
+	return atlas
+
+
+func _set_wearer(member: CrewMember) -> void:
+	_wearer = member
+	_selected = _default_selection()
+	_refresh_inventory.call_deferred()
 
 
 ## Une case : son cadre, l'icône (×2), le nombre en bas à droite (`amount` > 0, les
@@ -544,7 +589,7 @@ func _is_selected(kind: StringName, key: Variant) -> bool:
 func _equipment_column() -> VBoxContainer:
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override(&"separation", 3)
-	column.add_child(MenuKit.label("Équipement porté", MenuKit.GOLD))
+	column.add_child(MenuKit.label("Équipement porté" if _wearer == null else _wearer.full_name(), MenuKit.GOLD))
 	var figure := HBoxContainer.new()
 	figure.add_theme_constant_override(&"separation", 3)
 	column.add_child(figure)
@@ -552,16 +597,25 @@ func _equipment_column() -> VBoxContainer:
 	var frame := PanelContainer.new()
 	frame.theme_type_variation = &"InsetPanel"
 	var portrait := TextureRect.new()
-	var atlas := AtlasTexture.new()
-	atlas.atlas = PORTRAIT
-	atlas.region = Rect2(0.0, 0.0, 36.0, 40.0)
-	portrait.texture = atlas
+	if _wearer:
+		portrait.texture = CrewLooks.frames(_wearer.look).get_frame_texture(&"idle_s", 0)
+	else:
+		var atlas := AtlasTexture.new()
+		atlas.atlas = PORTRAIT
+		atlas.region = Rect2(0.0, 0.0, 36.0, 40.0)
+		portrait.texture = atlas
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	portrait.custom_minimum_size = Vector2(54.0, 60.0)
 	frame.add_child(portrait)
 	figure.add_child(frame)
 	figure.add_child(_worn_slots(RIGHT_SLOTS))
+	if _wearer:
+		var gear: Loadout = _wearer.loadout
+		column.add_child(MenuKit.label("Armure %d · Prot. %d %% · Dégâts %d" % [
+			gear.armor(), roundi(gear.protection() * 100.0), gear.damage()], MenuKit.MUTED))
+		column.add_child(MenuKit.stats_grid(_wearer))
+		return column
 	column.add_child(MenuKit.label("PV %d · Armure %d · Prot. %d %%" % [
 		GameState.max_health(), GameState.armor(), roundi(GameState.protection() * 100.0)], MenuKit.MUTED))
 	column.add_child(MenuKit.label("Infection : " + Infection.describe(GameState.infection), Infection.color(GameState.infection)))
@@ -572,7 +626,7 @@ func _worn_slots(slots: Array[int]) -> VBoxContainer:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override(&"separation", 3)
 	for slot: int in slots:
-		var item: ItemData = GameState.loadout.get_item(slot)
+		var item: ItemData = _wearer_loadout().get_item(slot)
 		var tip: String = "%s : %s" % [ItemData.SLOT_NAMES[slot], item.display_name if item else "rien"]
 		var on_press: Callable = func() -> void: _select({"kind": &"worn", "item": item, "slot": slot})
 		box.add_child(_slot(item.icon if item else null, 0, tip, _is_selected(&"worn", item) and item != null, on_press))
@@ -641,7 +695,7 @@ func _locker_column() -> VBoxContainer:
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override(&"separation", 3)
 	var active: bool = can_change_equipment()
-	var spare := _spare_items()
+	var spare := GameState.spare_items()
 	column.add_child(MenuKit.label("Casier · %d" % spare.size() if active else "Casier · dans le train", MenuKit.GOLD if active else MenuKit.MUTED))
 	var grid := GridContainer.new()
 	grid.name = "LockerGrid"
@@ -659,7 +713,8 @@ func _locker_column() -> VBoxContainer:
 			grid.add_child(_slot(item.icon, 0, item.display_name, active and _is_selected(&"locker", item), on_press))
 		else:
 			grid.add_child(_slot(null, 0, "", false, Callable()))
-	var text: String = "Touche un objet, puis « Équiper » : il remplace celui que tu portes." if active \
+	var text: String = ("Touche un objet, puis « Équiper » : il remplace celui que tu portes." if _wearer == null
+		else "Touche un objet, puis « Donner » : il remplace ce que %s porte." % _wearer.display_name) if active \
 		else "On change d'équipement dans le train, avant de descendre."
 	if spare.is_empty():
 		text = "Rien d'autre : fabrique-en à l'établi."
@@ -691,14 +746,15 @@ func _fill_detail() -> void:
 				_detail_box.add_child(_action("Jeter la pile (%d)" % pile, func() -> void: _drop(session, id, pile)))
 		&"locker":
 			var item: ItemData = _selected.get("item")
-			if item == null or not item in _spare_items():
+			if item == null or not item in GameState.spare_items():
 				_selected = {}
 				_fill_detail()
 				return
-			var worn: ItemData = GameState.loadout.get_item(item.slot)
-			var compare: String = "Tu portes : %s." % worn.display_name if worn else "Emplacement vide."
+			var worn: ItemData = _wearer_loadout().get_item(item.slot)
+			var who: String = "Tu portes" if _wearer == null else "%s porte" % _wearer.display_name
+			var compare: String = "%s : %s." % [who, worn.display_name] if worn else "Emplacement vide."
 			_detail_line(item.icon, "%s · %s" % [item.display_name, ItemData.SLOT_NAMES[item.slot]], "%s · %s" % [item.describe_effects(), compare])
-			var equip := _action("Équiper", func() -> void: _equip(item))
+			var equip := _action("Équiper" if _wearer == null else "Donner à " + _wearer.display_name, func() -> void: _equip(item))
 			equip.disabled = not can_change_equipment()
 			_detail_box.add_child(equip)
 		&"worn":
@@ -708,6 +764,10 @@ func _fill_detail() -> void:
 				_fill_detail()
 				return
 			_detail_line(item.icon, "%s · %s (porté)" % [item.display_name, ItemData.SLOT_NAMES[item.slot]], item.describe_effects())
+			if _wearer and can_change_equipment():
+				var member: CrewMember = _wearer
+				var slot: int = _selected.get("slot", item.slot)
+				_detail_box.add_child(_action("Reprendre", func() -> void: _take_back(member, slot)))
 		_:
 			_detail_line(null, "Touche une case pour voir ce qu'elle contient.", "")
 
@@ -750,8 +810,20 @@ func _drop(session: StopSession, id: StringName, amount: int) -> void:
 func _equip(item: ItemData) -> void:
 	if not can_change_equipment():
 		return
-	GameState.equip(item)
+	if _wearer:
+		GameState.equip_member(_wearer, item)
+	else:
+		GameState.equip(item)
 	_selected = {"kind": &"worn", "item": item, "slot": item.slot}
+	_refresh_inventory()
+
+
+## Reprend ce qu'un équipier porte : ça revient au casier, la sélection le suit.
+func _take_back(member: CrewMember, slot: int) -> void:
+	var item: ItemData = member.loadout.get_item(slot)
+	if item == null or not GameState.unequip_member(member, slot):
+		return
+	_selected = {"kind": &"locker", "item": item}
 	_refresh_inventory()
 
 

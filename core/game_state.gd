@@ -705,6 +705,14 @@ func owned_for_slot(slot: ItemData.Slot) -> Array[ItemData]:
 
 
 ## Prénoms déjà pris dans l'équipage (pour ne pas recruter deux « Léa »).
+## Apparences déjà portées dans l'équipage (une recrue en prend une autre).
+func crew_looks() -> Array[int]:
+	var looks: Array[int] = []
+	for member: CrewMember in crew:
+		looks.append(member.look)
+	return looks
+
+
 func crew_names() -> Array[String]:
 	var names: Array[String] = []
 	for member: CrewMember in crew:
@@ -972,6 +980,9 @@ func _crew_trajet(to_refuge: bool) -> bool:
 	context.rng.seed = _rng.seed + stop_number * 101
 	_horde_damage = 0.0
 	var report: CrewLife.Report = CrewLife.run_trajet(crew, context)
+	# Mort à bord : on récupère ce qu'il portait. Passé à la ruche ou parti : c'est perdu.
+	for member: CrewMember in report.dead:
+		_return_gear(member)
 	var before: float = train_condition
 	train_condition = clampf(train_condition + report.repair - report.train_damage, 0.0, 1.0)
 	last_repair = maxf(train_condition - before, 0.0) if report.train_damage == 0.0 else 0.0
@@ -1085,10 +1096,61 @@ func toggle_quarantine(member: CrewMember) -> bool:
 	return true
 
 
-## Le faire descendre du train (au prochain arrêt).
+## Le faire descendre du train (au prochain arrêt). Il rend son équipement.
 func dismiss(member: CrewMember) -> void:
 	crew.erase(member)
+	if _return_gear(member):
+		equipment_changed.emit()
 	crew_changed.emit()
+
+
+# --- Équipement de l'équipage ---------------------------------------------------------
+
+## Le casier : les équipements possédés que le joueur ne porte pas. Un objet peut être
+## en plusieurs exemplaires (repris à une recrue) : on n'en retire qu'un par objet porté.
+func spare_items() -> Array[ItemData]:
+	var spare: Array[ItemData] = owned_items.duplicate()
+	for item: ItemData in loadout.equipped.values():
+		var index: int = spare.find(item)
+		if index >= 0:
+			spare.remove_at(index)
+	return spare
+
+
+## Donne un équipement du casier à un équipier : ce qu'il portait à cet emplacement
+## revient au casier.
+func equip_member(member: CrewMember, item: ItemData) -> bool:
+	if not member in crew or not item in spare_items():
+		return false
+	owned_items.remove_at(owned_items.find(item))
+	var previous: ItemData = member.loadout.get_item(item.slot)
+	if previous:
+		owned_items.append(previous)
+	member.loadout.equip(item)
+	equipment_changed.emit()
+	crew_changed.emit()
+	return true
+
+
+## Reprend ce qu'un équipier porte à cet emplacement : ça revient au casier.
+func unequip_member(member: CrewMember, slot: ItemData.Slot) -> bool:
+	var item: ItemData = member.loadout.get_item(slot)
+	if item == null:
+		return false
+	member.loadout.unequip(slot)
+	owned_items.append(item)
+	equipment_changed.emit()
+	crew_changed.emit()
+	return true
+
+
+## Ce que portait un équipier revient au casier. Renvoie true s'il portait quelque chose.
+func _return_gear(member: CrewMember) -> bool:
+	var items: Array[ItemData] = []
+	items.assign(member.loadout.equipped.values())
+	owned_items.append_array(items)
+	member.loadout = Loadout.new()
+	return not items.is_empty()
 
 
 func can_fulfil_request(member: CrewMember) -> bool:

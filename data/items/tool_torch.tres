@@ -17,3 +17,4 @@ recipe = Dictionary[StringName, int]({
 &"chemicals": 1
 })
 plan = &"torch"
+tier = 3

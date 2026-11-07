@@ -212,3 +212,26 @@ static func loot(id: StringName) -> LootData:
 		if data.id == id:
 			return data
 	return null
+
+
+## Les 4 stats d'un équipier : nom et barre en 5 crans (infobulle : ce qu'elle fait).
+static func stats_grid(member: CrewMember) -> GridContainer:
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override(&"h_separation", 4)
+	grid.add_theme_constant_override(&"v_separation", 1)
+	for entry: Array in CrewMember.STATS:
+		var value: int = member.stat(entry[0])
+		var name_label := label(entry[1], MUTED)
+		name_label.tooltip_text = "%s : %s" % [entry[1], entry[2]]
+		name_label.mouse_filter = Control.MOUSE_FILTER_STOP
+		grid.add_child(name_label)
+		var bar := StageBar.new()
+		bar.custom_minimum_size = Vector2(40.0, 4.0)
+		bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		bar.fill_color = GOLD if value >= 4 else (BAD if value <= 1 else Color(0.8, 0.8, 0.84))
+		bar.value = value / 5.0
+		bar.marks = [0.2, 0.4, 0.6, 0.8] as Array[float]
+		bar.tooltip_text = "%s %d/5 : %s" % [entry[1], value, entry[2]]
+		grid.add_child(bar)
+	return grid

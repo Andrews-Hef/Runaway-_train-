@@ -35,6 +35,7 @@ Le train est **noir** (`iron-black`) avec des liserés rouges (`train-red`) et d
 | `props/truck-wreck` | 1 | — | Épave de camion (il faut un chalumeau) |
 | `props/dropped-bundle` | 1 | — | Tas de ce que le joueur a jeté de son sac (ballot de toile, planche, ferraille) |
 | `characters/refugee`, `characters/merchant` | 1 (s) | `idle` | PNJ : réfugié à recruter, marchand |
+| `characters/crew-01` à `crew-20` | 4 | comme `survivor` | Les 20 apparences d'équipiers, générées par `tools/gen_crew_assets.py` (carrure, peau, coiffure ou couvre-chef, couleurs, accessoires) ; synchronisées dans `assets/sprites/crew/` par `tools/sync_td2d.py crew-`, portraits 12 px par `tools/gen_crew_portraits.py` |
 | `characters/infected`, `characters/raider` | 4 (s, e, n, w) | `idle`, `walk`, `attack` | Ennemis d'infanterie : infecté (membre de la ruche), pilleur |
 | `characters/infected-crawler`, `characters/raider-lurker` | 4 | `idle`, `walk` (rampe), `attack` (bond) | Rampants : couchés au sol |
 | `characters/infected-spitter`, `characters/raider-marksman` | 4 | `idle`, `walk`, `attack` (crache / vise) | Tireurs |
@@ -43,7 +44,7 @@ Le train est **noir** (`iron-black`) avec des liserés rouges (`train-red`) et d
 
 ### Intérieur du train (vue de dessus)
 
-L'intérieur utilise la même caméra trois-quarts et les mêmes 16 px par mètre que dehors : le joueur et l'équipage réutilisent `characters/survivor` et `characters/refugee`. Le jeu zoome ×2 dans le train.
+L'intérieur utilise la même caméra trois-quarts et les mêmes 16 px par mètre que dehors : le joueur réutilise `characters/survivor`, chaque équipier son `characters/crew-XX`. Le jeu zoome ×2 dans le train.
 
 | Id | Directions | Animations | Utilisé par |
 |---|---|---|---|

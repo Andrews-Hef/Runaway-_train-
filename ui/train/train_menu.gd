@@ -29,7 +29,6 @@ const WAGON: Texture2D = preload("res://assets/ui/icons/wagon.png")
 const HAMMER: Texture2D = preload("res://assets/ui/icons/hammer.png")
 const CROSS: Texture2D = preload("res://assets/ui/icons/cross.png")
 const PLAN: Texture2D = preload("res://assets/ui/icons/plan.png")
-const PERSON: Texture2D = preload("res://assets/ui/icons/recruit.png")
 const STAR: Texture2D = preload("res://assets/ui/icons/order.png")
 const HEALTH: Texture2D = preload("res://assets/ui/icons/health.png")
 const SPORE: Texture2D = preload("res://assets/ui/icons/infection.png")
@@ -61,6 +60,8 @@ var _selection: Dictionary[int, Variant] = {}
 var _cells: Dictionary[int, Array] = {}
 ## Patient choisi à l'infirmerie : null = toi.
 var _patient: CrewMember
+## Fiche de l'équipier choisi (jauges, stats, équipement), sous les portraits.
+var _crew_sheet: HBoxContainer
 
 
 func _ready() -> void:
@@ -163,6 +164,8 @@ func _cell(tab: Tab, texture: Texture2D, key: Variant, tip: String, count: Strin
 func _select(tab: Tab, key: Variant) -> void:
 	_selection[tab] = key
 	_highlight(tab)
+	if tab == Tab.CREW:
+		_fill_crew_sheet()
 	if tab == _tabs.current_tab:
 		_fill_detail()
 
@@ -389,16 +392,52 @@ func _fill_crew() -> void:
 	for member: CrewMember in GameState.crew:
 		grid.add_child(_crew_tile(member))
 	_crew_list.add_child(grid)
+	_crew_sheet = HBoxContainer.new()
+	_crew_sheet.name = "CrewSheet"
+	_crew_sheet.add_theme_constant_override(&"separation", 12)
+	_crew_list.add_child(_crew_sheet)
 	_ensure_selection(Tab.CREW)
+	_fill_crew_sheet()
 
 
-## Un équipier : son portrait (teinté selon le rôle), une marque d'état, son nom, sa vie.
+## La fiche de l'équipier choisi : ses jauges, ses stats, ce qu'il porte.
+func _fill_crew_sheet() -> void:
+	if not is_instance_valid(_crew_sheet):
+		return
+	MenuKit.clear(_crew_sheet)
+	var member: CrewMember = _selection.get(Tab.CREW) as CrewMember
+	if member == null:
+		return
+	var gauges := GridContainer.new()
+	gauges.columns = 2
+	gauges.add_theme_constant_override(&"h_separation", 8)
+	gauges.add_theme_constant_override(&"v_separation", 2)
+	gauges.add_child(_gauge("Vie %d" % member.health, member.health / 100.0, Color(0.86, 0.27, 0.24)))
+	gauges.add_child(_gauge("Infection " + member.infection_text(), member.visible_infection() / 100.0, Color(0.75, 0.42, 1.0)))
+	gauges.add_child(_gauge("Fatigue %d" % member.fatigue, member.fatigue / 100.0, Color(0.85, 0.68, 0.3)))
+	gauges.add_child(_gauge("Confiance %d" % member.trust, member.trust / 100.0, Color(0.45, 0.7, 0.95)))
+	_crew_sheet.add_child(gauges)
+	_crew_sheet.add_child(MenuKit.stats_grid(member))
+	var gear := VBoxContainer.new()
+	gear.add_theme_constant_override(&"separation", 2)
+	var slots := HBoxContainer.new()
+	slots.add_theme_constant_override(&"separation", 2)
+	for slot: ItemData.Slot in ItemData.Slot.values():
+		var item: ItemData = member.loadout.get_item(slot)
+		slots.add_child(SlotCell.create(item.icon if item else null, "", "%s : %s" % [
+			ItemData.SLOT_NAMES[slot], item.display_name if item else "rien"], false, Vector2(22.0, 22.0)))
+	gear.add_child(slots)
+	gear.add_child(MenuKit.label("Armure %d · Prot. %d %% · Dégâts %d" % [member.loadout.armor(),
+		roundi(member.loadout.protection() * 100.0), member.loadout.damage()], MUTED))
+	_crew_sheet.add_child(gear)
+
+
+## Un équipier : son portrait, une marque d'état, son nom, sa vie.
 func _crew_tile(member: CrewMember) -> VBoxContainer:
 	var tile := VBoxContainer.new()
 	tile.add_theme_constant_override(&"separation", 1)
 	tile.custom_minimum_size = Vector2(46.0, 0.0)
-	var cell := _cell(Tab.CREW, PERSON, member, "%s (%s)" % [member.display_name, member.role_label])
-	cell.set_tint(MenuKit.role_color(member.role))
+	var cell := _cell(Tab.CREW, CrewLooks.portrait(member.look), member, "%s (%s)" % [member.full_name(), member.role_label])
 	cell.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	var mark: Texture2D = _crew_mark(member)
 	if mark:
@@ -432,9 +471,7 @@ func _detail_crew(key: Variant) -> void:
 	if not key is CrewMember:
 		return
 	var member: CrewMember = key
-	var portrait := MenuKit.icon(PERSON, SlotCell.ICON)
-	portrait.self_modulate = MenuKit.role_color(member.role)
-	_detail.add_child(portrait)
+	_detail.add_child(MenuKit.icon(CrewLooks.portrait(member.look), SlotCell.ICON))
 	var column := VBoxContainer.new()
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	column.add_theme_constant_override(&"separation", 2)
@@ -442,16 +479,9 @@ func _detail_crew(key: Variant) -> void:
 	var tags: PackedStringArray = CrewLife.status(member)
 	var line := HBoxContainer.new()
 	line.add_theme_constant_override(&"separation", 8)
-	line.add_child(MenuKit.label("%s · %s%s" % [member.display_name, member.role_label,
+	line.add_child(MenuKit.label("%s · %s%s" % [member.full_name(), member.role_label,
 		(" · " + ", ".join(tags)) if not tags.is_empty() else ""], GOLD))
 	column.add_child(line)
-	var gauges := HBoxContainer.new()
-	gauges.add_theme_constant_override(&"separation", 8)
-	gauges.add_child(_gauge("Vie %d" % member.health, member.health / 100.0, Color(0.86, 0.27, 0.24)))
-	gauges.add_child(_gauge("Infection " + member.infection_text(), member.visible_infection() / 100.0, Color(0.75, 0.42, 1.0)))
-	gauges.add_child(_gauge("Fatigue %d" % member.fatigue, member.fatigue / 100.0, Color(0.85, 0.68, 0.3)))
-	gauges.add_child(_gauge("Confiance %d" % member.trust, member.trust / 100.0, Color(0.45, 0.7, 0.95)))
-	column.add_child(gauges)
 	var actions := HFlowContainer.new()
 	actions.add_theme_constant_override(&"h_separation", 3)
 	actions.add_theme_constant_override(&"v_separation", 2)
@@ -472,6 +502,10 @@ func _detail_crew(key: Variant) -> void:
 		if member.request_kind == &"deliver":
 			actions.add_child(MenuKit.action("Donner", func() -> void: GameState.fulfil_request(member),
 				not GameState.can_fulfil_request(member), "Il manque des matériaux dans le stock."))
+	# L'équiper : dans l'inventaire, ouvert sur lui.
+	actions.add_child(MenuKit.action("Équiper", func() -> void:
+		close()
+		GameMenu.open_inventory(GameMenu.InventoryTab.ITEMS, member)))
 	# Diriger l'équipage : à partir de Sergent (avant, le capitaine décide).
 	var command: bool = GameState.can(&"crew")
 	var locked: String = GameState.locked_text(&"crew") if not command else ""
@@ -856,8 +890,7 @@ func _fill_infirmary() -> void:
 				isolated.append(member)
 		for i: int in GameState.QUARANTINE_BEDS:
 			if i < isolated.size():
-				beds.add_child(_cell(Tab.INFIRMARY, PERSON, isolated[i], isolated[i].display_name + " (isolé)")
-					.set_tint(MenuKit.role_color(isolated[i].role)))
+				beds.add_child(_cell(Tab.INFIRMARY, CrewLooks.portrait(isolated[i].look), isolated[i], isolated[i].display_name + " (isolé)"))
 			else:
 				beds.add_child(_cell(Tab.INFIRMARY, BED, &"bed", "Lit libre").set_dim(true))
 		_infirmary_list.add_child(beds)
@@ -892,7 +925,7 @@ func _detail_infirmary(key: Variant) -> void:
 		_detail_medicine(key as LootData)
 	elif key is CrewMember:
 		var member: CrewMember = key
-		MenuKit.detail_info(_detail, PERSON, "%s · isolé" % member.display_name,
+		MenuKit.detail_info(_detail, CrewLooks.portrait(member.look), "%s · isolé" % member.display_name,
 			"Infection %s · il ne contamine plus personne et ne travaille pas." % member.infection_text())
 		_detail.add_child(MenuKit.action("Libérer", func() -> void: GameState.toggle_quarantine(member),
 			not GameState.can(&"crew"), GameState.locked_text(&"crew")))

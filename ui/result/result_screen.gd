@@ -20,7 +20,6 @@ const BED: Texture2D = preload("res://assets/ui/icons/bed.png")
 const HAMMER: Texture2D = preload("res://assets/ui/icons/hammer.png")
 const STAR: Texture2D = preload("res://assets/ui/icons/order.png")
 const PLAN: Texture2D = preload("res://assets/ui/icons/plan.png")
-const PERSON: Texture2D = preload("res://assets/ui/icons/recruit.png")
 const WEAPON: Texture2D = preload("res://assets/ui/icons/items/weapon_pipe.png")
 
 @onready var _root: Control = $Root
@@ -94,7 +93,7 @@ func _haul(result: ExpeditionResult, loot_types: Array[LootData]) -> HFlowContai
 		if amount > 0:
 			haul.add_child(SlotCell.create(loot.icon, str(amount), "%s ×%d" % [loot.display_name, amount], false))
 	for member: CrewMember in result.recruits:
-		haul.add_child(SlotCell.create(PERSON, "", "Recrue : " + member.describe(), false).set_tint(MenuKit.role_color(member.role)))
+		haul.add_child(SlotCell.create(CrewLooks.portrait(member.look), "", "Recrue : %s (%s)" % [member.full_name(), member.role_label], false))
 	for item: ItemData in result.items:
 		haul.add_child(SlotCell.create(item.icon, "", "Trouvé : %s (%s)" % [item.display_name, item.describe_effects()], false))
 	for plan_id: StringName in result.plans:

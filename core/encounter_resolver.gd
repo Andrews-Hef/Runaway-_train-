@@ -4,11 +4,8 @@ extends RefCounted
 ##
 ## Pur : pas de scène, pas d'interface. Testable seul.
 
-## Prénoms possibles des recrues.
-const NAMES: Array[String] = [
-	"Léa", "Malik", "Sofia", "Yanis", "Inès", "Hugo", "Nora", "Bastien",
-	"Aya", "Théo", "Camille", "Jules", "Salomé", "Idris", "Maëlle", "Oscar",
-]
+## Prénoms possibles des recrues (voir CrewNames).
+const NAMES: Array[String] = CrewNames.FIRST_NAMES
 
 
 ## Ce qu'un choix a produit, pour l'afficher et l'appliquer au joueur.
@@ -108,8 +105,11 @@ static func apply(choice: EncounterChoice, result: ExpeditionResult, rng: Random
 
 	if choice.recruits():
 		var infected: bool = rng.randf() < choice.recruit_infection_chance
-		outcome.recruit = CrewMember.create(pick_name(rng, taken_names), choice.recruit_role, choice.recruit_role_label, infected,
-			GameState.FIELD_RECRUIT_TRUST)
+		var looks: Array[int] = GameState.crew_looks()
+		for other: CrewMember in result.recruits:
+			looks.append(other.look)
+		outcome.recruit = CrewFactory.recruit(rng, choice.recruit_role, choice.recruit_role_label, infected,
+			GameState.FIELD_RECRUIT_TRUST, taken_names, looks, GameState.stop_number)
 		result.recruits.append(outcome.recruit)
 		outcome.text = outcome.text.replace("{nom}", outcome.recruit.display_name)
 
@@ -137,10 +137,4 @@ static func _gain(outcome: Outcome, result: ExpeditionResult, id: StringName, am
 
 
 static func pick_name(rng: RandomNumberGenerator, taken: Array[String]) -> String:
-	var free: Array[String] = []
-	for candidate: String in NAMES:
-		if not candidate in taken:
-			free.append(candidate)
-	if free.is_empty():
-		return NAMES[rng.randi_range(0, NAMES.size() - 1)]
-	return free[rng.randi_range(0, free.size() - 1)]
+	return CrewNames.first_name(rng, taken)

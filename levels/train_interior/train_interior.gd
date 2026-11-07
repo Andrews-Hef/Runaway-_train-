@@ -46,7 +46,6 @@ const CAMERA_Y: float = -17.0
 
 const SHELL_TEXTURE: Texture2D = preload("res://assets/sprites/train/interior_top.png")
 const SHELL_PIVOT: Vector2 = Vector2(74, 69)
-const CREW_FRAMES: SpriteFrames = preload("res://assets/sprites/refugee/refugee.tres")
 const GAME_THEME: Theme = preload("res://ui/theme/game_theme.tres")
 const SCENERY_TEXTURES: Array[Texture2D] = [
 	preload("res://assets/sprites/props/dead_tree.png"),
@@ -344,9 +343,9 @@ func _add_crew(wagon_x: float, members: Array[CrewMember], first: int, places: i
 		var member: CrewMember = members[i]
 		var sprite := AnimatedSprite2D.new()
 		sprite.name = "Crew_" + member.display_name
-		sprite.sprite_frames = CREW_FRAMES
+		sprite.sprite_frames = CrewLooks.frames(member.look)
 		sprite.centered = false
-		sprite.offset = Vector2(-18, -36)
+		sprite.offset = -CrewLooks.PIVOT
 		sprite.position = Vector2(wagon_x, 0.0) + CREW_SPOTS[i - first]
 		sprite.play(&"idle_s")
 		sprite.frame = i * 3 % 10 # pas tous la même respiration

@@ -16,3 +16,4 @@ recipe = Dictionary[StringName, int]({
 &"parts": 2,
 &"scrap": 2
 })
+tier = 2

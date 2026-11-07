@@ -45,6 +45,9 @@ const SLOT_NAMES: Array[String] = ["Tenue", "Masque", "Sac", "Outil", "Arme"]
 @export var starter: bool = false
 ## Plan à étudier avant de pouvoir le fabriquer (vide = recette connue).
 @export var plan: StringName
+## Rareté : 1 courant, 2 rare, 3 très rare. Les recrues arrivent avec un équipement de
+## leur temps : du courant au début de la ligne, du rare plus loin (CrewFactory).
+@export_range(1, 3) var tier: int = 1
 
 
 func slot_name() -> String:

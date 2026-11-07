@@ -15,3 +15,4 @@ recipe = Dictionary[StringName, int]({
 &"cloth": 4,
 &"wood": 1
 })
+tier = 2

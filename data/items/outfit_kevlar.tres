@@ -10,3 +10,4 @@ display_name = "Gilet en kevlar"
 icon = ExtResource("9_icon")
 description = "Un gilet pare-balles d'avant. Il arrête les coups, pas les spores."
 armor = 2
+tier = 2

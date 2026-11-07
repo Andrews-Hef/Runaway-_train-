@@ -50,5 +50,5 @@ static func apply(offer: RefugeOffer, storage: Dictionary[StringName, int], rng:
 		storage[id] = storage.get(id, 0) + offer.reward[id]
 	if not offer.recruits():
 		return null
-	return CrewMember.create(EncounterResolver.pick_name(rng, taken_names), offer.recruit_role, offer.recruit_role_label, false,
-		GameState.REFUGE_RECRUIT_TRUST)
+	return CrewFactory.recruit(rng, offer.recruit_role, offer.recruit_role_label, false, GameState.REFUGE_RECRUIT_TRUST,
+		taken_names, GameState.crew_looks(), GameState.stop_number)

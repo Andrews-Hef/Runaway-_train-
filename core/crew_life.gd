@@ -41,6 +41,8 @@ const MEDIC_CURE: int = 8
 ## Mécanicien : réparation du train (au plus MAX_MECHANICS comptent), mieux s'il est loyal.
 const MECHANIC_REPAIR: float = 0.1
 const MAX_MECHANICS: int = 2
+## Réparation en plus (ou en moins) par point d'Adresse au-dessus (en dessous) de 3.
+const SKILL_REPAIR: float = 0.15
 const LOYAL_BONUS: float = 1.5
 ## Blessures de l'équipage quand la horde frappe le train : 10 PV par tranche de 10 %.
 const HORDE_HURT_STEP: float = 0.1
@@ -132,7 +134,9 @@ static func run_trajet(crew: Array[CrewMember], context: Context) -> Report:
 			&"mechanic":
 				if mechanics < MAX_MECHANICS:
 					mechanics += 1
-					var repair: float = MECHANIC_REPAIR * (LOYAL_BONUS if is_loyal(member) else 1.0)
+					# Adresse : un mécano adroit répare mieux (3 = normal).
+					var repair: float = MECHANIC_REPAIR * (LOYAL_BONUS if is_loyal(member) else 1.0) \
+						* (1.0 + SKILL_REPAIR * (member.skill - 3))
 					report.repair += repair
 					report.events.append("%s a réparé le train : +%d %%." % [member.display_name, roundi(repair * 100.0)])
 			&"medic":
