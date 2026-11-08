@@ -159,6 +159,7 @@ func release() -> void:
 	_sprite.offset.x = _base_offset_x
 	interactor.set_physics_process(controls_enabled)
 	pinned_changed.emit(false)
+	Audio.play(&"freed")
 	freed.emit(by)
 
 
@@ -174,6 +175,7 @@ func _attack() -> void:
 	_attacking = true
 	_sprite.speed_scale = attack_speed
 	_sprite.play(StringName("attack_" + direction_name(facing)))
+	Audio.play(&"swing", 0.1)
 	attacked.emit(facing)
 	# process_always = false : l'impact attend si le jeu est mis en pause.
 	get_tree().create_timer(strike_delay / attack_speed, false).timeout.connect(strike)
@@ -196,12 +198,14 @@ func strike() -> int:
 		enemy.take_hit(attack_damage, global_position)
 		hits += 1
 	if hits > 0:
+		Audio.play(&"hit", 0.1)
 		struck.emit(hits)
 	return hits
 
 
 ## Coup reçu : flash rouge (le recul est donné par la zone, selon l'ennemi).
 func _on_damaged(_amount: int, _from: Vector2) -> void:
+	Audio.play(&"hurt", 0.08)
 	_sprite.modulate = Color(1.0, 0.45, 0.45)
 	create_tween().tween_property(_sprite, "modulate", Color.WHITE, 0.25)
 

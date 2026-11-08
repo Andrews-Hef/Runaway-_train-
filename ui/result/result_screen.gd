@@ -82,9 +82,21 @@ func show_result(result: ExpeditionResult, loot_types: Array[LootData]) -> void:
 		_storage.visible = true
 		_button.text = "Reprendre"
 
+	Audio.play(result_sound(result))
 	_root.visible = true
 	if not _button.disabled:
 		_button.grab_focus()
+
+
+## La petite musique du bilan : promotion, ordre rempli, simple retour, ou échec.
+static func result_sound(result: ExpeditionResult) -> StringName:
+	if not result.boarded:
+		return &"defeat"
+	if not result.promotions.is_empty():
+		return &"promotion"
+	if result.order_completed:
+		return &"order_done"
+	return &"ui_open"
 
 
 ## Ce que tu rapportes, en cases : ressources, recrues, équipements, plans.

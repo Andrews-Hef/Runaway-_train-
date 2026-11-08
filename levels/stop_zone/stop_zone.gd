@@ -96,6 +96,8 @@ var _train_broke_down: bool = false
 ## Heure à l'arrivée (minutes, voir DayClock) ; elle avance pendant l'arrêt.
 var _start_minutes: int = 0
 var _night: bool = false
+## Une horde attaque : la musique cogne jusqu'à ce qu'elle soit repoussée.
+var _danger: bool = false
 var _clock_shown: int = -1
 var _day_light: CanvasModulate
 var _lantern: PointLight2D
@@ -154,6 +156,15 @@ func _ready() -> void:
 	if GameState.is_incident_stop():
 		_setup_incident()
 	_send_companion()
+	_refresh_music()
+
+
+## Jour, nuit ou horde : la musique suit.
+func _refresh_music() -> void:
+	if _danger:
+		Audio.play_music(&"danger", 0.6)
+	else:
+		Audio.play_music(&"explore_night" if _night else &"explore_day", 2.5)
 
 
 # --- Application du plan --------------------------------------------------------
@@ -208,6 +219,7 @@ func _on_biome_hurt(amount: int, message: String) -> void:
 
 ## Alarme de voiture : les ennemis proches accourent.
 func _on_alarm(at: Vector2) -> void:
+	Audio.play_at(&"alarm", at)
 	_hud.call(&"toast", "Une alarme hurle ! Les ennemis accourent.", true)
 	for node: Node in get_tree().get_nodes_in_group(Enemy.GROUP):
 		var enemy := node as Enemy
@@ -324,18 +336,22 @@ func is_sheltered(at: Vector2) -> bool:
 
 
 func _on_rain_warned(seconds: float) -> void:
+	Audio.play(&"thunder", 0.1)
 	_rain_weather.set_rain(0.4, 3.0)
 	_hud.call(&"toast", "Le ciel se couvre : une pluie infectée arrive ! Trouve un abri.", true)
 	_show_rain_time(true)
 
 
 func _on_rain_started(_duration: float) -> void:
+	Audio.play(&"thunder", 0.1, -3.0)
+	Audio.set_loop(&"rain_loop", true, self, 2.0)
 	_rain_weather.set_rain(1.0, 1.0)
 	_spawn_rain_infected()
 	_show_rain_time(true)
 
 
 func _on_rain_ended() -> void:
+	Audio.set_loop(&"rain_loop", false, null, 3.0)
 	_rain_weather.set_rain(0.0, 3.0)
 	var grown: int = _grow_sprouts()
 	_hud.call(&"set_weather", "", false)
@@ -489,6 +505,7 @@ func _update_daylight(force: bool = false) -> void:
 			(node as Enemy).set_night(night)
 		if changed and not force:
 			_hud.call(&"toast", "La nuit tombe : la ruche chasse, les pilleurs somnolent." if night else "Le jour se lève.", night)
+			_refresh_music()
 	var minute: int = now
 	if minute != _clock_shown:
 		_clock_shown = minute
@@ -537,6 +554,7 @@ func _setup_incident() -> void:
 	_engine_spot.add_child(shape)
 	_engine_spot.interacted.connect(func(_actor: Node2D) -> void: feed_engine())
 	_train.add_child(_engine_spot)
+	Audio.play(&"breakdown" if GameState.incident == EngineRules.BREAKDOWN else &"alarm")
 	if GameState.incident == EngineRules.BREAKDOWN:
 		for node: Node in _world.get_children():
 			if node is Harvestable and (node as Harvestable).bonus_loot and (node as Harvestable).bonus_loot.id == &"parts":
@@ -583,6 +601,7 @@ func feed_engine() -> void:
 	var stock: Dictionary = used["stock"]
 	if not bag.is_empty():
 		_session.loot_changed.emit(_session.result)
+	Audio.play(&"ui_error" if bag.is_empty() and stock.is_empty() else &"coal_load")
 	var parts: PackedStringArray = []
 	if not bag.is_empty():
 		parts.append(MenuKit.describe_amounts(bag) + " du sac")
@@ -621,6 +640,7 @@ func _engine_ready() -> void:
 		_engine_spot.queue_free()
 		_engine_spot = null
 	_session.release(EngineRules.DEPARTURE_SECONDS)
+	Audio.play(&"repair_done")
 	_hud.call(&"toast", "La locomotive est prête : monte à bord, le train repart !", false)
 
 
@@ -637,8 +657,10 @@ func _send_companion() -> void:
 
 func _on_boarding_requested() -> void:
 	if _session.is_held():
+		Audio.play(&"ui_error")
 		_hud.call(&"toast", "Le train est en panne. " + _incident_goal(), true)
 		return
+	Audio.play(&"door")
 	_session.board()
 
 
@@ -667,6 +689,9 @@ func _setup_horde(zone_seed: int) -> void:
 func _on_horde_arrived(members: Array[EnemyData]) -> void:
 	if not _session.is_running():
 		return
+	Audio.play(&"horde", 0.0)
+	_danger = true
+	_refresh_music()
 	_hud.call(&"toast", "Une horde ! Elle fonce sur le train : défends-le !", true)
 	_hud.call(&"set_train_condition", GameState.train_condition)
 	var size_px := Vector2(layout.size_in_pixels())
@@ -685,6 +710,7 @@ func _on_train_hit(enemy: Enemy) -> void:
 	if not _session.is_running() or _train_broke_down:
 		return
 	var left: float = GameState.damage_train(enemy.data.damage * _horde_event.train_damage_per_hit)
+	Audio.play_at(&"train_hit", enemy.global_position)
 	_train.hit_flash()
 	_hud.call(&"set_train_condition", left)
 	if not _train_attacked:
@@ -699,6 +725,9 @@ func _on_train_hit(enemy: Enemy) -> void:
 
 func _on_horde_repelled() -> void:
 	_session.result.horde_repelled = true
+	_danger = false
+	Audio.play(&"order_done")
+	_refresh_music()
 	_hud.call(&"toast", "Horde repoussée ! +%d mérite au retour." % GameState.HORDE_MERIT, false)
 
 
@@ -782,6 +811,7 @@ func _on_bag_dropped(id: StringName, amount: int) -> void:
 		pile.global_position = at
 		pile.pick_requested.connect(_pick_up_pile)
 	pile.add(id, amount)
+	Audio.play(&"drop")
 
 
 ## Ramasser un tas : ce qui rentre revient dans le sac, le reste reste au sol.
@@ -792,6 +822,7 @@ func _pick_up_pile(pile: DroppedPile) -> void:
 		if taken > 0:
 			pile.take(id, taken)
 			gained[id] = taken
+	Audio.play(&"pickup" if not gained.is_empty() else &"ui_error")
 	if not pile.contents.is_empty():
 		_hud.call(&"toast", "Sac plein : le reste du tas reste au sol.", true)
 	elif not gained.is_empty():
@@ -855,6 +886,7 @@ func _on_enemy_died(enemy: Enemy) -> void:
 		if taken > 0:
 			gained[id] = taken
 	if not gained.is_empty():
+		Audio.play(&"pickup")
 		_hud.call(&"toast", "Récupéré : " + MenuKit.describe_amounts(gained), false)
 	elif not dropped.is_empty():
 		_hud.call(&"toast", "Sac plein : tu n'as rien pu ramasser.", true)
@@ -879,6 +911,8 @@ static func _loot_type(id: StringName) -> LootData:
 
 func _connect_harvestable(harvestable: Harvestable, kind: StringName = &"") -> void:
 	harvestable.harvested.connect(func(loot: LootData, amount: int, exposure: float) -> void:
+		if amount > 0:
+			Audio.play(&"pickup")
 		_session.add_loot(loot, amount)
 		_player.exposure.add(exposure)
 		_extract_with_tool(loot)
@@ -887,6 +921,7 @@ func _connect_harvestable(harvestable: Harvestable, kind: StringName = &"") -> v
 		if harvestable.harvest_tag == &"cache" and _combat_rng.randf() < CACHE_PLAN_CHANCE:
 			var plan: StringName = _session.find_plan(_combat_rng)
 			if plan != &"":
+				Audio.play(&"plan_found")
 				_hud.call(&"toast", "Plan trouvé : %s !" % BlueprintCatalog.get_plan(plan).display_name, false)
 	)
 
@@ -928,6 +963,7 @@ func _on_infection_changed(value: float) -> void:
 	_infection_speed = Infection.speed_factor(value)
 	_refresh_speed()
 	if worse:
+		Audio.play(&"infection_up")
 		_hud.call(&"toast", "Infection : %s" % Infection.describe(value), true)
 
 

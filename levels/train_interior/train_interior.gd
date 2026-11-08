@@ -142,6 +142,8 @@ var _route_menu: CanvasLayer
 
 
 func _ready() -> void:
+	Audio.play_music(&"train")
+	Audio.set_loop(&"train_loop", true, self)
 	BiomeData.apply_ground(_ground_tiles, GameState.region())
 	# Dehors, l'heure du trajet ; dedans, les lampes du train adoucissent la nuit.
 	var light := CanvasModulate.new()
@@ -481,6 +483,8 @@ func _leave_for_stop() -> void:
 	_leaving = true
 	_player.set_controls_enabled(false)
 	_prompt.text = "Le train ralentit..."
+	Audio.play(&"brake", 0.0)
+	Audio.set_loop(&"train_loop", false, null, 1.2)
 	var slow := create_tween()
 	slow.tween_property(_ground, "autoscroll:x", 0.0, 1.0).set_ease(Tween.EASE_OUT)
 	slow.tween_property(_fade, "color:a", 1.0, 0.4)

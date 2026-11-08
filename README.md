@@ -139,6 +139,8 @@ Ouvrir `project.godot` dans Godot puis **F5**. Le jeu démarre sur l'écran titr
 
 **Android** : le bouton retour fait comme Échap (il ferme le menu ouvert, sinon il ouvre la pause) et ne quitte le jeu que depuis l'écran titre. Quand l'app passe en arrière-plan (appel, notification, bouton accueil), le jeu se met en pause et se sauvegarde s'il est dans le train ou en trajet : Android peut fermer une app en arrière-plan. Sur PC, quitter la fenêtre met aussi en pause. La version du jeu s'affiche sur l'écran titre et dans le menu pause.
 
+**Son** : deux volumes, **Musique** et **Effets**, réglables sur l'écran titre (bouton « Son ») et dans le menu pause (« Son »). Ils sont gardés d'une partie à l'autre.
+
 Les touches sont définies par **position physique** : ZQSD fonctionne directement en AZERTY, sans réglage. Les consignes à l'écran s'adaptent au dernier périphérique utilisé (« Maintenir E », « Maintenir A » ou « Maintenir Agir »).
 
 ### Tester les contrôles tactiles sur PC
@@ -169,6 +171,7 @@ Le forçage est ignoré dans un build release.
 | `Interactable` / `Harvestable` | `entities/interaction/` | Objets à « maintenir Agir », objets récoltables |
 | `Interactor` | `entities/interaction/interactor.gd` | Cible l'objet le plus proche, gère l'appui maintenu |
 | `Train` | `entities/train/` | Train vu de dehors : sifflet, départ, porte, nombre de wagons |
+| `Audio` (autoload) | `core/audio.gd` | Bruitages (partout ou placés dans le monde), musique en fondu enchaîné, ambiances, clic des boutons, volumes |
 | `InputMode` (autoload) | `core/input_mode.gd` | Dernier périphérique utilisé (clavier, manette, tactile) |
 | `GameState` (autoload) | `core/game_state.gd` | Partie en cours : numéro d'arrêt, prochaine zone et graine, stock du train |
 | `ZoneProfile` | `core/zone_profile.gd` | Type d'arrêt : biome, spécialité, fourchettes d'objets, d'infection, de sol piégeux, de durée (`data/zones/*.tres`) |
@@ -236,7 +239,7 @@ Le forçage est ignoré dans un build release.
 
 ```
 art/         définitions des sprites td2d (JSON), voir art/README.md
-assets/      sprites, tuiles, police
+assets/      sprites, tuiles, police, sons et musiques (assets/audio/)
 core/        données et services partagés (LootData, ExpeditionResult, InputMode…)
 data/        ressources de jeu (.tres) : matériaux, équipements, types de zones, rencontres, voitures, locomotive, gares refuges
 entities/    joueur, train, PNJ, interactions
@@ -256,6 +259,29 @@ tools/       scripts hors Godot (ignorés par Godot via .gdignore)
 - **Police** : [Barlow](https://github.com/jpt/barlow) (SemiBold pour les textes, Bold pour les chiffres du HUD), une police lisse et lisible sur téléphone. Le jeu est rendu en mode `canvas_items` : le pixel art est agrandi par paliers entiers (net), le texte est dessiné à la vraie résolution de l'écran.
 - **Icônes** : pixel art 12 px, générées par `tools/gen_icons.py`.
 - **Interface** : plaques de fer, boutons, onglets et télégramme en pixel art, dessinés par `python tools/gen_ui.py`, puis assemblés en thème Godot par `godot --headless --path . --script tools/build_theme.gd` (écrit `ui/theme/game_theme.tres`).
+
+## Son et musique
+
+Des sons **provisoires**, comme les sprites : bruitages et musiques 8-bit **synthétisés par le code** (`python3 tools/gen_audio.py`, numpy + ffmpeg), sans échantillon extérieur ni licence à gérer. Même script, mêmes fichiers. Pour retoucher un son, on change ses chiffres dans le script et on relance.
+
+- **Bruitages** (`assets/audio/sfx/*.wav`, 35) : combat (coup, touché, blessé, ennemi abattu, tir, grognement, « Hé ! » des pilleurs), récolte et sac, train (sifflet, départ, freinage, porte, horde qui frappe), événements (horde, alarme, tonnerre, rencontre), menus du train (fabriquer, construire, étudier, charger la chaudière, soigner), panne et réparation, bilan (promotion, ordre rempli, échec), clic des menus.
+- **Ambiances en boucle** (`assets/audio/sfx/*.ogg`) : pluie, roulement du train.
+- **Musiques en boucle** (`assets/audio/music/*.ogg`) : écran titre, train (à bord, trajet, gare), exploration de jour, de nuit, horde.
+
+Le jeu les joue par l'autoload `Audio` :
+
+| Moment | Musique | Ambiance |
+|---|---|---|
+| Écran titre | `title` | |
+| À bord, trajet, gare refuge | `train` | roulement (à bord et en trajet) |
+| Arrêt, de jour / de nuit | `explore_day` / `explore_night` (bascule au coucher du soleil) | pluie infectée quand elle tombe |
+| Horde | `danger`, jusqu'à ce qu'elle soit repoussée | |
+
+- `Audio.play(&"hit")` : un bruitage, hauteur légèrement variée (sauf les petites mélodies, toujours justes). Un même son relancé trop vite est ignoré : dix ennemis touchés font un seul « paf ».
+- `Audio.play_at(&"growl", position)` : un son d'ennemi, qui s'atténue au loin et passe à gauche ou à droite.
+- Tous les boutons font « clic » ; un bouton d'action peut avoir son propre son (`MenuKit.action(..., &"craft")`).
+- Bus `Music` et `SFX` (`default_bus_layout.tres`), limiteur sur le bus principal. Volumes dans `user://settings.cfg`.
+- Les tests coupent le son (`Audio.enabled = false`), sauf `test_audio.gd` ; un test vérifie que chaque son demandé dans le code existe.
 
 ## Tests
 

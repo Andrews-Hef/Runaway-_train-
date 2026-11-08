@@ -82,6 +82,8 @@ func open() -> void:
 	cancel.custom_minimum_size = Vector2(0.0, 18.0)
 	cancel.pressed.connect(close)
 	_box.add_child(cancel)
+	if not _root.visible:
+		Audio.play(&"ui_open")
 	_root.visible = true
 	if first_button:
 		MenuKit.focus_later(first_button)
@@ -90,6 +92,7 @@ func open() -> void:
 func close() -> void:
 	if not _root.visible:
 		return
+	Audio.play(&"ui_close")
 	_root.visible = false
 	closed.emit()
 

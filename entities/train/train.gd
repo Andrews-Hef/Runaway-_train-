@@ -112,6 +112,7 @@ func set_boiler_lit(value: bool) -> void:
 
 ## Le sifflet : le train tremble et crache un jet de vapeur.
 func whistle() -> void:
+	Audio.play(&"whistle", 0.0)
 	if _shake_tween:
 		_shake_tween.kill()
 	_shake_tween = create_tween().set_loops(6)
@@ -125,6 +126,7 @@ func whistle() -> void:
 
 ## Le train s'en va vers la droite. Renvoie le tween pour pouvoir l'attendre.
 func depart() -> Tween:
+	Audio.play(&"train_depart", 0.0)
 	door.monitorable = false
 	_body.process_mode = Node.PROCESS_MODE_DISABLED
 	set_running(true)

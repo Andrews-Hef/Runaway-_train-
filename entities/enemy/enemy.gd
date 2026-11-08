@@ -119,6 +119,7 @@ func think(delta: float) -> void:
 		State.WANDER:
 			if distance <= sight:
 				state = State.CHASE
+				_cry()
 			elif besieging:
 				_besiege()
 			else:
@@ -220,6 +221,7 @@ func _release(distance: float) -> void:
 			if distance <= data.attack_range + MELEE_MARGIN:
 				state = State.GRAB
 				_timer = data.grab_tick
+				Audio.play_at(&"growl", global_position, 0.1, 3.0)
 				grabbed.emit(self)
 				attack_landed.emit(self)
 				return
@@ -245,6 +247,7 @@ func _fire() -> void:
 	projectile.speed = data.projectile_speed
 	projectile.color = data.projectile_color
 	projectile.position = origin
+	Audio.play_at(&"shot", global_position)
 	shot_fired.emit(self, projectile)
 
 
@@ -303,6 +306,11 @@ func _wander(delta: float) -> void:
 
 ## Une alarme sonne en `at` (voiture fouillée en ville) : il accourt, et voit loin
 ## pendant ALERT_TIME secondes. Son point d'attache devient l'alarme.
+## Il repère le joueur : grognement (infecté) ou « Hé ! » (pilleur).
+func _cry() -> void:
+	Audio.play_at(&"growl" if data.faction == EnemyData.Faction.INFECTED else &"bark", global_position)
+
+
 func alert(at: Vector2) -> void:
 	if state == State.DEAD:
 		return
@@ -333,6 +341,7 @@ func _on_died() -> void:
 	remove_from_group(GROUP)
 	_telegraph.queue_redraw()
 	$CollisionShape2D.set_deferred(&"disabled", true)
+	Audio.play_at(&"enemy_die", global_position)
 	died.emit(self)
 	var tween := create_tween()
 	tween.tween_property(_sprite, "modulate", Color(1.0, 1.0, 1.0, 0.0), 0.5)

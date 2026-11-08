@@ -59,6 +59,7 @@ func open(encounter: EncounterData, carrying: ExpeditionResult, capacity: int = 
 	_gains.visible = false
 	_continue.visible = false
 	_build_choices()
+	Audio.play(&"encounter")
 	_root.visible = true
 
 
@@ -72,6 +73,10 @@ func show_outcome(text: String, gained: Dictionary[StringName, int], return_to_c
 		lines.append("Plan trouvé : %s (à étudier à la table des plans)" % BlueprintCatalog.get_plan(plan).display_name)
 	_outcome.text = "\n".join(lines)
 	_outcome.visible = true
+	if plan != &"":
+		Audio.play(&"plan_found")
+	elif not gained.is_empty() or item:
+		Audio.play(&"pickup")
 	# Ce qu'on a gagné, en cases : +2 ferrailles se voit d'un coup d'œil.
 	MenuKit.clear(_gains)
 	for id: StringName in gained:
@@ -92,6 +97,7 @@ func show_outcome(text: String, gained: Dictionary[StringName, int], return_to_c
 func close() -> void:
 	if not _root.visible:
 		return
+	Audio.play(&"ui_close")
 	_root.visible = false
 	closed.emit()
 

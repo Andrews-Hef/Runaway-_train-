@@ -41,6 +41,7 @@ const SUITES: Array[String] = [
 	"res://tests/test_engine.gd",
 	"res://tests/test_crew_identity.gd",
 	"res://tests/test_companion.gd",
+	"res://tests/test_audio.gd",
 ]
 
 
@@ -71,6 +72,8 @@ func _run_all() -> void:
 	# arrêt forcé. Les tests de la chaudière (test_engine.gd) les rallument.
 	ProjectSettings.set_setting("game/debug/engine_trouble", false)
 	root.get_node("/root/GameState").set(&"engine_trouble", false)
+	# Pas de son pendant les tests (les tests du son le rallument chez eux).
+	root.get_node("/root/Audio").set(&"enabled", false)
 	var catcher := ErrorCatcher.new()
 	OS.add_logger(catcher)
 	var passed: int = 0

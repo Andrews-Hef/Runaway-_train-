@@ -45,6 +45,7 @@ var _leaving: bool = false
 
 func _ready() -> void:
 	refuge = GameState.current_refuge if GameState.current_refuge else GameState.REFUGES[0]
+	Audio.play_music(&"train")
 	# Point de reprise : rater le train plus loin ramènera ici.
 	Campaign.reach_refuge()
 	_paint_ground()

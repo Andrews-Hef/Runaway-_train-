@@ -191,8 +191,12 @@ static func detail_info(box: Container, texture: Texture2D, title: String, text:
 
 ## Bouton d'action de la barre de détail (Fabriquer, Construire...). `why` : la raison
 ## quand il est grisé, en infobulle.
-static func action(text: String, on_press: Callable, disabled: bool = false, why: String = "") -> Button:
+## `sound` : le bruit du bouton à la place du clic (Audio), &"" = le clic habituel.
+static func action(text: String, on_press: Callable, disabled: bool = false, why: String = "",
+		sound: StringName = &"") -> Button:
 	var button := Button.new()
+	if sound != &"":
+		button.set_meta(&"sound", sound)
 	button.text = text
 	button.disabled = disabled
 	button.tooltip_text = why

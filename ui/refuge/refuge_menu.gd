@@ -64,6 +64,8 @@ func is_open() -> bool:
 func open(tab: Tab) -> void:
 	_refresh()
 	_tabs.current_tab = tab
+	if not _root.visible:
+		Audio.play(&"ui_open")
 	_root.visible = true
 	MenuKit.focus_later(_close)
 
@@ -71,6 +73,7 @@ func open(tab: Tab) -> void:
 func close() -> void:
 	if not _root.visible:
 		return
+	Audio.play(&"ui_close")
 	_root.visible = false
 	closed.emit()
 
@@ -153,7 +156,7 @@ func _offer_card(offer: RefugeOffer, verb: String) -> PanelContainer:
 		var reason := MenuKit.label(_short_reason(problem), MenuKit.BAD)
 		box.add_child(reason)
 	var button := MenuKit.action("Fait" if problem == RefugeRules.Problem.ALREADY_DONE else verb, func() -> void: take(offer),
-		problem != RefugeRules.Problem.NONE, why)
+		problem != RefugeRules.Problem.NONE, why, &"pickup")
 	box.add_child(button)
 	return card
 
@@ -185,7 +188,7 @@ func _fill_depot() -> void:
 	if needs_repair:
 		repair.add_child(MenuKit.cost_row(GameState.DEPOT_REPAIR_COST, GameState.storage))
 		repair.add_child(MenuKit.action("Réparer", func() -> void: GameState.repair_train_at_depot(), not can_repair,
-			"Il manque des matériaux dans le stock."))
+			"Il manque des matériaux dans le stock.", &"craft"))
 	# Renfort de la locomotive : une voiture de plus.
 	var next: LocomotiveLevel = TrainRules.next_level(GameState.locomotive_level)
 	if next == null:
@@ -198,7 +201,7 @@ func _fill_depot() -> void:
 		loco.add_child(MenuKit.cost_row(next.cost, GameState.storage))
 		loco.add_child(MenuKit.action("Renforcer", func() -> void: GameState.upgrade_locomotive(),
 			problem != TrainRules.Problem.NONE or not allowed,
-			GameState.locked_text(&"build") if not allowed else "Il manque des matériaux dans le stock."))
+			GameState.locked_text(&"build") if not allowed else "Il manque des matériaux dans le stock.", &"build"))
 	_depot_list.add_child(MenuKit.label("Les voitures se construisent à bord (table du capitaine).", MenuKit.MUTED))
 
 

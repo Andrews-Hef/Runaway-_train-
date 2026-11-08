@@ -105,6 +105,8 @@ func open(tab: Tab) -> void:
 		_tabs.set_tab_hidden(i, not linked and i != tab)
 	_refresh()
 	_hint.visible = not linked
+	if not _root.visible:
+		Audio.play(&"ui_open")
 	_root.visible = true
 	# Manette, clavier : on part de la case choisie (sinon du bouton Fermer).
 	if not _focus_cell(tab, _selection.get(tab)):
@@ -114,6 +116,7 @@ func open(tab: Tab) -> void:
 func close() -> void:
 	if not _root.visible:
 		return
+	Audio.play(&"ui_close")
 	_root.visible = false
 	closed.emit()
 
@@ -338,7 +341,7 @@ func _detail_workshop(key: Variant) -> void:
 	var lacking: Dictionary[StringName, int] = Crafting.missing(item, GameState.storage)
 	_detail.add_child(MenuKit.cost_row(item.recipe, GameState.storage))
 	_detail.add_child(MenuKit.action("Fabriquer", func() -> void: GameState.craft(item), not lacking.is_empty(),
-		"Il manque : " + MenuKit.describe_amounts(lacking)))
+		"Il manque : " + MenuKit.describe_amounts(lacking), &"craft"))
 
 
 ## Une recette : ce qu'on donne → ce qu'on obtient, et la raison si c'est impossible.
@@ -350,7 +353,7 @@ func _detail_recipe(recipe: RecipeData, verb: String) -> void:
 	var note: String = problem if problem != MISSING_MATERIALS else ""
 	MenuKit.detail_info(_detail, _recipe_icon(recipe), recipe.display_name, note, BAD)
 	_detail.add_child(MenuKit.recipe_row(recipe.cost, recipe.output, GameState.storage))
-	_detail.add_child(MenuKit.action(verb, func() -> void: GameState.make_recipe(recipe), not problem.is_empty(), problem))
+	_detail.add_child(MenuKit.action(verb, func() -> void: GameState.make_recipe(recipe), not problem.is_empty(), problem, &"craft"))
 
 
 # --- Équipement -------------------------------------------------------------------
@@ -508,7 +511,7 @@ func _detail_crew(key: Variant) -> void:
 		actions.add_child(request)
 		if member.request_kind == &"deliver":
 			actions.add_child(MenuKit.action("Donner", func() -> void: GameState.fulfil_request(member),
-				not GameState.can_fulfil_request(member), "Il manque des matériaux dans le stock."))
+				not GameState.can_fulfil_request(member), "Il manque des matériaux dans le stock.", &"order_done"))
 	# L'équiper : dans l'inventaire, ouvert sur lui.
 	actions.add_child(MenuKit.action("Équiper", func() -> void:
 		close()
@@ -523,11 +526,12 @@ func _detail_crew(key: Variant) -> void:
 	var command: bool = GameState.can(&"crew")
 	var locked: String = GameState.locked_text(&"crew") if not command else ""
 	actions.add_child(MenuKit.action("Panser", func() -> void: GameState.bandage(member),
-		not command or not GameState.can_bandage(member), locked if not command else "1 tissu : soigne ses blessures"))
+		not command or not GameState.can_bandage(member), locked if not command else "1 tissu : soigne ses blessures", &"medicine"))
 	var medicine: LootData = GameState.medicine_for_crew()
 	actions.add_child(MenuKit.action("Soigner", func() -> void: GameState.medicate(member),
 		not command or medicine == null or (member.infection_known and member.infection == 0),
-		locked if not command else ("Donner : " + medicine.display_name.to_lower() if medicine else "Pas de médicament dans le stock")))
+		locked if not command else ("Donner : " + medicine.display_name.to_lower() if medicine else "Pas de médicament dans le stock"),
+		&"medicine"))
 	actions.add_child(MenuKit.action("Au travail" if member.resting else "Repos", func() -> void: GameState.toggle_rest(member),
 		not command, locked))
 	actions.add_child(MenuKit.action("Libérer" if member.quarantined else "Isoler", func() -> void: GameState.toggle_quarantine(member),
@@ -654,7 +658,7 @@ func _detail_build(wagon: WagonData) -> void:
 		BAD if problem == TrainRules.Problem.NO_TRACTION else MUTED)
 	_detail.add_child(MenuKit.cost_row(wagon.cost, GameState.storage))
 	_detail.add_child(MenuKit.action("Construire", func() -> void: GameState.build_wagon(wagon),
-		problem != TrainRules.Problem.NONE or not can_build, why))
+		problem != TrainRules.Problem.NONE or not can_build, why, &"build"))
 
 
 func _detail_wagon(wagon: WagonData) -> void:
@@ -676,7 +680,7 @@ func _detail_wagon(wagon: WagonData) -> void:
 		why = GameState.locked_text(&"build")
 	_detail.add_child(MenuKit.cost_row(TrainRules.upgrade_cost(wagon, level + 1, count), GameState.storage))
 	_detail.add_child(MenuKit.action("Agrandir", func() -> void: GameState.upgrade_wagon(wagon),
-		problem != TrainRules.Problem.NONE or not GameState.can(&"build"), why))
+		problem != TrainRules.Problem.NONE or not GameState.can(&"build"), why, &"build"))
 
 
 ## La cabine : la locomotive (combien de voitures elle tire), l'état du train, la réparation.
@@ -690,7 +694,7 @@ func _detail_locomotive(cabin: WagonData) -> void:
 	if GameState.train_condition < 1.0:
 		_detail.add_child(MenuKit.cost_row(GameState.REPAIR_COST, GameState.storage))
 		_detail.add_child(MenuKit.action("Réparer +%d %%" % roundi(GameState.REPAIR_STEP * 100.0), func() -> void: GameState.repair_train(),
-			not GameState.can_repair_train(), MISSING_MATERIALS))
+			not GameState.can_repair_train(), MISSING_MATERIALS, &"craft"))
 
 
 # --- Machines ---------------------------------------------------------------------
@@ -851,7 +855,7 @@ func _detail_plan(key: Variant) -> void:
 	var problem: String = BlueprintCatalog.research_problem(plan, GameState.found_plans, GameState.researched_plans, GameState.storage)
 	MenuKit.detail_info(_detail, icon, plan.display_name + " · à étudier", text)
 	_detail.add_child(MenuKit.cost_row(plan.research_cost, GameState.storage))
-	_detail.add_child(MenuKit.action("Étudier", func() -> void: GameState.research(plan), not problem.is_empty(), problem))
+	_detail.add_child(MenuKit.action("Étudier", func() -> void: GameState.research(plan), not problem.is_empty(), problem, &"research"))
 
 
 # --- Infirmerie --------------------------------------------------------------------
@@ -959,7 +963,7 @@ func _detail_medicine(medicine: LootData) -> void:
 		MenuKit.detail_info(_detail, medicine.icon, title, "Infection −%d %% · toi : %d %% → %d %%" % [
 			roundi(cure * 100.0), now, maxi(now - roundi(cure * 100.0), 0)])
 		_detail.add_child(MenuKit.action("Prendre", func() -> void: GameState.take_medicine(medicine),
-			amount <= 0 or GameState.infection <= 0.0, "Rien à soigner" if GameState.infection <= 0.0 else "Plus en stock"))
+			amount <= 0 or GameState.infection <= 0.0, "Rien à soigner" if GameState.infection <= 0.0 else "Plus en stock", &"medicine"))
 		return
 	var member: CrewMember = _patient
 	MenuKit.detail_info(_detail, medicine.icon, title, "Infection −%d %% · %s : %s" % [
@@ -967,7 +971,7 @@ func _detail_medicine(medicine: LootData) -> void:
 	var command: bool = GameState.can(&"crew")
 	_detail.add_child(MenuKit.action("Donner à " + member.display_name, func() -> void: GameState.medicate(member, medicine),
 		not command or amount <= 0 or (member.infection_known and member.infection == 0),
-		GameState.locked_text(&"crew") if not command else ("Plus en stock" if amount <= 0 else "Il n'est pas infecté")))
+		GameState.locked_text(&"crew") if not command else ("Plus en stock" if amount <= 0 else "Il n'est pas infecté"), &"medicine"))
 
 
 # --- Chaudière -----------------------------------------------------------------------
@@ -1015,6 +1019,6 @@ func _detail_boiler(key: Variant) -> void:
 	MenuKit.detail_info(_detail, fuel.icon, "%s ×%d" % [fuel.display_name, amount],
 		"+%d d'énergie chacun%s" % [fuel.fuel, " · chaudière pleine" if full else (" · place pour %d" % room if room < amount else "")])
 	var why: String = "Chaudière pleine" if full else ("Plus en stock" if amount == 0 else "Pas assez de place")
-	_detail.add_child(MenuKit.action("Charger 1", func() -> void: GameState.load_fuel(fuel, 1), room <= 0, why))
+	_detail.add_child(MenuKit.action("Charger 1", func() -> void: GameState.load_fuel(fuel, 1), room <= 0, why, &"coal_load"))
 	_detail.add_child(MenuKit.action("Charger %d" % room if room > 1 else "Tout charger", func() -> void: GameState.load_fuel(fuel, room),
-		room <= 1, why))
+		room <= 1, why, &"coal_load"))

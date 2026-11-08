@@ -42,6 +42,8 @@ var _intro: IntroOverlay
 func _ready() -> void:
 	# Le train vu de dehors a autant de wagons que le vrai (ils s'attellent vers la gauche).
 	_train.set_wagon_count(GameState.train.size() - 1)
+	Audio.play_music(&"train")
+	Audio.set_loop(&"train_loop", true, self, 1.5)
 	Campaign.autosave_journey()
 	_paint_scenery()
 	_fill_texts()

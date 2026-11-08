@@ -2,7 +2,7 @@ extends CanvasLayer
 ## Autoload « GameMenu » : menu pause (Échap / Start) et inventaire (I / Tab / Y),
 ## partout en jeu sauf sur l'écran titre. Le jeu est en pause tant qu'ils sont ouverts.
 ##
-## - Pause : reprendre, inventaire, commandes, écran titre, quitter (PC).
+## - Pause : reprendre, inventaire, commandes, son (volumes), écran titre, quitter (PC).
 ## - Inventaire façon Minecraft : le personnage et ses 5 cases d'équipement, le sac en
 ##   cases (piles de 5 ; cases grisées = ce qu'un sac plus grand ajouterait) et le
 ##   casier. On touche une case, l'objet s'affiche en bas avec ce qu'on peut en faire :
@@ -17,7 +17,7 @@ extends CanvasLayer
 ##
 ## L'interface est construite en code (comme les menus du train) et lit GameState.
 
-enum View { NONE, PAUSE, CONTROLS, CONFIRM_TITLE, INVENTORY }
+enum View { NONE, PAUSE, CONTROLS, SOUND, CONFIRM_TITLE, INVENTORY }
 enum InventoryTab { ITEMS, GRADE }
 
 ## Le menu se referme (le casier du train rend alors la main au joueur).
@@ -171,7 +171,7 @@ func _input(event: InputEvent) -> void:
 	if view == View.NONE:
 		return
 	if event.is_action_pressed(&"pause") or event.is_action_pressed(&"ui_cancel"):
-		if view == View.CONTROLS or view == View.CONFIRM_TITLE:
+		if view == View.CONTROLS or view == View.SOUND or view == View.CONFIRM_TITLE:
 			_show_pause_buttons()
 		else:
 			close()
@@ -186,6 +186,8 @@ func _input(event: InputEvent) -> void:
 func open_pause() -> void:
 	if not is_available():
 		return
+	if view == View.NONE:
+		Audio.play(&"ui_open")
 	_pause()
 	_inventory_panel.visible = false
 	_pause_panel.visible = true
@@ -195,6 +197,8 @@ func open_pause() -> void:
 func open_inventory(tab: InventoryTab = InventoryTab.ITEMS, wearer: CrewMember = null) -> void:
 	if not is_available():
 		return
+	if view == View.NONE:
+		Audio.play(&"ui_open")
 	_pause()
 	_wearer = wearer
 	view = View.INVENTORY
@@ -212,6 +216,7 @@ func close() -> void:
 	if view == View.NONE:
 		return
 	view = View.NONE
+	Audio.play(&"ui_close")
 	_root.visible = false
 	get_tree().paused = _was_paused
 	_update_touch_buttons()
@@ -330,6 +335,7 @@ func _build() -> void:
 	_touch_buttons.add_child(pause_button)
 	for child: Node in _touch_buttons.get_children():
 		(child as Button).focus_mode = Control.FOCUS_NONE
+		Audio.tag(child as Button, &"") # le menu qui s'ouvre fait déjà son bruit
 
 	# Rappel des touches, en bas au-dessus des consignes.
 	_hint = Label.new()
@@ -387,10 +393,11 @@ func _show_pause_buttons() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override(&"font_size", 16)
 	_pause_box.add_child(title)
-	var resume := _button("Reprendre", close)
+	var resume := Audio.tag(_button("Reprendre", close), &"") as Button
 	_pause_box.add_child(resume)
 	_pause_box.add_child(_button("Inventaire (%s)" % InputMode.label_for(&"inventory"), func() -> void: open_inventory()))
 	_pause_box.add_child(_button("Commandes", _show_controls))
+	_pause_box.add_child(_button("Son", _show_sound))
 	_pause_box.add_child(_button("Écran titre", _confirm_title))
 	if not OS.has_feature("mobile") and not OS.has_feature("web"):
 		_pause_box.add_child(_button("Quitter le jeu", func() -> void: get_tree().quit()))
@@ -415,6 +422,16 @@ func _show_controls() -> void:
 	var back := _button("Retour", _show_pause_buttons)
 	_pause_box.add_child(back)
 	MenuKit.focus_later(back)
+
+
+func _show_sound() -> void:
+	view = View.SOUND
+	MenuKit.clear(_pause_box)
+	_pause_box.add_child(MenuKit.label("Son", MenuKit.GOLD))
+	var settings := SoundSettings.create()
+	_pause_box.add_child(settings)
+	_pause_box.add_child(_button("Retour", _show_pause_buttons))
+	MenuKit.focus_later(settings.sliders[0])
 
 
 ## Les commandes du périphérique : [action, touche(s)].

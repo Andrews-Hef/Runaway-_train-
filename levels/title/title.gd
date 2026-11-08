@@ -1,5 +1,6 @@
 extends Node2D
-## Écran titre : continuer la campagne enregistrée, ou en commencer une nouvelle.
+## Écran titre : continuer la campagne enregistrée, ou en commencer une nouvelle, et
+## régler le son (Musique, Effets) avant de jouer.
 ##
 ## Le train roule en fond, la voie défile.
 
@@ -13,9 +14,13 @@ const NEW_GAME_TEXT: String = "Nouvelle partie"
 @onready var _hint: Label = %Hint
 
 var _confirm_new: bool = false
+var _sound_button: Button
+## Les curseurs de volume, ouverts sous les boutons (null = fermés).
+var _sound: SoundSettings
 
 
 func _ready() -> void:
+	Audio.play_music(&"title")
 	_paint_ground()
 	var has_save: bool = Campaign.has_resume()
 	_continue.visible = has_save
@@ -25,8 +30,26 @@ func _ready() -> void:
 	_new_game.pressed.connect(_on_new_game)
 	_hint.text = "Partie sauvegardée à chaque trajet. Rater le train ramène à la dernière gare refuge." if has_save \
 		else "Tu viens d'être recruté à bord. Le capitaine attend."
+	_sound_button = Button.new()
+	_sound_button.name = "Sound"
+	_sound_button.text = "Son"
+	_sound_button.custom_minimum_size = _new_game.custom_minimum_size
+	_new_game.add_sibling(_sound_button)
+	_sound_button.pressed.connect(toggle_sound)
 	MenuKit.focus_later(_continue if has_save else _new_game)
 	_add_version()
+
+
+## Ouvre ou ferme les curseurs de volume, juste sous le bouton « Son ».
+func toggle_sound() -> void:
+	if _sound:
+		_sound.queue_free()
+		_sound = null
+		_sound_button.grab_focus()
+		return
+	_sound = SoundSettings.create()
+	_sound_button.add_sibling(_sound)
+	_sound.sliders[0].grab_focus()
 
 
 func _add_version() -> void:
@@ -42,6 +65,9 @@ func _add_version() -> void:
 ## Bouton retour d'Android (via GameMenu) : annule la confirmation « effacer la partie »,
 ## sinon quitte le jeu.
 func go_back() -> void:
+	if _sound:
+		toggle_sound()
+		return
 	if _confirm_new:
 		_confirm_new = false
 		_new_game.text = NEW_GAME_TEXT
