@@ -153,6 +153,7 @@ func _ready() -> void:
 	_session.start(roundf(layout.stop_duration * GameState.stop_time_factor()))
 	if GameState.is_incident_stop():
 		_setup_incident()
+	_send_companion()
 
 
 # --- Application du plan --------------------------------------------------------
@@ -621,6 +622,17 @@ func _engine_ready() -> void:
 		_engine_spot = null
 	_session.release(EngineRules.DEPARTURE_SECONDS)
 	_hud.call(&"toast", "La locomotive est prête : monte à bord, le train repart !", false)
+
+
+## L'équipier de sortie part fouiller de son côté (on ne le voit pas) : il rejoindra le
+## train avec sa part, d'autant plus grosse qu'on reste longtemps.
+func _send_companion() -> void:
+	_session.result.companion = GameState.companion_for_stop()
+	var member: CrewMember = _session.result.companion
+	if member:
+		_hud.call(&"toast", "%s part fouiller de son côté : il te rejoindra au train." % member.display_name, false)
+	elif GameState.companion and GameState.companion in GameState.crew and GameState.can(&"companion"):
+		_hud.call(&"toast", GameState.companion_problem() + ".", true)
 
 
 func _on_boarding_requested() -> void:

@@ -30,6 +30,7 @@ const HAMMER: Texture2D = preload("res://assets/ui/icons/hammer.png")
 const CROSS: Texture2D = preload("res://assets/ui/icons/cross.png")
 const PLAN: Texture2D = preload("res://assets/ui/icons/plan.png")
 const STAR: Texture2D = preload("res://assets/ui/icons/order.png")
+const PARTNER: Texture2D = preload("res://assets/ui/icons/recruit.png")
 const HEALTH: Texture2D = preload("res://assets/ui/icons/health.png")
 const SPORE: Texture2D = preload("res://assets/ui/icons/infection.png")
 const OUTFIT: Texture2D = preload("res://assets/ui/icons/items/outfit_padded.png")
@@ -379,6 +380,11 @@ func _fill_crew() -> void:
 	var head := MenuKit.header()
 	head.add_child(MenuKit.chip(BED, "%d/%d" % [GameState.crew.size(), GameState.beds()], BAD if full else Color.WHITE,
 		"Couchettes occupées" + (" : construis un dortoir pour recruter" if full else "")))
+	# L'équipier de sortie : il fouille de son côté à chaque arrêt et rapporte sa part.
+	var partner: CrewMember = GameState.companion if GameState.companion in GameState.crew else null
+	if GameState.can(&"companion"):
+		head.add_child(MenuKit.chip(PARTNER, "Sortie : " + (partner.display_name if partner else "seul"), GOLD if partner else MUTED,
+			"Équipier de sortie : il descend avec toi à chaque arrêt, fouille de son côté (hors de vue) et te rejoint au train avec sa part."))
 	if not GameState.can(&"crew"):
 		head.add_child(MenuKit.chip(LOCK, Career.required_grade(&"crew"), MUTED,
 			GameState.locked_text(&"crew") + " : il met au repos les épuisés et isole les infectés. Tu peux remplir leurs demandes."))
@@ -443,7 +449,8 @@ func _crew_tile(member: CrewMember) -> VBoxContainer:
 	if mark:
 		cell.set_corner(mark)
 	tile.add_child(cell)
-	var name_label := MenuKit.label(member.display_name)
+	# L'équipier de sortie a son nom en doré.
+	var name_label := MenuKit.label(member.display_name, GOLD if member == GameState.companion else Color.WHITE)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.clip_text = true
 	tile.add_child(name_label)
@@ -506,6 +513,12 @@ func _detail_crew(key: Variant) -> void:
 	actions.add_child(MenuKit.action("Équiper", func() -> void:
 		close()
 		GameMenu.open_inventory(GameMenu.InventoryTab.ITEMS, member)))
+	# L'emmener en sortie (Caporal) : il fouille de son côté, hors de vue.
+	var is_partner: bool = member == GameState.companion
+	actions.add_child(MenuKit.action("Ne plus l'emmener" if is_partner else "Emmener en sortie",
+		func() -> void: GameState.set_companion(null if is_partner else member), not GameState.can(&"companion"),
+		GameState.locked_text(&"companion") if not GameState.can(&"companion")
+			else "Il descend avec toi à chaque arrêt, fouille de son côté et te rejoint au train avec sa part."))
 	# Diriger l'équipage : à partir de Sergent (avant, le capitaine décide).
 	var command: bool = GameState.can(&"crew")
 	var locked: String = GameState.locked_text(&"crew") if not command else ""

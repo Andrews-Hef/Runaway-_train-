@@ -207,6 +207,9 @@ var clock_minutes: int = DayClock.START_MINUTES
 var train_condition: float = 1.0
 ## Réparé par les mécaniciens pendant le dernier trajet.
 var last_repair: float = 0.0
+## Équipier de sortie : il descend avec le joueur à chaque arrêt, hors de vue, et le
+## rejoint au train avec sa part du butin (MissionSim.run_companion). null : seul.
+var companion: CrewMember
 ## Réserve d'énergie de la chaudière (voir EngineRules) : chaque trajet en brûle.
 var energy: int = EngineRules.START_ENERGY
 ## Énergie et pannes actives (voir ENGINE_TROUBLE_SETTING).
@@ -267,6 +270,7 @@ func new_run(run_seed: int = 0) -> void:
 	current_refuge = null
 	storage.clear()
 	crew.clear()
+	companion = null
 	owned_items = ItemCatalog.starters()
 	loadout = Loadout.new()
 	for item: ItemData in owned_items:
@@ -677,6 +681,65 @@ func record_expedition(result: ExpeditionResult) -> void:
 			owned_items.append(item)
 	if not result.items.is_empty():
 		equipment_changed.emit()
+	_bring_back_companion(result)
+
+
+# --- Équipier de sortie ---------------------------------------------------------------
+
+## L'emmener en sortie (à partir de Caporal) ; null : sortir seul.
+func set_companion(member: CrewMember) -> void:
+	if member != null and (not member in crew or not can(&"companion")):
+		return
+	companion = member
+	crew_changed.emit()
+
+
+## Pourquoi l'équipier choisi ne sort pas cette fois (vide : il sort).
+func companion_problem() -> String:
+	if companion == null or not companion in crew:
+		return "personne"
+	if not can(&"companion"):
+		return locked_text(&"companion")
+	if not CrewLife.can_work(companion):
+		var tags: PackedStringArray = CrewLife.status(companion)
+		return "%s reste à bord (%s)" % [companion.display_name, ", ".join(tags) if not tags.is_empty() else "pas en état"]
+	return ""
+
+
+## L'équipier qui descend avec le joueur à cet arrêt (null : seul).
+func companion_for_stop() -> CrewMember:
+	return companion if companion_problem().is_empty() else null
+
+
+## L'équipier de sortie rejoint le train avec sa part : le stock la range après celle du
+## joueur (ce qui ne rentre pas reste sur le quai).
+func _bring_back_companion(result: ExpeditionResult) -> void:
+	var member: CrewMember = result.companion
+	if member == null or not member in crew:
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = current_seed + 71
+	var sim: MissionSim.Result = MissionSim.run_companion(member, current_zone, stop_number, rng, result.time_share)
+	result.companion_lines = sim.lines
+	result.companion_died = sim.died
+	var free: int = storage_free()
+	var left: int = 0
+	for id: StringName in sim.loot:
+		var kept: int = mini(sim.loot[id], free)
+		if kept > 0:
+			storage[id] = storage.get(id, 0) + kept
+			result.companion_loot[id] = kept
+			free -= kept
+		left += sim.loot[id] - kept
+	if left > 0:
+		result.companion_lines.append("Stock plein : %d objet(s) de %s laissé(s) sur le quai." % [left, member.display_name])
+	if sim.died:
+		crew.erase(member)
+		companion = null
+		for other: CrewMember in crew:
+			other.trust = clampi(other.trust + CrewLife.TRUST_LOSS, 0, 100)
+	storage_changed.emit()
+	crew_changed.emit()
 
 
 ## Fabrique un équipement à l'atelier avec les matériaux du stock (son plan doit être étudié).
@@ -1367,6 +1430,7 @@ func to_save() -> Dictionary:
 		"rng_state": str(_rng.state),
 		"storage": storage,
 		"crew": crew_data,
+		"companion": crew.find(companion) if companion else -1,
 		"items": owned_items.map(func(item: ItemData) -> String: return String(item.id)),
 		"equipped": equipped,
 		"train": train.map(func(wagon: WagonData) -> String: return String(wagon.id)),
@@ -1422,6 +1486,8 @@ func load_save(data: Dictionary) -> bool:
 	crew.clear()
 	for entry: Dictionary in data.get("crew", []):
 		crew.append(CrewMember.from_dict(entry))
+	var companion_index: int = int(data.get("companion", -1))
+	companion = crew[companion_index] if companion_index >= 0 and companion_index < crew.size() else null
 	owned_items.clear()
 	for id: String in data.get("items", []):
 		var item: ItemData = ItemCatalog.get_item(StringName(id))

@@ -37,6 +37,13 @@ var horde_repelled: bool = false
 var crew_thanks: Array[String] = []
 var merit_gained: int = 0
 var promotions: Array[GradeData] = []
+## Part de l'arrêt passée dehors (0 à 1) : l'équipier de sortie rapporte d'autant plus.
+var time_share: float = 1.0
+## L'équipier de sortie (null : seul), et ce qu'il a rapporté (rempli au retour).
+var companion: CrewMember
+var companion_loot: Dictionary[StringName, int] = {}
+var companion_lines: Array[String] = []
+var companion_died: bool = false
 
 
 func add_loot(id: StringName, amount: int) -> void:

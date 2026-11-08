@@ -326,6 +326,10 @@ func _add_furniture(wagon_x: float, entry: Array) -> void:
 		spot.prompt = "Descendre à la gare refuge"
 	elif station == &"lever" and GameState.has_route_choice():
 		spot.prompt = "Aiguillage : choisir le prochain arrêt"
+	# Pas d'équipier de sortie en gare refuge (on n'y fouille pas).
+	var partner: CrewMember = GameState.companion_for_stop()
+	if station == &"lever" and partner and not GameState.is_refuge_stop() and not GameState.has_route_choice():
+		spot.prompt += " (avec %s)" % partner.display_name
 	spot.hold_time = 0.7 if station == &"lever" else 0.25
 	spot.animation = STATION_ANIMATIONS.get(station, &"work")
 	spot.indicator_offset = Vector2(0.0, -40.0)

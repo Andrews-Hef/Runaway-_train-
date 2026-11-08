@@ -27,6 +27,8 @@ signal dropped(id: StringName, amount: int)
 
 var state: State = State.RUNNING
 var remaining: float = 0.0
+## Temps passé dehors depuis le début de l'arrêt (même train en panne).
+var elapsed: float = 0.0
 var result: ExpeditionResult = ExpeditionResult.new()
 ## Source de l'exposition à recopier dans le résultat à la fin (injectée par la zone).
 var exposure_source: ExposureComponent
@@ -51,6 +53,7 @@ func _ready() -> void:
 func start(stop_duration: float) -> void:
 	duration = stop_duration
 	remaining = stop_duration
+	elapsed = 0.0
 	state = State.RUNNING
 	result = ExpeditionResult.new()
 	if exposure_source:
@@ -63,7 +66,10 @@ func _process(delta: float) -> void:
 
 
 func tick(delta: float) -> void:
-	if state == State.ENDED or state == State.HELD:
+	if state == State.ENDED:
+		return
+	elapsed += delta
+	if state == State.HELD:
 		return
 	remaining = maxf(remaining - delta, 0.0)
 	time_changed.emit(remaining)
@@ -228,6 +234,7 @@ func is_running() -> bool:
 func _finish(boarded: bool) -> void:
 	state = State.ENDED
 	result.boarded = boarded
+	result.time_share = clampf(elapsed / duration, 0.0, 1.0) if duration > 0.0 else 1.0
 	if exposure_source:
 		result.exposure = exposure_source.value
 	ended.emit(result)

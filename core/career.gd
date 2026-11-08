@@ -22,6 +22,7 @@ const GRADES: Array[GradeData] = [
 const AUTHORITY: Dictionary[StringName, int] = {
 	&"recruit": 1,
 	&"route": 2,
+	&"companion": 2,
 	&"crew": 3,
 	&"build": 4,
 	&"missions": 5,
@@ -32,7 +33,7 @@ const AUTHORITY: Dictionary[StringName, int] = {
 const UNLOCKS: Array[String] = [
 	"Sorties, fabrication de ton équipement, étude des plans",
 	"Recruter les survivants rencontrés",
-	"Choisir la voie à l'aiguillage",
+	"Choisir la voie à l'aiguillage, emmener un équipier en sortie",
 	"Diriger l'équipage : soins, repos, quarantaine, renvoi",
 	"Construire et agrandir les voitures, dépôt de la gare",
 	"Envoyer un équipier en mission à ta place",

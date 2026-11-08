@@ -2,6 +2,8 @@ class_name MissionSim
 extends RefCounted
 ## Mission d'équipage (mode gestion, grade Capitaine) : un équipier descend seul à
 ## l'arrêt pendant que le joueur reste à bord. L'arrêt est simulé, sans le jouer.
+## Équipier de sortie (à partir de Caporal) : il descend AVEC le joueur, hors de vue, et
+## le rejoint au train avec sa part (run_companion).
 ## Pur : modifie l'équipier et renvoie le résultat ; GameState l'applique.
 ##
 ## Il rapporte une part de ce que la zone offre (plus s'il est éclaireur ou fidèle, moins
@@ -50,6 +52,11 @@ const ENDURANCE_INFECTION: float = 0.07
 ## (il décroche), mais rapporte alors moins.
 const NERVE_CAP_PER_POINT: int = 10
 const RETREAT_LOOT: float = 0.6
+## Équipier de sortie : part du butin d'une mission, part du danger, fatigue, confiance.
+const COMPANION_LOOT: float = 0.5
+const COMPANION_DANGER: float = 0.5
+const COMPANION_FATIGUE: int = 20
+const COMPANION_TRUST: int = 2
 
 
 class Result:
@@ -57,6 +64,8 @@ class Result:
 	var lines: Array[String] = []
 	var died: bool = false
 	var horde: bool = false
+	var wounds: int = 0
+	var retreated: bool = false
 
 
 ## Peut-il partir en mission ? Même règle que pour travailler.
@@ -66,10 +75,45 @@ static func can_go(member: CrewMember) -> bool:
 
 static func run(member: CrewMember, zone: ZoneProfile, stop_number: int, rng: RandomNumberGenerator,
 		horde: bool = false) -> Result:
+	var result: Result = _simulate(member, zone, stop_number, rng, 1.0, 1.0, FATIGUE, TRUST_GAIN)
+	result.horde = horde
+	if result.died:
+		result.lines.append("%s ne revient pas de : %s." % [member.display_name, zone.display_name])
+	else:
+		var found: String = MenuKit.describe_amounts(result.loot) if not result.loot.is_empty() else "rien"
+		var hurt: String = " (blessé : −%d PV)" % result.wounds if result.wounds > 0 else ""
+		var retreat: String = " Ça tournait mal : il a décroché à temps." if result.retreated else ""
+		result.lines.append("%s revient de : %s, avec %s%s.%s" % [member.display_name, zone.display_name, found, hurt, retreat])
+	if horde:
+		result.lines.append("Une horde a attaqué le train pendant ce temps : −%d %%." % roundi(HORDE_TRAIN_DAMAGE * 100.0))
+	return result
+
+
+## Équipier de sortie : il descend avec le joueur, fouille de son côté (on ne le voit
+## pas) et le rejoint au train. Moitié moins de butin qu'en mission, autant que le joueur
+## est resté (`share` : part de l'arrêt passée dehors, 0 à 1), et moitié moins de danger
+## (le joueur attire les ennemis).
+static func run_companion(member: CrewMember, zone: ZoneProfile, stop_number: int, rng: RandomNumberGenerator,
+		share: float) -> Result:
+	var result: Result = _simulate(member, zone, stop_number, rng, COMPANION_LOOT * clampf(share, 0.0, 1.0),
+		COMPANION_DANGER * clampf(share, 0.2, 1.0), COMPANION_FATIGUE, COMPANION_TRUST)
+	if result.died:
+		result.lines.append("%s ne revient pas. On l'a attendu jusqu'au sifflet." % member.display_name)
+	else:
+		var hurt: String = " (blessé : −%d PV)" % result.wounds if result.wounds > 0 else ""
+		var retreat: String = " Ça tournait mal : il a décroché à temps." if result.retreated else ""
+		result.lines.append("%s te rejoint au train%s.%s" % [member.display_name, hurt, retreat])
+	return result
+
+
+## Le cœur commun : ce qu'il récolte, ses blessures, l'infection, la fatigue.
+## `loot_scale` et `danger_scale` : 1 pour une mission.
+static func _simulate(member: CrewMember, zone: ZoneProfile, stop_number: int, rng: RandomNumberGenerator,
+		loot_scale: float, danger_scale: float, fatigue: int, trust: int) -> Result:
 	var result := Result.new()
 	var efficiency: float = EFFICIENCY + (SCOUT_BONUS if member.role == &"scout" else 0.0) \
 		+ (LOYAL_BONUS if CrewLife.is_loyal(member) else 0.0) + loot_bonus(member)
-	efficiency *= member.health / 100.0 * (1.0 - member.fatigue / 200.0)
+	efficiency *= member.health / 100.0 * (1.0 - member.fatigue / 200.0) * loot_scale
 	var bag: int = bag_size(member)
 	var total: int = 0
 	for entry: Array in YIELDS:
@@ -81,33 +125,28 @@ static func run(member: CrewMember, zone: ZoneProfile, stop_number: int, rng: Ra
 			total += amount
 	var caution: float = SCOUT_CAUTION if member.role == &"scout" else 1.0
 	var wounds: int = roundi(zone.expected_enemies(stop_number) * WOUNDS_PER_ENEMY * caution * wound_factor(member)
-		* rng.randf_range(0.5, 1.5))
+		* danger_scale * rng.randf_range(0.5, 1.5))
 	# Sang-froid : il décroche avant d'y laisser sa peau, les mains moins pleines.
-	var retreated: bool = wounds > wound_cap(member)
-	if retreated:
+	result.retreated = wounds > wound_cap(member)
+	if result.retreated:
 		wounds = wound_cap(member)
 		for id: StringName in result.loot:
 			result.loot[id] = roundi(result.loot[id] * RETREAT_LOOT)
 	var infection: int = roundi((zone.infected_patches.x + zone.infected_patches.y) / 2.0 * INFECTION_PER_PATCH
-		* infection_factor(member) * rng.randf_range(0.5, 1.5))
+		* infection_factor(member) * danger_scale * rng.randf_range(0.5, 1.5))
+	result.wounds = wounds
 	member.health = maxi(member.health - wounds, 0)
-	member.fatigue = mini(member.fatigue + maxi(FATIGUE - ENDURANCE_FATIGUE * (member.endurance - 3), 0), 100)
-	member.trust = mini(member.trust + TRUST_GAIN, 100)
+	member.fatigue = mini(member.fatigue + maxi(fatigue - ENDURANCE_FATIGUE * (member.endurance - 3), 0), 100)
+	member.trust = mini(member.trust + trust, 100)
 	if infection > 0:
 		member.infection = mini(member.infection + infection, 99)
 		member.infected = true
-	result.horde = horde
 	if member.health <= 0:
 		result.died = true
 		result.loot.clear()
-		result.lines.append("%s ne revient pas de : %s." % [member.display_name, zone.display_name])
-	else:
-		var found: String = MenuKit.describe_amounts(result.loot) if not result.loot.is_empty() else "rien"
-		var hurt: String = " (blessé : −%d PV)" % wounds if wounds > 0 else ""
-		var retreat: String = " Ça tournait mal : il a décroché à temps." if retreated else ""
-		result.lines.append("%s revient de : %s, avec %s%s.%s" % [member.display_name, zone.display_name, found, hurt, retreat])
-	if horde:
-		result.lines.append("Une horde a attaqué le train pendant ce temps : −%d %%." % roundi(HORDE_TRAIN_DAMAGE * 100.0))
+	for id: StringName in result.loot.keys():
+		if result.loot[id] <= 0:
+			result.loot.erase(id)
 	return result
 
 

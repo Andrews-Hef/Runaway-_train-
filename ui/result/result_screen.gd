@@ -57,6 +57,8 @@ func show_result(result: ExpeditionResult, loot_types: Array[LootData]) -> void:
 			_add_line("Tu reviens les mains vides.", MenuKit.MUTED)
 		else:
 			_loot_list.add_child(haul)
+		if result.companion:
+			_loot_list.add_child(_companion_row(result))
 		_loot_list.add_child(_stats(result))
 		_storage.visible = false
 		_button.text = "Continuer le voyage"
@@ -100,6 +102,34 @@ func _haul(result: ExpeditionResult, loot_types: Array[LootData]) -> HFlowContai
 		haul.add_child(SlotCell.create(BlueprintCatalog.icon(plan_id), "",
 			"Plan trouvé : %s (à étudier à la table des plans)" % BlueprintCatalog.get_plan(plan_id).display_name, false).set_corner(PLAN))
 	return haul
+
+
+## L'équipier de sortie : son portrait, ce qu'il rapporte en cases, et comment il revient.
+func _companion_row(result: ExpeditionResult) -> HBoxContainer:
+	var member: CrewMember = result.companion
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override(&"separation", 4)
+	row.add_child(SlotCell.create(CrewLooks.portrait(member.look), "", member.full_name(), false))
+	if result.companion_died:
+		var lost := MenuKit.label(" ".join(result.companion_lines), RISK_HIGH)
+		lost.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		lost.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(lost)
+		return row
+	if result.companion_loot.is_empty():
+		row.add_child(MenuKit.label("%s revient les mains vides." % member.display_name, MenuKit.MUTED))
+	else:
+		row.add_child(MenuKit.label("%s rapporte" % member.display_name))
+		row.add_child(MenuKit.cost_row(result.companion_loot))
+	var note: String = " ".join(result.companion_lines.slice(1)) if result.companion_lines.size() > 1 else ""
+	var first: String = result.companion_lines[0] if not result.companion_lines.is_empty() else ""
+	# Blessé, ou a décroché : ça se dit ; sinon pas de phrase en plus.
+	if first.contains("blessé") or first.contains("décroché") or not note.is_empty():
+		var extra := MenuKit.label((first + " " + note).strip_edges(), RISK_MEDIUM)
+		extra.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		extra.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(extra)
+	return row
 
 
 ## Les chiffres du retour : infection (et ce que la sortie a coûté), stock, couchettes.
