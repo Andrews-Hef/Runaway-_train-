@@ -118,7 +118,7 @@ jobs:
               -keyalg RSA -keysize 2048 -validity 10000 \
               -storepass "$KEYSTORE_PASSWORD" -keypass "$KEYSTORE_PASSWORD" \
               -dname "CN=Runaway Train (cle temporaire)"
-            echo "::warning title=APK signé avec une clé temporaire::Ajoute les secrets ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_ALIAS et ANDROID_KEYSTORE_PASSWORD (voir le README)."
+            echo "::warning title=APK signé avec une clé temporaire::Ajoute les secrets ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_ALIAS et ANDROID_KEYSTORE_PASSWORD (voir docs/builds.md)."
             echo "SIGNING=clé temporaire (ajoute les secrets ANDROID_KEYSTORE_*)" >> "$GITHUB_ENV"
           fi
           {

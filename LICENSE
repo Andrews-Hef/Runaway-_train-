@@ -15,6 +15,8 @@ Pour toute demande d'autorisation : https://github.com/Andrews-Hef
 
 Exception : les composants tiers inclus restent sous leur propre licence.
 - Police Barlow (assets/fonts/barlow/) : SIL Open Font License 1.1, voir OFL.txt.
+- Musiques et bruitages (assets/audio/) : œuvres d'autres auteurs, en CC0 ou
+  CC-BY, listées avec leurs licences dans assets/audio/CREDITS.md.
 
 --------------------------------------------------------------------------------
 
@@ -35,3 +37,5 @@ For permission requests: https://github.com/Andrews-Hef
 
 Exception: bundled third-party components remain under their own licenses.
 - Barlow font (assets/fonts/barlow/): SIL Open Font License 1.1, see OFL.txt.
+- Music and sound effects (assets/audio/): works by other authors, under CC0
+  or CC-BY, listed with their licenses in assets/audio/CREDITS.md.
