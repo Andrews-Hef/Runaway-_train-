@@ -49,3 +49,16 @@ static func make_panel() -> PanelContainer:
 	panel.position = Vector2(4.0, 4.0)
 	panel.add_child(EquipmentBar.new())
 	return panel
+
+
+## Cale le bandeau d'infos du haut (`top`) à droite de la barre d'équipement (`bar`, déjà
+## dans l'arbre) : ils ne peuvent plus se chevaucher, quelle que soit la largeur de l'écran
+## (480 px de large en 16:9 sur PC, 600 en 20:9 sur téléphone). Les textes trop longs
+## passent à la ligne au lieu de déborder.
+static func dock_beside(bar: Control, top: Control, gap: float = 4.0) -> void:
+	top.anchor_left = 0.0
+	top.anchor_right = 1.0
+	top.offset_left = bar.position.x + bar.get_combined_minimum_size().x + gap
+	top.offset_right = -bar.position.x
+	for node: Node in top.find_children("*", "Label", true, false):
+		(node as Label).autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

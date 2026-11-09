@@ -91,6 +91,8 @@ func test_la_scene_de_la_gare() -> void:
 		assert_true(scene.get_node("World").has_node(expected), "%s manquant" % expected)
 	var train: Train = scene.get_node("World/Train")
 	assert_true(train.door.prompt == "Repartir", "la porte du train sert à repartir")
+	var top := scene.get_node("Ui/Root/Top") as Control
+	assert_true(top.offset_left > 60.0 and top.anchor_right == 1.0, "le bandeau se cale à droite de la barre d'équipement")
 	scene.free()
 
 

@@ -86,3 +86,23 @@ func test_l_equipage_se_repartit_dans_les_dortoirs() -> void:
 	GameState.crew_changed.emit()
 	GameState.train_changed.emit()
 	assert_true(_find("Crew_").size() == 6, "les 6 équipiers sont visibles")
+
+
+## Le bandeau d'infos du haut ne passe jamais sous la barre d'équipement (bug vu en 16:9).
+func test_le_bandeau_ne_chevauche_pas_l_equipement() -> void:
+	var top := _interior.get_node("Ui/Root/Top") as Control
+	var bar: Control
+	for child: Node in _interior.get_node("Ui/Root").get_children():
+		if child is PanelContainer and child.get_child_count() > 0 and child.get_child(0) is EquipmentBar:
+			bar = child
+	assert_true(bar != null, "barre d'équipement en haut à gauche")
+	assert_true(top.offset_left >= bar.position.x + bar.get_combined_minimum_size().x,
+		"le bandeau commence après la barre (%.0f ≥ %.0f)" % [top.offset_left, bar.position.x + bar.get_combined_minimum_size().x])
+	assert_true(top.anchor_left == 0.0 and top.anchor_right == 1.0, "il prend la place qui reste, quelle que soit la largeur")
+
+
+func test_l_etat_du_train_en_pastilles() -> void:
+	var summary := _interior.get_node("%Summary") as HFlowContainer
+	assert_true(summary.get_child_count() == 7, "arrivée, infection, stock, équipage, voitures, état, énergie")
+	for chip: Node in summary.get_children():
+		assert_false((chip as Control).tooltip_text.is_empty(), "chaque pastille s'explique en infobulle")

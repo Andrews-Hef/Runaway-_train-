@@ -120,6 +120,14 @@ const STATION_ANIMATIONS: Dictionary[StringName, StringName] = {
 	&"crew": &"idle",
 }
 
+const ICON_TIMER: Texture2D = preload("res://assets/ui/icons/timer.png")
+const ICON_INFECTION: Texture2D = preload("res://assets/ui/icons/infection.png")
+const ICON_CRATE: Texture2D = preload("res://assets/ui/icons/crate.png")
+const ICON_BED: Texture2D = preload("res://assets/ui/icons/bed.png")
+const ICON_WAGON: Texture2D = preload("res://assets/ui/icons/wagon.png")
+const ICON_HAMMER: Texture2D = preload("res://assets/ui/icons/hammer.png")
+const ICON_COAL: Texture2D = preload("res://assets/ui/icons/coal.png")
+
 @onready var _ground: Parallax2D = $Ground
 @onready var _ground_tiles: TileMapLayer = $Ground/Tiles
 @onready var _ground_props: Node2D = $Ground/Props
@@ -130,7 +138,9 @@ const STATION_ANIMATIONS: Dictionary[StringName, StringName] = {
 @onready var _camera: Camera2D = $Camera2D
 @onready var _menu: CanvasLayer = $TrainMenu
 @onready var _destination: Label = %Destination
-@onready var _summary: Label = %Summary
+## L'état du train en pastilles (heure d'arrivée, infection, stock, équipage, voitures,
+## état, énergie) : le détail est dans l'infobulle.
+@onready var _summary: HFlowContainer = %Summary
 @onready var _order: Label = %Order
 @onready var _prompt: Label = %Prompt
 @onready var _fade: ColorRect = %Fade
@@ -170,8 +180,10 @@ func _ready() -> void:
 	GameState.train_changed.connect(_build_train)
 	GameState.crew_changed.connect(_place_crew)
 	InputMode.changed.connect(func(_device: int) -> void: _refresh_prompt())
-	# Équipement porté, en haut à gauche.
-	_fade.get_parent().add_child(EquipmentBar.make_panel())
+	# Équipement porté, en haut à gauche ; le bandeau d'infos se cale à sa droite.
+	var equipment := EquipmentBar.make_panel()
+	_fade.get_parent().add_child(equipment)
+	EquipmentBar.dock_beside(equipment, $Ui/Root/Top)
 	_fade.get_parent().move_child(_fade, -1)
 	_refresh_texts()
 	_fade.color.a = 1.0
@@ -533,11 +545,28 @@ func _refresh_texts() -> void:
 			("Ordre du capitaine : " + order.text()) if order else "Pas d'ordre en gare"]
 	if not GameState.pending_promotions.is_empty():
 		_order.text += " · Talent à choisir (%s : inventaire)" % InputMode.label_for(&"inventory")
-	_summary.text = "Arrivée %s · Infection %d %% · Stock %d/%d · Équipage %d/%d · Voitures %d/%d · Train %d %% · Énergie %d/%d (%d trajet(s))" % [
-		DayClock.time_text(GameState.clock_minutes),
-		roundi(GameState.infection * 100.0), GameState.storage_total(), GameState.storage_capacity(),
-		GameState.crew.size(), GameState.beds(), GameState.train.size(), GameState.max_cars(),
-		roundi(GameState.train_condition * 100.0), GameState.energy, GameState.energy_capacity(), GameState.trips_left()]
+	_fill_summary()
+
+
+func _fill_summary() -> void:
+	MenuKit.clear(_summary)
+	var full: bool = GameState.storage_total() >= GameState.storage_capacity()
+	var trips: int = GameState.trips_left()
+	var chips: Array = [
+		[ICON_TIMER, DayClock.time_text(GameState.clock_minutes), Color.WHITE, "Arrivée à l'arrêt"],
+		[ICON_INFECTION, "%d %%" % roundi(GameState.infection * 100.0),
+			MenuKit.BAD if GameState.infection >= 0.3 else Color.WHITE, "Ton infection"],
+		[ICON_CRATE, "%d/%d" % [GameState.storage_total(), GameState.storage_capacity()],
+			MenuKit.BAD if full else Color.WHITE, "Stock du train"],
+		[ICON_BED, "%d/%d" % [GameState.crew.size(), GameState.beds()], Color.WHITE, "Équipage / couchettes"],
+		[ICON_WAGON, "%d/%d" % [GameState.train.size(), GameState.max_cars()], Color.WHITE, "Voitures / maximum"],
+		[ICON_HAMMER, "%d %%" % roundi(GameState.train_condition * 100.0),
+			MenuKit.BAD if GameState.train_condition < 0.4 else Color.WHITE, "État du train"],
+		[ICON_COAL, "%d/%d (%d)" % [GameState.energy, GameState.energy_capacity(), trips],
+			MenuKit.BAD if trips <= 1 else Color.WHITE, "Énergie / chaudière (trajets possibles)"],
+	]
+	for chip: Array in chips:
+		_summary.add_child(MenuKit.chip(chip[0], chip[1], chip[2], chip[3]))
 
 
 func _on_target_changed(target: Interactable) -> void:

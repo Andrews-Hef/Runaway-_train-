@@ -75,8 +75,10 @@ func _ready() -> void:
 	light.name = "DayLight"
 	light.color = DayClock.sky_color(GameState.clock_minutes).lerp(Color.WHITE, 0.35)
 	add_child(light)
-	# Équipement porté, en haut à gauche.
-	_fade.get_parent().add_child(EquipmentBar.make_panel())
+	# Équipement porté, en haut à gauche ; le bandeau d'infos se cale à sa droite.
+	var equipment := EquipmentBar.make_panel()
+	_fade.get_parent().add_child(equipment)
+	EquipmentBar.dock_beside(equipment, $Ui/Root/Top)
 	_fade.get_parent().move_child(_fade, -1)
 	_fade.color.a = 1.0
 	create_tween().tween_property(_fade, "color:a", 0.0, 0.4)
