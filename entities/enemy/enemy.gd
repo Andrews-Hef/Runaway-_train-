@@ -247,7 +247,7 @@ func _fire() -> void:
 	projectile.speed = data.projectile_speed
 	projectile.color = data.projectile_color
 	projectile.position = origin
-	Audio.play_at(&"shot", global_position)
+	Audio.play_at(&"spit" if _infected() else &"shot", global_position) # crachat ou balle
 	shot_fired.emit(self, projectile)
 
 
@@ -308,7 +308,11 @@ func _wander(delta: float) -> void:
 ## pendant ALERT_TIME secondes. Son point d'attache devient l'alarme.
 ## Il repère le joueur : grognement (infecté) ou « Hé ! » (pilleur).
 func _cry() -> void:
-	Audio.play_at(&"growl" if data.faction == EnemyData.Faction.INFECTED else &"bark", global_position)
+	Audio.play_at(&"growl" if _infected() else &"bark", global_position)
+
+
+func _infected() -> bool:
+	return data.faction == EnemyData.Faction.INFECTED
 
 
 func alert(at: Vector2) -> void:
@@ -341,7 +345,7 @@ func _on_died() -> void:
 	remove_from_group(GROUP)
 	_telegraph.queue_redraw()
 	$CollisionShape2D.set_deferred(&"disabled", true)
-	Audio.play_at(&"enemy_die", global_position)
+	Audio.play_at(&"enemy_die" if _infected() else &"raider_die", global_position)
 	died.emit(self)
 	var tween := create_tween()
 	tween.tween_property(_sprite, "modulate", Color(1.0, 1.0, 1.0, 0.0), 0.5)

@@ -5,6 +5,7 @@ extends TestCase
 
 const STOP_ZONE: PackedScene = preload("res://levels/stop_zone/stop_zone.tscn")
 const HORDE: EventData = preload("res://data/events/horde.tres")
+const TITLE: PackedScene = preload("res://levels/title/title.tscn")
 const ResultScreenScript = preload("res://ui/result/result_screen.gd")
 const TEST_SETTINGS: String = "user://test_settings.cfg"
 
@@ -45,22 +46,39 @@ func _add(node: Node) -> Node:
 
 # --- Fichiers et bus ---------------------------------------------------------------
 
-func test_chaque_son_a_son_fichier() -> void:
+func test_chaque_son_a_ses_fichiers() -> void:
 	for id: StringName in Audio.SOUNDS:
-		assert_true(Audio.stream(id) is AudioStreamWAV, "bruitage %s" % id)
+		var all: Array = Audio.variants(id)
+		assert_true(all.size() == AudioCatalog.VARIANTS.get(id, 0), "bruitage %s : %d variante(s)" % [id, all.size()])
+		for sound: AudioStream in all:
+			assert_true(sound is AudioStreamWAV, "bruitage %s en WAV (pas de décodage pendant le jeu)" % id)
 	for id: StringName in Audio.LOOPS:
 		var loop := Audio.stream(id) as AudioStreamOggVorbis
 		assert_true(loop != null and loop.loop, "ambiance %s, en boucle" % id)
-	for id: StringName in Audio.MUSIC:
-		var music := Audio.stream(id) as AudioStreamOggVorbis
-		assert_true(music != null and music.loop, "musique %s, en boucle" % id)
-		assert_true(music.get_length() > 20.0, "musique %s : assez longue pour ne pas lasser (%.0f s)" % [id, music.get_length()])
+
+
+func test_chaque_morceau_a_son_fichier() -> void:
+	for moment: StringName in AudioCatalog.PLAYLISTS:
+		var tracks: Array = AudioCatalog.PLAYLISTS[moment]
+		for path: String in tracks:
+			var music := Audio.track(path) as AudioStreamOggVorbis
+			assert_true(music != null, "morceau %s" % path)
+			if music:
+				assert_true(music.get_length() > 20.0, "%s : un vrai morceau (%.0f s)" % [path, music.get_length()])
+				assert_true(music.loop == (tracks.size() == 1), "%s : boucle seulement s'il est seul" % path)
+
+
+func test_les_moments_du_jeu_ont_leur_musique() -> void:
+	for moment: StringName in [&"title", &"train", &"explore_day", &"explore_night", &"danger", &"defeat"]:
+		assert_true(AudioCatalog.PLAYLISTS.has(moment), "playlist %s" % moment)
+	assert_true(AudioCatalog.PLAYLISTS[&"explore_day"].size() >= 10, "de quoi explorer longtemps sans redite (jour)")
+	assert_true(AudioCatalog.PLAYLISTS[&"explore_night"].size() >= 8, "de quoi explorer longtemps sans redite (nuit)")
 
 
 func test_les_bruitages_sont_courts() -> void:
 	for id: StringName in Audio.SOUNDS:
-		var sound: AudioStream = Audio.stream(id)
-		assert_true(sound.get_length() > 0.03 and sound.get_length() < 3.0, "%s : %.2f s" % [id, sound.get_length()])
+		for sound: AudioStream in Audio.variants(id):
+			assert_true(sound.get_length() > 0.01 and sound.get_length() < 8.0, "%s : %.2f s" % [id, sound.get_length()])
 
 
 ## Chaque son demandé dans le code existe (une faute de frappe = un son muet en jeu).
@@ -68,7 +86,7 @@ func test_le_code_ne_demande_que_des_sons_qui_existent() -> void:
 	var known: Array[StringName] = [&""]
 	known.append_array(Audio.SOUNDS.keys())
 	known.append_array(Audio.LOOPS.keys())
-	known.append_array(Audio.MUSIC)
+	known.append_array(AudioCatalog.PLAYLISTS.keys())
 	var names := RegEx.create_from_string("&\"(\\w*)\"")
 	var checked: int = 0
 	for path: String in _scripts("res://", []):
@@ -106,8 +124,18 @@ func test_un_bruitage_part_sur_le_bus_des_effets() -> void:
 	var player: AudioStreamPlayer = Audio.play(&"hit")
 	assert_true(player != null and player.playing, "le son joue")
 	assert_true(player.bus == Audio.SFX_BUS, "bus Effets")
-	assert_true(player.stream == Audio.stream(&"hit"), "le bon fichier")
+	assert_true(player.stream in Audio.variants(&"hit"), "une des variantes du coup")
 	assert_true(absf(player.pitch_scale - 1.0) <= 0.05, "hauteur à peine variée")
+
+
+func test_une_variante_n_est_jamais_rejouee_aussitot() -> void:
+	var previous: AudioStream
+	for i: int in 20:
+		Audio._last_played.clear()
+		var player: AudioStreamPlayer = Audio.play(&"hit")
+		assert_true(player.stream != previous, "coup %d : une autre variante que le précédent" % i)
+		previous = player.stream
+		player.stop()
 
 
 func test_le_meme_son_n_est_pas_empile() -> void:
@@ -156,14 +184,36 @@ func test_les_boutons_cliquent_et_peuvent_avoir_leur_son() -> void:
 func test_la_musique_change_en_fondu() -> void:
 	Audio.play_music(&"train")
 	var first: AudioStreamPlayer = Audio._music[Audio._music_index]
-	assert_true(first.playing and first.stream == Audio.stream(&"train"), "la musique du train démarre")
+	assert_true(Audio.current_track in AudioCatalog.PLAYLISTS[&"train"], "un morceau du train")
+	assert_true(first.playing and first.stream == Audio.track(Audio.current_track), "il démarre")
 	assert_true(first.bus == Audio.MUSIC_BUS, "bus Musique")
 	Audio.play_music(&"train")
-	assert_true(Audio._music[Audio._music_index] == first, "la même musique ne redémarre pas")
+	assert_true(Audio._music[Audio._music_index] == first, "la même playlist ne redémarre pas")
 	Audio.play_music(&"danger")
 	var second: AudioStreamPlayer = Audio._music[Audio._music_index]
-	assert_true(second != first and second.stream == Audio.stream(&"danger"), "l'autre lecteur prend le relais")
+	assert_true(second != first and Audio.current_track in AudioCatalog.PLAYLISTS[&"danger"], "l'autre lecteur prend le relais")
 	assert_true(first.playing and first.get_meta(&"stopping", false), "l'ancienne s'efface en fondu")
+
+
+func test_la_playlist_enchaine_sans_redite() -> void:
+	Audio.play_music(&"explore_day")
+	for i: int in 25:
+		var before: String = Audio.current_track
+		Audio._on_track_finished(Audio._music[Audio._music_index])
+		assert_true(Audio.current_track != before, "morceau %d : pas deux fois le même de suite" % i)
+		assert_true(Audio.current_track in AudioCatalog.PLAYLISTS[&"explore_day"], "toujours la playlist du jour")
+	Audio.play_music(&"defeat")
+	assert_true(Audio.current_track == "defeat/game_over" and Audio.track(Audio.current_track).loop,
+		"un moment à un seul morceau : il boucle")
+
+
+func test_un_morceau_qu_on_quitte_ne_relance_rien() -> void:
+	Audio.play_music(&"train")
+	var old: AudioStreamPlayer = Audio._music[Audio._music_index]
+	Audio.play_music(&"danger")
+	var danger: String = Audio.current_track
+	Audio._on_track_finished(old)
+	assert_true(Audio.current_track == danger, "la fin de l'ancien morceau (en fondu) ne change pas la playlist")
 
 
 func test_une_ambiance_s_arrete_avec_sa_scene() -> void:
@@ -254,3 +304,32 @@ func test_le_bilan_choisit_sa_petite_musique() -> void:
 	assert_true(ResultScreenScript.result_sound(result) == &"order_done", "ordre rempli")
 	result.promotions.append(Career.GRADES[1])
 	assert_true(ResultScreenScript.result_sound(result) == &"promotion", "promu")
+
+
+# --- Crédits -----------------------------------------------------------------------
+
+func test_les_credits_nomment_chaque_oeuvre() -> void:
+	var view := _add(CreditsView.create()) as CreditsView
+	var expected: int = AudioCatalog.MUSIC_CREDITS.size() + AudioCatalog.SFX_CREDITS.size() + CreditsView.OTHER_CREDITS.size()
+	assert_true(view.lines.size() == expected, "une ligne par œuvre (%d)" % expected)
+	for entry: Array in AudioCatalog.MUSIC_CREDITS + AudioCatalog.SFX_CREDITS:
+		assert_true(entry.size() == 4 and (entry[3] as String).begins_with("https://"), "%s : auteur, licence et lien" % entry[0])
+		assert_true(entry[2] in ["CC0", "CC-BY 3.0", "CC-BY 4.0"], "%s : licence connue (%s)" % [entry[0], entry[2]])
+	var shown: Array[String] = []
+	for line: Button in view.lines:
+		shown.append(line.text)
+	assert_true("Gunshot Sounds — Vincent Sevedge (publié par Tabasco) (CC-BY 3.0)" in shown,
+		"le CC-BY exige le crédit : il est à l'écran")
+
+
+func test_credits_dans_la_pause_et_sur_l_ecran_titre() -> void:
+	GameMenu.call(&"_show_credits")
+	assert_true(GameMenu.view == GameMenu.View.CREDITS, "menu pause > Crédits")
+	GameMenu.call(&"_show_pause_buttons")
+	GameMenu.close()
+	var title := _add(TITLE.instantiate())
+	title.call(&"toggle_credits")
+	assert_true(title.get(&"_credits") != null, "écran titre : les crédits s'ouvrent")
+	assert_false((title.get(&"_new_game") as Control).visible, "à la place des boutons")
+	title.call(&"go_back")
+	assert_true(title.get(&"_credits") == null and (title.get(&"_new_game") as Control).visible, "Retour : les boutons reviennent")

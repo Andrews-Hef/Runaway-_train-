@@ -1,41 +1,45 @@
 extends Node
 ## Autoload « Audio » : bruitages, boucles d'ambiance et musique de fond.
 ##
-## - play(&"hit") : un bruitage, entendu partout (hauteur un peu variée à chaque fois).
+## - play(&"hit") : un bruitage, entendu partout. S'il a plusieurs variantes (4 coups,
+##   3 cris…), une au hasard, jamais deux fois la même de suite ; hauteur un peu variée.
 ## - play_at(&"growl", position) : un bruitage placé dans le monde ; il s'atténue au loin
 ##   et passe à gauche ou à droite selon la caméra.
-## - play_music(&"train") : fondu enchaîné vers ce morceau (rien si c'est déjà lui).
+## - play_music(&"explore_day") : la playlist de ce moment du jeu, en fondu enchaîné (rien si
+##   c'est déjà elle). Les morceaux s'enchaînent au hasard, sans répéter celui qui vient de
+##   passer ; un moment qui n'a qu'un morceau le joue en boucle.
 ## - set_loop(&"rain_loop", true, self) : boucle d'ambiance (pluie, roulement du train),
 ##   coupée toute seule quand le nœud `owner` quitte la scène.
 ## - Tous les boutons font « clic » d'eux-mêmes ; un bouton peut demander un autre son
 ##   (« Fabriquer » fait marteau) : tag(button, &"craft").
 ## - Deux volumes, Musique et Effets (menu pause > Son), gardés dans user://settings.cfg.
 ##
-## Sons et musiques sont générés par tools/gen_audio.py (synthé maison, 8-bit) : de quoi
-## faire tester le jeu en attendant de vrais sons.
+## Sons et musiques libres (CC0 pour la plupart, voir assets/audio/CREDITS.md), préparés
+## par tools/build_audio.py, qui écrit aussi le catalogue (AudioCatalog : playlists,
+## variantes, crédits).
 
 const SFX_DIR: String = "res://assets/audio/sfx/"
 const MUSIC_DIR: String = "res://assets/audio/music/"
 const MUSIC_BUS: StringName = &"Music"
 const SFX_BUS: StringName = &"SFX"
 ## Les bruitages et leur volume propre (dB) : c'est ici qu'on équilibre le mélange.
+## (Les fichiers sont déjà au même volume moyen : ces chiffres disent qui passe devant.)
 const SOUNDS: Dictionary[StringName, float] = {
-	&"ui_click": -8.0, &"ui_open": -6.0, &"ui_close": -7.0, &"ui_error": -5.0,
-	&"swing": -6.0, &"hit": -1.0, &"hurt": 0.0, &"enemy_die": -2.0, &"shot": -3.0,
-	&"growl": -4.0, &"bark": -5.0, &"freed": -3.0,
-	&"pickup": -5.0, &"drop": -4.0, &"plan_found": -2.0,
-	&"whistle": -1.0, &"train_depart": 0.0, &"brake": -3.0, &"door": -3.0, &"train_hit": -2.0,
-	&"horde": 0.0, &"alarm": -3.0, &"thunder": 0.0, &"encounter": -4.0,
-	&"craft": -3.0, &"build": -2.0, &"research": -3.0, &"coal_load": -3.0,
-	&"repair_done": -2.0, &"breakdown": 0.0, &"medicine": -3.0,
-	&"promotion": -1.0, &"order_done": -2.0, &"defeat": -2.0, &"infection_up": -3.0,
+	&"ui_click": -10.0, &"ui_open": -9.0, &"ui_close": -9.0, &"ui_error": -8.0, &"encounter": -6.0,
+	&"swing": -8.0, &"hit": -3.0, &"hurt": -3.0, &"enemy_die": -4.0, &"raider_die": -4.0,
+	&"shot": -4.0, &"spit": -5.0, &"growl": -6.0, &"bark": -6.0, &"freed": -6.0,
+	&"pickup": -6.0, &"drop": -6.0, &"plan_found": -4.0,
+	&"whistle": -4.0, &"train_depart": -4.0, &"brake": -6.0, &"door": -6.0, &"train_hit": -4.0,
+	&"horde": -2.0, &"alarm": -8.0, &"thunder": -2.0,
+	&"craft": -6.0, &"build": -6.0, &"research": -6.0, &"coal_load": -6.0,
+	&"repair_done": -5.0, &"breakdown": -3.0, &"medicine": -5.0,
+	&"promotion": -3.0, &"order_done": -4.0, &"defeat": -4.0, &"infection_up": -4.0,
 }
 ## Petites mélodies : toujours à la même hauteur, sinon elles sonnent faux sur la musique.
 const STEADY: Array[StringName] = [&"plan_found", &"encounter", &"research", &"repair_done", &"medicine",
 	&"promotion", &"order_done", &"defeat", &"ui_open", &"ui_close"]
 ## Boucles d'ambiance (OGG) et leur volume (dB).
 const LOOPS: Dictionary[StringName, float] = {&"rain_loop": -6.0, &"train_loop": -8.0}
-const MUSIC: Array[StringName] = [&"title", &"train", &"explore_day", &"explore_night", &"danger"]
 ## Les sons d'ennemis hors de ce rayon (px) ne s'entendent plus.
 const HEARING_DISTANCE: float = 420.0
 const POOL_SIZE: int = 10
@@ -45,10 +49,13 @@ const REPEAT_GAP_MS: int = 50
 ## Sons qui lasseraient vite : un écart plus long (ms) entre deux.
 const COOLDOWNS_MS: Dictionary[StringName, int] = {
 	&"growl": 700, &"bark": 900, &"alarm": 1500, &"thunder": 1500, &"horde": 3000, &"train_hit": 220, &"hurt": 120,
+	&"spit": 300,
 }
 const MUSIC_FADE: float = 1.2
 ## La musique reste un cran sous les effets.
 const MUSIC_DB: float = -6.0
+## Entre deux morceaux d'une même playlist : petit fondu d'entrée.
+const NEXT_TRACK_FADE: float = 0.6
 const SILENT_DB: float = -60.0
 const DEFAULT_VOLUMES: Dictionary[StringName, float] = {MUSIC_BUS: 0.7, SFX_BUS: 0.8}
 
@@ -56,9 +63,15 @@ const DEFAULT_VOLUMES: Dictionary[StringName, float] = {MUSIC_BUS: 0.7, SFX_BUS:
 var settings_path: String = "user://settings.cfg"
 ## false : plus aucun son ne part (les tests l'éteignent ; la musique demandée reste notée).
 var enabled: bool = true
+## Le moment du jeu dont la playlist joue (&"" : pas de musique)…
 var current_music: StringName = &""
+## …et le morceau en cours (chemin sous assets/audio/music/, sans extension).
+var current_track: String = ""
 
 var _streams: Dictionary[StringName, AudioStream] = {}
+var _variants: Dictionary[StringName, Array] = {}
+var _last_variant: Dictionary[StringName, int] = {}
+var _tracks: Dictionary[String, AudioStream] = {}
 var _players: Array[AudioStreamPlayer] = []
 var _world_players: Array[AudioStreamPlayer2D] = []
 var _next_player: int = 0
@@ -88,7 +101,9 @@ func _ready() -> void:
 		add_child(player)
 		_world_players.append(player)
 	for i: int in 2:
-		_music.append(_new_player(MUSIC_BUS))
+		var music := _new_player(MUSIC_BUS)
+		music.finished.connect(_on_track_finished.bind(music))
+		_music.append(music)
 	load_settings()
 	get_tree().node_added.connect(_on_node_added)
 	_hook_buttons(get_tree().root)
@@ -114,7 +129,7 @@ func play(id: StringName, pitch_spread: float = 0.05, volume_db: float = 0.0) ->
 	if not _may_play(id):
 		return null
 	var player: AudioStreamPlayer = _free_player()
-	player.stream = stream(id)
+	player.stream = _pick_variant(id)
 	player.volume_db = SOUNDS[id] + volume_db
 	player.pitch_scale = _pitch(id, pitch_spread)
 	player.play()
@@ -133,7 +148,7 @@ func play_at(id: StringName, at: Vector2, pitch_spread: float = 0.08, volume_db:
 			break
 	_next_world = (_world_players.find(player) + 1) % WORLD_POOL_SIZE
 	player.global_position = at
-	player.stream = stream(id)
+	player.stream = _pick_variant(id)
 	player.volume_db = SOUNDS[id] + volume_db
 	player.pitch_scale = _pitch(id, pitch_spread)
 	player.play()
@@ -174,24 +189,58 @@ func _free_player() -> AudioStreamPlayer:
 	return oldest
 
 
-## Le fichier d'un son, d'une boucle ou d'un morceau (chargé une fois, puis gardé).
+## Le fichier d'un bruitage (sa première variante) ou d'une ambiance.
 func stream(id: StringName) -> AudioStream:
+	if SOUNDS.has(id):
+		var all: Array = variants(id)
+		return all[0] if not all.is_empty() else null
 	if _streams.has(id):
 		return _streams[id]
-	var path: String
-	if SOUNDS.has(id):
-		path = SFX_DIR + id + ".wav"
-	elif LOOPS.has(id):
-		path = SFX_DIR + id + ".ogg"
-	elif id in MUSIC:
-		path = MUSIC_DIR + id + ".ogg"
-	var loaded: AudioStream = load(path) as AudioStream if not path.is_empty() and ResourceLoader.exists(path) else null
-	if loaded == null:
-		push_warning("Audio : fichier manquant pour « %s »" % id)
-	elif loaded is AudioStreamOggVorbis:
-		(loaded as AudioStreamOggVorbis).loop = true # musiques et ambiances tournent en boucle
-	_streams[id] = loaded
-	return loaded
+	var loop := _load(SFX_DIR + id + ".ogg") as AudioStreamOggVorbis if LOOPS.has(id) else null
+	if loop:
+		loop.loop = true
+	_streams[id] = loop
+	return loop
+
+
+## Toutes les variantes d'un bruitage (chargées une fois, puis gardées).
+func variants(id: StringName) -> Array:
+	if _variants.has(id):
+		return _variants[id]
+	var found: Array = []
+	var count: int = AudioCatalog.VARIANTS.get(id, 1)
+	for index: int in count:
+		var path: String = SFX_DIR + id + (".wav" if count == 1 else "_%d.wav" % (index + 1))
+		var sound: AudioStream = _load(path)
+		if sound:
+			found.append(sound)
+	_variants[id] = found
+	return found
+
+
+## Une variante au hasard, jamais deux fois la même de suite.
+func _pick_variant(id: StringName) -> AudioStream:
+	var all: Array = variants(id)
+	if all.size() <= 1:
+		return all[0] if not all.is_empty() else null
+	var index: int = _random_except(all.size(), _last_variant.get(id, -1))
+	_last_variant[id] = index
+	return all[index]
+
+
+## Un index de 0 à count - 1, au hasard, différent de `except` (-1 : aucun à éviter).
+func _random_except(count: int, except: int) -> int:
+	if except < 0 or except >= count:
+		return _rng.randi_range(0, count - 1)
+	var index: int = _rng.randi_range(0, count - 2)
+	return index + 1 if index >= except else index
+
+
+func _load(path: String) -> AudioStream:
+	if ResourceLoader.exists(path):
+		return load(path) as AudioStream
+	push_warning("Audio : fichier manquant « %s »" % path)
+	return null
 
 
 ## Un bouton qui fait un autre son que le clic (&"" : silencieux). Renvoie le bouton.
@@ -225,19 +274,46 @@ func _on_button_pressed(button: BaseButton) -> void:
 
 # --- Musique -----------------------------------------------------------------------
 
-## Fondu enchaîné vers un morceau. &"" : la musique s'éteint.
-func play_music(id: StringName, fade: float = MUSIC_FADE) -> void:
-	if id == current_music:
+## Fondu enchaîné vers la playlist d'un moment du jeu. &"" : la musique s'éteint.
+func play_music(moment: StringName, fade: float = MUSIC_FADE) -> void:
+	if moment == current_music:
 		return
-	current_music = id
+	if moment != &"" and not AudioCatalog.PLAYLISTS.has(moment):
+		push_warning("Audio : pas de musique pour « %s »" % moment)
+	current_music = moment
+	_start_track(next_track(moment), fade)
+
+
+## Le prochain morceau d'une playlist : au hasard, pas celui qui joue déjà.
+func next_track(moment: StringName) -> String:
+	var tracks: Array = AudioCatalog.PLAYLISTS.get(moment, [])
+	if tracks.is_empty():
+		return ""
+	if tracks.size() == 1:
+		return tracks[0]
+	return tracks[_random_except(tracks.size(), tracks.find(current_track))]
+
+
+## Le fichier d'un morceau ; seul dans sa playlist, il boucle.
+func track(path: String) -> AudioStream:
+	if _tracks.has(path):
+		return _tracks[path]
+	var music := _load(MUSIC_DIR + path + ".ogg") as AudioStreamOggVorbis
+	if music:
+		var moment: StringName = StringName(path.get_slice("/", 0))
+		music.loop = (AudioCatalog.PLAYLISTS.get(moment, []) as Array).size() == 1
+	_tracks[path] = music
+	return music
+
+
+func _start_track(path: String, fade: float) -> void:
+	current_track = path
 	if not enabled:
 		return
 	var old: AudioStreamPlayer = _music[_music_index]
 	if old.playing:
 		_fade(old, SILENT_DB, fade, true)
-	if id == &"":
-		return
-	var music: AudioStream = stream(id)
+	var music: AudioStream = track(path) if not path.is_empty() else null
 	if music == null:
 		return
 	_music_index = 1 - _music_index
@@ -246,6 +322,12 @@ func play_music(id: StringName, fade: float = MUSIC_FADE) -> void:
 	player.volume_db = SILENT_DB
 	player.play()
 	_fade(player, MUSIC_DB, fade, false)
+
+
+## Un morceau se termine : le suivant de la même playlist.
+func _on_track_finished(player: AudioStreamPlayer) -> void:
+	if player == _music[_music_index] and not player.get_meta(&"stopping", false) and current_music != &"":
+		_start_track(next_track(current_music), NEXT_TRACK_FADE)
 
 
 func stop_music(fade: float = MUSIC_FADE) -> void:
@@ -264,6 +346,7 @@ func stop_all() -> void:
 		elif child is AudioStreamPlayer2D:
 			(child as AudioStreamPlayer2D).stop()
 	current_music = &""
+	current_track = ""
 
 
 # --- Ambiances ---------------------------------------------------------------------
@@ -334,7 +417,7 @@ func set_volume(bus: StringName, value: float, save: bool = true) -> void:
 
 func load_settings() -> void:
 	var config := ConfigFile.new()
-	var loaded: bool = config.load(settings_path) == OK
+	var loaded: bool = FileAccess.file_exists(settings_path) and config.load(settings_path) == OK
 	for bus: StringName in DEFAULT_VOLUMES:
 		var value: float = DEFAULT_VOLUMES[bus]
 		if loaded:
@@ -344,7 +427,8 @@ func load_settings() -> void:
 
 func save_settings() -> void:
 	var config := ConfigFile.new()
-	config.load(settings_path) # garde les autres réglages qu'on y mettra
+	if FileAccess.file_exists(settings_path):
+		config.load(settings_path) # garde les autres réglages qu'on y mettra
 	for bus: StringName in DEFAULT_VOLUMES:
 		config.set_value("audio", String(bus).to_lower(), snappedf(volume(bus), 0.01))
 	config.save(settings_path)

@@ -1,6 +1,6 @@
 extends Node2D
-## Écran titre : continuer la campagne enregistrée, ou en commencer une nouvelle, et
-## régler le son (Musique, Effets) avant de jouer.
+## Écran titre : continuer la campagne enregistrée, ou en commencer une nouvelle, régler
+## le son (Musique, Effets) avant de jouer, et lire les crédits.
 ##
 ## Le train roule en fond, la voie défile.
 
@@ -15,8 +15,12 @@ const NEW_GAME_TEXT: String = "Nouvelle partie"
 
 var _confirm_new: bool = false
 var _sound_button: Button
+var _credits_button: Button
 ## Les curseurs de volume, ouverts sous les boutons (null = fermés).
 var _sound: SoundSettings
+## Les crédits, à la place des boutons (null = fermés).
+var _credits: CreditsView
+var _credits_back: Button
 
 
 func _ready() -> void:
@@ -30,17 +34,53 @@ func _ready() -> void:
 	_new_game.pressed.connect(_on_new_game)
 	_hint.text = "Partie sauvegardée à chaque trajet. Rater le train ramène à la dernière gare refuge." if has_save \
 		else "Tu viens d'être recruté à bord. Le capitaine attend."
-	_sound_button = Button.new()
-	_sound_button.name = "Sound"
-	_sound_button.text = "Son"
-	_sound_button.custom_minimum_size = _new_game.custom_minimum_size
-	_new_game.add_sibling(_sound_button)
-	_sound_button.pressed.connect(toggle_sound)
+	# « Son » et « Crédits » côte à côte, sous « Nouvelle partie ».
+	var options := HBoxContainer.new()
+	options.name = "Options"
+	_new_game.add_sibling(options)
+	_sound_button = _option_button(options, "Sound", "Son", toggle_sound)
+	_credits_button = _option_button(options, "Credits", "Crédits", toggle_credits)
 	MenuKit.focus_later(_continue if has_save else _new_game)
 	_add_version()
 
 
-## Ouvre ou ferme les curseurs de volume, juste sous le bouton « Son ».
+func _option_button(box: HBoxContainer, node_name: String, text: String, on_press: Callable) -> Button:
+	var button := Button.new()
+	button.name = node_name
+	button.text = text
+	button.custom_minimum_size = _new_game.custom_minimum_size
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.pressed.connect(on_press)
+	box.add_child(button)
+	return button
+
+
+## Les crédits prennent la place des boutons ; « Retour » (ou Échap, B) les referme.
+func toggle_credits() -> void:
+	var options: Control = _sound_button.get_parent()
+	var opening: bool = _credits == null
+	if _sound and opening:
+		toggle_sound()
+	for control: Control in [_new_game, options, _hint]:
+		control.visible = not opening
+	_continue.visible = not opening and Campaign.has_resume()
+	if opening:
+		_credits = CreditsView.create(118.0)
+		options.add_sibling(_credits)
+		_credits_back = Button.new()
+		_credits_back.text = "Retour"
+		_credits_back.custom_minimum_size = Vector2(0.0, 18.0)
+		_credits_back.pressed.connect(toggle_credits)
+		_credits.add_sibling(_credits_back)
+		_credits.lines[0].grab_focus()
+	else:
+		_credits.queue_free()
+		_credits_back.queue_free()
+		_credits = null
+		_credits_button.grab_focus()
+
+
+## Ouvre ou ferme les curseurs de volume, juste sous les boutons « Son » et « Crédits ».
 func toggle_sound() -> void:
 	if _sound:
 		_sound.queue_free()
@@ -48,7 +88,7 @@ func toggle_sound() -> void:
 		_sound_button.grab_focus()
 		return
 	_sound = SoundSettings.create()
-	_sound_button.add_sibling(_sound)
+	_sound_button.get_parent().add_sibling(_sound)
 	_sound.sliders[0].grab_focus()
 
 
@@ -65,6 +105,9 @@ func _add_version() -> void:
 ## Bouton retour d'Android (via GameMenu) : annule la confirmation « effacer la partie »,
 ## sinon quitte le jeu.
 func go_back() -> void:
+	if _credits:
+		toggle_credits()
+		return
 	if _sound:
 		toggle_sound()
 		return

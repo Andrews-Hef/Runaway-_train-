@@ -139,7 +139,7 @@ Ouvrir `project.godot` dans Godot puis **F5**. Le jeu démarre sur l'écran titr
 
 **Android** : le bouton retour fait comme Échap (il ferme le menu ouvert, sinon il ouvre la pause) et ne quitte le jeu que depuis l'écran titre. Quand l'app passe en arrière-plan (appel, notification, bouton accueil), le jeu se met en pause et se sauvegarde s'il est dans le train ou en trajet : Android peut fermer une app en arrière-plan. Sur PC, quitter la fenêtre met aussi en pause. La version du jeu s'affiche sur l'écran titre et dans le menu pause.
 
-**Son** : deux volumes, **Musique** et **Effets**, réglables sur l'écran titre (bouton « Son ») et dans le menu pause (« Son »). Ils sont gardés d'une partie à l'autre.
+**Son** : deux volumes, **Musique** et **Effets**, réglables sur l'écran titre (bouton « Son ») et dans le menu pause (« Son »). Ils sont gardés d'une partie à l'autre. Les **Crédits** (musiques, bruitages, police) sont à côté.
 
 Les touches sont définies par **position physique** : ZQSD fonctionne directement en AZERTY, sans réglage. Les consignes à l'écran s'adaptent au dernier périphérique utilisé (« Maintenir E », « Maintenir A » ou « Maintenir Agir »).
 
@@ -262,26 +262,33 @@ tools/       scripts hors Godot (ignorés par Godot via .gdignore)
 
 ## Son et musique
 
-Des sons **provisoires**, comme les sprites : bruitages et musiques 8-bit **synthétisés par le code** (`python3 tools/gen_audio.py`, numpy + ffmpeg), sans échantillon extérieur ni licence à gérer. Même script, mêmes fichiers. Pour retoucher un son, on change ses chiffres dans le script et on relance.
+Des sons **libres**, trouvés sur [OpenGameArt](https://opengameart.org) : presque tout en **CC0** (domaine public), un pack de coups de feu en **CC-BY 3.0** (crédit obligatoire). La liste complète, avec auteurs, licences et liens, est dans [`assets/audio/CREDITS.md`](assets/audio/CREDITS.md) et dans l'écran **Crédits** du jeu (écran titre et menu pause).
 
-- **Bruitages** (`assets/audio/sfx/*.wav`, 35) : combat (coup, touché, blessé, ennemi abattu, tir, grognement, « Hé ! » des pilleurs), récolte et sac, train (sifflet, départ, freinage, porte, horde qui frappe), événements (horde, alarme, tonnerre, rencontre), menus du train (fabriquer, construire, étudier, charger la chaudière, soigner), panne et réparation, bilan (promotion, ordre rempli, échec), clic des menus.
+- **Musiques** (`assets/audio/music/<moment>/*.ogg`, 39 morceaux) : synthwave pour l'écran titre, le train et la horde ; lofi (et un peu de synthwave) pour l'exploration.
+- **Bruitages** (`assets/audio/sfx/*.wav`, 37 sons, 58 fichiers) : extraits de packs CC0 (Kenney, rubberduck, bart, qubodup, artisticdude…), parfois mixés entre eux. Un son peut avoir plusieurs **variantes** (`hit_1.wav` … `hit_4.wav`) : le jeu en prend une au hasard, jamais deux fois la même de suite.
 - **Ambiances en boucle** (`assets/audio/sfx/*.ogg`) : pluie, roulement du train.
-- **Musiques en boucle** (`assets/audio/music/*.ogg`) : écran titre, train (à bord, trajet, gare), exploration de jour, de nuit, horde.
 
-Le jeu les joue par l'autoload `Audio` :
+**Les playlists.** Chaque moment du jeu a sa liste de morceaux, jouée dans un ordre au hasard sans répéter celui qui vient de passer. Un moment qui n'a qu'un morceau le joue en boucle.
 
-| Moment | Musique | Ambiance |
-|---|---|---|
-| Écran titre | `title` | |
-| À bord, trajet, gare refuge | `train` | roulement (à bord et en trajet) |
-| Arrêt, de jour / de nuit | `explore_day` / `explore_night` (bascule au coucher du soleil) | pluie infectée quand elle tombe |
-| Horde | `danger`, jusqu'à ce qu'elle soit repoussée | |
+| Moment | Playlist | Morceaux | Ambiance |
+|---|---|---|---|
+| Écran titre | `title` | 3 (synthwave) | |
+| À bord, trajet, gare refuge | `train` | 3 (synthwave) | roulement (à bord et en trajet) |
+| Arrêt de jour | `explore_day` | 19 (lofi, ~45 min) | pluie infectée quand elle tombe |
+| Arrêt de nuit | `explore_night` | 10 (lofi 8-bit, darksynth, ~40 min) | idem |
+| Horde | `danger` | 3, jusqu'à ce qu'elle soit repoussée | |
+| Train raté (bilan) | `defeat` | 1, en boucle | |
+
+**Refaire les fichiers.** Les sources téléchargées ne sont pas dans le repo (elles pèsent 400 Mo). On les range dans un dossier (`music/`, `sfx/` avec les archives décompressées), puis `python3 tools/build_audio.py <dossier>` : volume des musiques égalisé (-18 LUFS) et OGG compact, bruitages découpés, mixés et égalisés, ambiances en boucle sans couture, et `core/audio_catalog.gd` (playlists, variantes, crédits) et `assets/audio/CREDITS.md` réécrits. Pour changer un bruitage : modifier sa recette dans le script et relancer.
+
+**Le code.** L'autoload `Audio` joue tout :
 
 - `Audio.play(&"hit")` : un bruitage, hauteur légèrement variée (sauf les petites mélodies, toujours justes). Un même son relancé trop vite est ignoré : dix ennemis touchés font un seul « paf ».
 - `Audio.play_at(&"growl", position)` : un son d'ennemi, qui s'atténue au loin et passe à gauche ou à droite.
+- `Audio.play_music(&"explore_day")` : fondu enchaîné vers la playlist de ce moment.
 - Tous les boutons font « clic » ; un bouton d'action peut avoir son propre son (`MenuKit.action(..., &"craft")`).
 - Bus `Music` et `SFX` (`default_bus_layout.tres`), limiteur sur le bus principal. Volumes dans `user://settings.cfg`.
-- Les tests coupent le son (`Audio.enabled = false`), sauf `test_audio.gd` ; un test vérifie que chaque son demandé dans le code existe.
+- Les tests coupent le son (`Audio.enabled = false`), sauf `test_audio.gd`. Un test vérifie que chaque son demandé dans le code existe, un autre que chaque œuvre a son crédit.
 
 ## Tests
 

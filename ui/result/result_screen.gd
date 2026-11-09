@@ -83,6 +83,8 @@ func show_result(result: ExpeditionResult, loot_types: Array[LootData]) -> void:
 		_button.text = "Reprendre"
 
 	Audio.play(result_sound(result))
+	if not result.boarded:
+		Audio.play_music(&"defeat") # train raté : la musique s'éteint sur une boucle triste
 	_root.visible = true
 	if not _button.disabled:
 		_button.grab_focus()

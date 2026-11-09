@@ -2,7 +2,7 @@ extends CanvasLayer
 ## Autoload « GameMenu » : menu pause (Échap / Start) et inventaire (I / Tab / Y),
 ## partout en jeu sauf sur l'écran titre. Le jeu est en pause tant qu'ils sont ouverts.
 ##
-## - Pause : reprendre, inventaire, commandes, son (volumes), écran titre, quitter (PC).
+## - Pause : reprendre, inventaire, commandes, son (volumes), crédits, écran titre, quitter (PC).
 ## - Inventaire façon Minecraft : le personnage et ses 5 cases d'équipement, le sac en
 ##   cases (piles de 5 ; cases grisées = ce qu'un sac plus grand ajouterait) et le
 ##   casier. On touche une case, l'objet s'affiche en bas avec ce qu'on peut en faire :
@@ -17,7 +17,7 @@ extends CanvasLayer
 ##
 ## L'interface est construite en code (comme les menus du train) et lit GameState.
 
-enum View { NONE, PAUSE, CONTROLS, SOUND, CONFIRM_TITLE, INVENTORY }
+enum View { NONE, PAUSE, CONTROLS, SOUND, CREDITS, CONFIRM_TITLE, INVENTORY }
 enum InventoryTab { ITEMS, GRADE }
 
 ## Le menu se referme (le casier du train rend alors la main au joueur).
@@ -171,7 +171,7 @@ func _input(event: InputEvent) -> void:
 	if view == View.NONE:
 		return
 	if event.is_action_pressed(&"pause") or event.is_action_pressed(&"ui_cancel"):
-		if view == View.CONTROLS or view == View.SOUND or view == View.CONFIRM_TITLE:
+		if view in [View.CONTROLS, View.SOUND, View.CREDITS, View.CONFIRM_TITLE]:
 			_show_pause_buttons()
 		else:
 			close()
@@ -398,6 +398,7 @@ func _show_pause_buttons() -> void:
 	_pause_box.add_child(_button("Inventaire (%s)" % InputMode.label_for(&"inventory"), func() -> void: open_inventory()))
 	_pause_box.add_child(_button("Commandes", _show_controls))
 	_pause_box.add_child(_button("Son", _show_sound))
+	_pause_box.add_child(_button("Crédits", _show_credits))
 	_pause_box.add_child(_button("Écran titre", _confirm_title))
 	if not OS.has_feature("mobile") and not OS.has_feature("web"):
 		_pause_box.add_child(_button("Quitter le jeu", func() -> void: get_tree().quit()))
@@ -432,6 +433,16 @@ func _show_sound() -> void:
 	_pause_box.add_child(settings)
 	_pause_box.add_child(_button("Retour", _show_pause_buttons))
 	MenuKit.focus_later(settings.sliders[0])
+
+
+func _show_credits() -> void:
+	view = View.CREDITS
+	MenuKit.clear(_pause_box)
+	_pause_box.add_child(MenuKit.label("Crédits", MenuKit.GOLD))
+	var credits := CreditsView.create(150.0)
+	_pause_box.add_child(credits)
+	_pause_box.add_child(_button("Retour", _show_pause_buttons))
+	MenuKit.focus_later(credits.lines[0])
 
 
 ## Les commandes du périphérique : [action, touche(s)].
