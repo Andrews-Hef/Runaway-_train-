@@ -157,6 +157,9 @@ func _ready() -> void:
 		_setup_incident()
 	_send_companion()
 	_refresh_music()
+	# Musiques qui peuvent arriver pendant l'arrêt : chargées d'avance, sans à-coup.
+	Audio.prefetch(&"danger")
+	Audio.prefetch(&"explore_day" if _night else &"explore_night")
 
 
 ## Jour, nuit ou horde : la musique suit.

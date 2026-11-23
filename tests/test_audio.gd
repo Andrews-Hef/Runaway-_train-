@@ -22,6 +22,8 @@ func before_each() -> void:
 
 
 func after_each() -> void:
+	Audio.poll_loads(true)
+	Audio.threaded = false
 	for node: Node in _nodes:
 		if is_instance_valid(node):
 			node.free()
@@ -205,6 +207,46 @@ func test_la_playlist_enchaine_sans_redite() -> void:
 	Audio.play_music(&"defeat")
 	assert_true(Audio.current_track == "defeat/game_over" and Audio.track(Audio.current_track).loop,
 		"un moment à un seul morceau : il boucle")
+
+
+func test_un_morceau_se_charge_sans_bloquer_le_jeu() -> void:
+	Audio.threaded = true
+	Audio._tracks.clear()
+	Audio._track_order.clear()
+	Audio.play_music(&"explore_night")
+	var wanted: String = Audio.current_track
+	assert_false(Audio.is_track_ready(wanted), "pas encore chargé : play_music rend la main tout de suite")
+	assert_false(Audio._music[0].playing or Audio._music[1].playing, "on attend le chargement")
+	Audio.poll_loads(true)
+	var player: AudioStreamPlayer = Audio._music[Audio._music_index]
+	assert_true(player.playing and player.stream == Audio.track(wanted), "chargé : il démarre")
+	var next: String = Audio._upcoming.get(&"explore_night", "")
+	assert_true(next != "" and next != wanted, "le suivant de la playlist est déjà choisi")
+	Audio.poll_loads(true)
+	assert_true(Audio.is_track_ready(next), "et chargé d'avance")
+	Audio._on_track_finished(player)
+	assert_true(Audio.current_track == next, "la fin du morceau enchaîne sur celui qui est prêt")
+	Audio.threaded = false
+
+
+func test_une_horde_preparee_demarre_aussitot() -> void:
+	Audio.threaded = true
+	Audio.play_music(&"explore_day")
+	Audio.poll_loads(true)
+	Audio.prefetch(&"danger")
+	Audio.poll_loads(true)
+	var ready: String = Audio._upcoming[&"danger"]
+	Audio.play_music(&"danger")
+	assert_true(Audio.current_track == ready and Audio._music[Audio._music_index].stream == Audio.track(ready),
+		"la musique de horde préparée démarre sans attendre")
+	Audio.threaded = false
+
+
+func test_la_memoire_des_morceaux_est_bornee() -> void:
+	for moment: StringName in AudioCatalog.PLAYLISTS:
+		for path: String in AudioCatalog.PLAYLISTS[moment]:
+			Audio._request(path)
+	assert_true(Audio._tracks.size() <= Audio.MUSIC_CACHE, "%d morceaux gardés au plus (%d)" % [Audio.MUSIC_CACHE, Audio._tracks.size()])
 
 
 func test_un_morceau_qu_on_quitte_ne_relance_rien() -> void:

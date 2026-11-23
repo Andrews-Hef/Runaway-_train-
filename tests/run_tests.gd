@@ -75,6 +75,7 @@ func _run_all() -> void:
 	root.get_node("/root/GameState").set(&"engine_trouble", false)
 	# Pas de son pendant les tests (les tests du son le rallument chez eux).
 	root.get_node("/root/Audio").set(&"enabled", false)
+	root.get_node("/root/Audio").set(&"threaded", false) # chargements sur place : résultats immédiats
 	var catcher := ErrorCatcher.new()
 	OS.add_logger(catcher)
 	var passed: int = 0

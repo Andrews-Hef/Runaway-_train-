@@ -8,6 +8,10 @@ extends Node
 ## - play_music(&"explore_day") : la playlist de ce moment du jeu, en fondu enchaîné (rien si
 ##   c'est déjà elle). Les morceaux s'enchaînent au hasard, sans répéter celui qui vient de
 ##   passer ; un moment qui n'a qu'un morceau le joue en boucle.
+## - Les morceaux se chargent en arrière-plan (un OGG de 5 minutes bloquait le jeu jusqu'à
+##   0,7 s) : le morceau d'avant continue le temps du chargement. Le suivant de la
+##   playlist est préparé d'avance ; prefetch(&"danger") prépare celui d'un autre moment
+##   (la horde, la nuit). On ne garde en mémoire que quelques morceaux.
 ## - set_loop(&"rain_loop", true, self) : boucle d'ambiance (pluie, roulement du train),
 ##   coupée toute seule quand le nœud `owner` quitte la scène.
 ## - Tous les boutons font « clic » d'eux-mêmes ; un bouton peut demander un autre son
@@ -58,11 +62,15 @@ const MUSIC_DB: float = -6.0
 const NEXT_TRACK_FADE: float = 0.6
 const SILENT_DB: float = -60.0
 const DEFAULT_VOLUMES: Dictionary[StringName, float] = {MUSIC_BUS: 0.7, SFX_BUS: 0.8}
+## Morceaux gardés en mémoire (chacun pèse 1 à 3 Mo) : en cours, préparés, récents.
+const MUSIC_CACHE: int = 5
 
 ## Où les volumes sont gardés (les tests en prennent un autre).
 var settings_path: String = "user://settings.cfg"
 ## false : plus aucun son ne part (les tests l'éteignent ; la musique demandée reste notée).
 var enabled: bool = true
+## false : les morceaux se chargent tout de suite, sur place (les tests).
+var threaded: bool = true
 ## Le moment du jeu dont la playlist joue (&"" : pas de musique)…
 var current_music: StringName = &""
 ## …et le morceau en cours (chemin sous assets/audio/music/, sans extension).
@@ -72,6 +80,18 @@ var _streams: Dictionary[StringName, AudioStream] = {}
 var _variants: Dictionary[StringName, Array] = {}
 var _last_variant: Dictionary[StringName, int] = {}
 var _tracks: Dictionary[String, AudioStream] = {}
+## Morceaux du cache, du plus ancien au plus récent.
+var _track_order: Array[String] = []
+## Chargements en cours : morceau -> chemin complet.
+var _loading: Dictionary[String, String] = {}
+## Le morceau attendu pour jouer dès qu'il est chargé, et son fondu.
+var _wanted: String = ""
+var _wanted_fade: float = MUSIC_FADE
+## Moment -> morceau déjà choisi et préparé pour la prochaine fois.
+var _upcoming: Dictionary[StringName, String] = {}
+## Bruitages et ambiances en cours de chargement (au lancement), puis prêts.
+var _sound_loading: Array[String] = []
+var _sound_ready: Dictionary[String, AudioStream] = {}
 var _players: Array[AudioStreamPlayer] = []
 var _world_players: Array[AudioStreamPlayer2D] = []
 var _next_player: int = 0
@@ -107,9 +127,14 @@ func _ready() -> void:
 	load_settings()
 	get_tree().node_added.connect(_on_node_added)
 	_hook_buttons(get_tree().root)
+	_prefetch_sounds()
 
 
 func _process(_delta: float) -> void:
+	if not _loading.is_empty():
+		poll_loads()
+	if not _sound_loading.is_empty():
+		_poll_sounds()
 	if _save_pending:
 		_save_pending = false
 		save_settings()
@@ -237,6 +262,8 @@ func _random_except(count: int, except: int) -> int:
 
 
 func _load(path: String) -> AudioStream:
+	if _sound_ready.has(path):
+		return _sound_ready[path]
 	if ResourceLoader.exists(path):
 		return load(path) as AudioStream
 	push_warning("Audio : fichier manquant « %s »" % path)
@@ -281,7 +308,16 @@ func play_music(moment: StringName, fade: float = MUSIC_FADE) -> void:
 	if moment != &"" and not AudioCatalog.PLAYLISTS.has(moment):
 		push_warning("Audio : pas de musique pour « %s »" % moment)
 	current_music = moment
-	_start_track(next_track(moment), fade)
+	_start_track(_take_upcoming(moment), fade)
+
+
+## Prépare d'avance un morceau d'un moment qui va peut-être venir (la nuit, la horde) :
+## s'il vient, il démarre sans attendre le chargement.
+func prefetch(moment: StringName) -> void:
+	if not _upcoming.has(moment) and AudioCatalog.PLAYLISTS.has(moment):
+		_upcoming[moment] = next_track(moment)
+	if _upcoming.has(moment):
+		_request(_upcoming[moment])
 
 
 ## Le prochain morceau d'une playlist : au hasard, pas celui qui joue déjà.
@@ -294,40 +330,153 @@ func next_track(moment: StringName) -> String:
 	return tracks[_random_except(tracks.size(), tracks.find(current_track))]
 
 
-## Le fichier d'un morceau ; seul dans sa playlist, il boucle.
+## Le morceau préparé pour ce moment s'il y en a un (et pas celui qui joue), sinon un tiré.
+func _take_upcoming(moment: StringName) -> String:
+	var path: String = _upcoming.get(moment, "")
+	_upcoming.erase(moment)
+	if path.is_empty() or (path == current_track and (AudioCatalog.PLAYLISTS.get(moment, []) as Array).size() > 1):
+		path = next_track(moment)
+	return path
+
+
+## Le fichier d'un morceau s'il est déjà en mémoire (sinon : chargé sur place, ce qui peut
+## bloquer ; le jeu passe par _request). Seul dans sa playlist, il boucle.
 func track(path: String) -> AudioStream:
-	if _tracks.has(path):
-		return _tracks[path]
-	var music := _load(MUSIC_DIR + path + ".ogg") as AudioStreamOggVorbis
-	if music:
+	if not _tracks.has(path):
+		_store(path, _load(MUSIC_DIR + path + ".ogg"))
+	return _tracks.get(path)
+
+
+func is_track_ready(path: String) -> bool:
+	return _tracks.has(path)
+
+
+## Lance le chargement d'un morceau en arrière-plan (rien s'il est là ou déjà en route).
+func _request(path: String) -> void:
+	if path.is_empty() or _tracks.has(path) or _loading.has(path):
+		return
+	var full: String = MUSIC_DIR + path + ".ogg"
+	if not threaded:
+		_store(path, _load(full))
+		return
+	if ResourceLoader.load_threaded_request(full, "AudioStream") != OK:
+		push_warning("Audio : chargement impossible « %s »" % full)
+		return
+	_loading[path] = full
+
+
+## Récupère les morceaux chargés ; `wait` : attend la fin des chargements (tests).
+func poll_loads(wait: bool = false) -> void:
+	for path: String in _loading.keys():
+		var full: String = _loading[path]
+		var status: ResourceLoader.ThreadLoadStatus = ResourceLoader.load_threaded_get_status(full)
+		if status == ResourceLoader.THREAD_LOAD_IN_PROGRESS and not wait:
+			continue
+		_loading.erase(path)
+		var loaded: AudioStream = ResourceLoader.load_threaded_get(full) as AudioStream \
+			if status != ResourceLoader.THREAD_LOAD_FAILED and status != ResourceLoader.THREAD_LOAD_INVALID_RESOURCE else null
+		if loaded == null:
+			push_warning("Audio : morceau illisible « %s »" % full)
+			if path == _wanted:
+				_wanted = ""
+			continue
+		_store(path, loaded)
+		if path == _wanted:
+			_wanted = ""
+			_play_now(path, _wanted_fade)
+
+
+func _store(path: String, music: AudioStream) -> void:
+	if music == null:
+		return
+	if music is AudioStreamOggVorbis:
 		var moment: StringName = StringName(path.get_slice("/", 0))
-		music.loop = (AudioCatalog.PLAYLISTS.get(moment, []) as Array).size() == 1
+		(music as AudioStreamOggVorbis).loop = (AudioCatalog.PLAYLISTS.get(moment, []) as Array).size() == 1
 	_tracks[path] = music
-	return music
+	_track_order.erase(path)
+	_track_order.append(path)
+	# Mémoire bornée : on oublie les plus anciens, sauf ceux qui servent encore.
+	var keep: Array[String] = [current_track, _wanted]
+	keep.append_array(_upcoming.values())
+	var index: int = 0
+	while _tracks.size() > MUSIC_CACHE and index < _track_order.size():
+		var old: String = _track_order[index]
+		if old in keep:
+			index += 1
+			continue
+		_track_order.remove_at(index)
+		_tracks.erase(old)
 
 
 func _start_track(path: String, fade: float) -> void:
 	current_track = path
+	_wanted = ""
 	if not enabled:
+		return
+	if path.is_empty():
+		var old: AudioStreamPlayer = _music[_music_index]
+		if old.playing:
+			_fade(old, SILENT_DB, fade, true)
+		return
+	_request(path) # rien s'il est déjà là ; sur place si `threaded` est faux
+	if _tracks.has(path):
+		_play_now(path, fade)
+		return
+	# Pas encore chargé : le morceau d'avant continue, le nouveau démarre une fois prêt.
+	_wanted = path
+	_wanted_fade = fade
+
+
+func _play_now(path: String, fade: float) -> void:
+	var music: AudioStream = _tracks.get(path)
+	if music == null:
 		return
 	var old: AudioStreamPlayer = _music[_music_index]
 	if old.playing:
 		_fade(old, SILENT_DB, fade, true)
-	var music: AudioStream = track(path) if not path.is_empty() else null
-	if music == null:
-		return
 	_music_index = 1 - _music_index
 	var player: AudioStreamPlayer = _music[_music_index]
 	player.stream = music
 	player.volume_db = SILENT_DB
 	player.play()
 	_fade(player, MUSIC_DB, fade, false)
+	# Le suivant de la playlist se prépare pendant que celui-ci joue.
+	if current_music != &"" and (AudioCatalog.PLAYLISTS.get(current_music, []) as Array).size() > 1:
+		_upcoming[current_music] = next_track(current_music)
+		_request(_upcoming[current_music])
 
 
-## Un morceau se termine : le suivant de la même playlist.
+## Un morceau se termine : le suivant de la même playlist (déjà préparé).
 func _on_track_finished(player: AudioStreamPlayer) -> void:
 	if player == _music[_music_index] and not player.get_meta(&"stopping", false) and current_music != &"":
-		_start_track(next_track(current_music), NEXT_TRACK_FADE)
+		_start_track(_take_upcoming(current_music), NEXT_TRACK_FADE)
+
+
+## Les bruitages et ambiances se chargent en arrière-plan dès le lancement : aucun ne
+## bloque le jeu la première fois qu'il sonne.
+func _prefetch_sounds() -> void:
+	if not threaded:
+		return
+	var paths: Array[String] = []
+	for id: StringName in SOUNDS:
+		var count: int = AudioCatalog.VARIANTS.get(id, 1)
+		for index: int in count:
+			paths.append(SFX_DIR + id + (".wav" if count == 1 else "_%d.wav" % (index + 1)))
+	for id: StringName in LOOPS:
+		paths.append(SFX_DIR + id + ".ogg")
+	for path: String in paths:
+		if ResourceLoader.exists(path) and ResourceLoader.load_threaded_request(path) == OK:
+			_sound_loading.append(path)
+
+
+func _poll_sounds() -> void:
+	for path: String in _sound_loading.duplicate():
+		var status: ResourceLoader.ThreadLoadStatus = ResourceLoader.load_threaded_get_status(path)
+		if status == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			continue
+		_sound_loading.erase(path)
+		if status == ResourceLoader.THREAD_LOAD_LOADED:
+			_sound_ready[path] = ResourceLoader.load_threaded_get(path) as AudioStream
 
 
 func stop_music(fade: float = MUSIC_FADE) -> void:
@@ -347,6 +496,8 @@ func stop_all() -> void:
 			(child as AudioStreamPlayer2D).stop()
 	current_music = &""
 	current_track = ""
+	_wanted = ""
+	_upcoming.clear()
 
 
 # --- Ambiances ---------------------------------------------------------------------
