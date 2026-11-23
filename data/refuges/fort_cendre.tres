@@ -107,6 +107,6 @@ id = &"fort_cendre"
 abundant = Array[StringName]([&"coal", &"scrap", &"metal_plate"])
 scarce = Array[StringName]([&"herb", &"cloth", &"antibiotics"])
 display_name = "Gare refuge de Fort-Cendre"
-description = "Une ancienne gare de triage derrière une palissade. On y échange, on y soigne, et le dépôt répare les locomotives."
+description = "Une grande gare fortifiée, cité du charbon et de la ferraille. Le marchand troque de tout, le comptoir fait de bonnes affaires, et le dépôt répare les locomotives."
 trades = Array[ExtResource("1_offer")]([SubResource("Resource_t0"), SubResource("Resource_t1"), SubResource("Resource_t2"), SubResource("Resource_fc_coal"), SubResource("Resource_t3"), SubResource("Resource_fc_meds"), SubResource("Resource_fc_plan_metal"), SubResource("Resource_fc_plan_green")])
 recruits = Array[ExtResource("1_offer")]([SubResource("Resource_r0"), SubResource("Resource_r1")])

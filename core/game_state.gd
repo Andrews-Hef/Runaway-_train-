@@ -632,6 +632,17 @@ func next_refuge_stop() -> int:
 	return stop_number if rest == 0 else stop_number + REFUGE_EVERY - rest
 
 
+## La prochaine gare refuge (celle de l'arrêt en cours s'il en est une).
+func next_refuge() -> RefugeData:
+	return REFUGES[(next_refuge_stop() / REFUGE_EVERY - 1) % REFUGES.size()]
+
+
+## Arrêts à faire avant la prochaine gare. `heading` : on roule vers l'arrêt n°stop_number
+## (trajet, intérieur du train), il compte ; sinon on y est déjà (zone), il ne compte plus.
+func stops_before_refuge(heading: bool) -> int:
+	return maxi(next_refuge_stop() - stop_number - (0 if heading else 1), 0)
+
+
 ## Nom de l'arrêt à venir, gare refuge ou zone.
 func stop_name() -> String:
 	return current_refuge.display_name if current_refuge else current_zone.display_name

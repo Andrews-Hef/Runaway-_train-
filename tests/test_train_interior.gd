@@ -103,6 +103,6 @@ func test_le_bandeau_ne_chevauche_pas_l_equipement() -> void:
 
 func test_l_etat_du_train_en_pastilles() -> void:
 	var summary := _interior.get_node("%Summary") as HFlowContainer
-	assert_true(summary.get_child_count() == 7, "arrivée, infection, stock, équipage, voitures, état, énergie")
+	assert_true(summary.get_child_count() == 8, "gare à venir, arrivée, infection, stock, équipage, voitures, état, énergie")
 	for chip: Node in summary.get_children():
 		assert_false((chip as Control).tooltip_text.is_empty(), "chaque pastille s'explique en infobulle")

@@ -100,6 +100,6 @@ id = &"vireux"
 abundant = Array[StringName]([&"herb", &"cloth", &"wood"])
 scarce = Array[StringName]([&"coal", &"parts", &"chemicals"])
 display_name = "Gare refuge de Vireux"
-description = "Un bourg ferroviaire au bord du fleuve. Les marchands y sont durs en affaires, mais l'infirmerie est la meilleure de la ligne."
+description = "Une ville fortifiée au bord du fleuve, riche en plantes et en tissu. Le charbon y manque : le marchand le paie bien. La quarantaine y recrute des gens sûrs."
 trades = Array[ExtResource("1_offer")]([SubResource("Resource_t0"), SubResource("Resource_t1"), SubResource("Resource_t2"), SubResource("Resource_vx_coal"), SubResource("Resource_vx_chem"), SubResource("Resource_vx_meds"), SubResource("Resource_vx_plan_pharma")])
 recruits = Array[ExtResource("1_offer")]([SubResource("Resource_r0"), SubResource("Resource_r1")])

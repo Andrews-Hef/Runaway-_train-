@@ -767,6 +767,24 @@ def balance() -> Image.Image:
     ], {"y": "#e0b84a", "Y": "#9a7426"}))
 
 
+def station() -> Image.Image:
+    """Gare refuge : pavillon central à horloge sous un toit d'ardoise, deux ailes."""
+    return outline(from_map([
+        "............",
+        ".....ss.....",
+        "....ssss....",
+        "...ssssss...",
+        "...llllll...",
+        "...llccll...",
+        ".ssllccllss.",
+        ".llllllllll.",
+        ".lwllddllwl.",
+        ".lwlddddlwl.",
+        ".LLLddddLLL.",
+        "............",
+    ], {"s": "#55616e", "l": "#c9bc98", "L": "#a39677", "c": "#f2ebd3", "w": "#7d9fb2", "d": "#3a2a20"}))
+
+
 def hammer() -> Image.Image:
     return outline(from_map([
         "............",
@@ -903,7 +921,7 @@ ICONS = {
     "cloth": cloth, "parts": gear, "metal_plate": metal_plate, "chemicals": flask,
     "antiseptic": bottle, "antibiotics": capsule,
     "serum": lambda: vial("#5aa8e6", "#c9e8ff"), "vaccine": syringe,
-    "lock": lock, "plus": plus, "balance": balance, "arrow": arrow, "check": check, "hammer": hammer, "bed": bed, "crate": crate,
+    "lock": lock, "plus": plus, "balance": balance, "station": station, "arrow": arrow, "check": check, "hammer": hammer, "bed": bed, "crate": crate,
     "wagon": wagon, "locomotive": locomotive, "cross": cross, "sprout": sprout, "tubes": tubes,
 }
 

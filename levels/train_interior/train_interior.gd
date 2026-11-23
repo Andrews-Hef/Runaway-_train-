@@ -524,6 +524,7 @@ func next_scene() -> String:
 
 # --- Interface -------------------------------------------------------------------------
 
+
 func _refresh_texts() -> void:
 	var order: CaptainOrders.Order = GameState.current_order
 	if GameState.is_incident_stop():
@@ -550,6 +551,9 @@ func _refresh_texts() -> void:
 
 func _fill_summary() -> void:
 	MenuKit.clear(_summary)
+	# En tête des indicateurs : les cases jusqu'à la gare (la phrase est en infobulle, et en
+	# entier sur l'écran du trajet) ; une ligne de plus cacherait le nom des wagons.
+	_summary.add_child(RouteProgress.create(true, true))
 	var full: bool = GameState.storage_total() >= GameState.storage_capacity()
 	var trips: int = GameState.trips_left()
 	var chips: Array = [

@@ -47,6 +47,10 @@ func _ready() -> void:
 	Campaign.autosave_journey()
 	_paint_scenery()
 	_fill_texts()
+	# Barre de progression jusqu'à la prochaine gare refuge, sous le nom de l'arrêt.
+	var progress := RouteProgress.create(true)
+	_next_stop.get_parent().add_child(progress)
+	_next_stop.get_parent().move_child(progress, _next_stop.get_index() + 1)
 	InputMode.changed.connect(func(_device: int) -> void: _refresh_hint())
 	_refresh_hint()
 	var blink := create_tween().set_loops()
