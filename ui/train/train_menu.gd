@@ -275,6 +275,9 @@ func _detail_stock(key: Variant) -> void:
 	if not key is LootData:
 		return
 	var loot: LootData = key
+	if loot.is_medicine():
+		_take_medicine_detail(loot) # se soigner depuis le coffre, même sans infirmerie
+		return
 	MenuKit.detail_info(_detail, loot.icon, "%s ×%d" % [loot.display_name, GameState.storage_amount(loot.id)], loot.describe())
 
 
@@ -958,12 +961,7 @@ func _detail_medicine(medicine: LootData) -> void:
 	var amount: int = GameState.storage_amount(medicine.id)
 	var title: String = "%s ×%d" % [medicine.display_name, amount]
 	if _patient == null:
-		var cure: float = GameState.medicine_cure(medicine)
-		var now: int = roundi(GameState.infection * 100.0)
-		MenuKit.detail_info(_detail, medicine.icon, title, "Infection −%d %% · toi : %d %% → %d %%" % [
-			roundi(cure * 100.0), now, maxi(now - roundi(cure * 100.0), 0)])
-		_detail.add_child(MenuKit.action("Prendre", func() -> void: GameState.take_medicine(medicine),
-			amount <= 0 or GameState.infection <= 0.0, "Rien à soigner" if GameState.infection <= 0.0 else "Plus en stock", &"medicine"))
+		_take_medicine_detail(medicine)
 		return
 	var member: CrewMember = _patient
 	MenuKit.detail_info(_detail, medicine.icon, title, "Infection −%d %% · %s : %s" % [
@@ -972,6 +970,17 @@ func _detail_medicine(medicine: LootData) -> void:
 	_detail.add_child(MenuKit.action("Donner à " + member.display_name, func() -> void: GameState.medicate(member, medicine),
 		not command or amount <= 0 or (member.infection_known and member.infection == 0),
 		GameState.locked_text(&"crew") if not command else ("Plus en stock" if amount <= 0 else "Il n'est pas infecté"), &"medicine"))
+
+
+## Un médicament pour soi : son effet (bonus de l'infirmerie compris) et « Prendre ».
+func _take_medicine_detail(medicine: LootData) -> void:
+	var amount: int = GameState.storage_amount(medicine.id)
+	var cure: float = GameState.medicine_cure(medicine)
+	var now: int = roundi(GameState.infection * 100.0)
+	MenuKit.detail_info(_detail, medicine.icon, "%s ×%d" % [medicine.display_name, amount], "Infection −%d %% · toi : %d %% → %d %%" % [
+		roundi(cure * 100.0), now, maxi(now - roundi(cure * 100.0), 0)])
+	_detail.add_child(MenuKit.action("Prendre", func() -> void: GameState.take_medicine(medicine),
+		amount <= 0 or GameState.infection <= 0.0, "Rien à soigner" if GameState.infection <= 0.0 else "Plus en stock", &"medicine"))
 
 
 # --- Chaudière -----------------------------------------------------------------------

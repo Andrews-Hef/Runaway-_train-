@@ -38,6 +38,14 @@ func _physics_process(delta: float) -> void:
 		add(infection * ground_rate * delta)
 
 
+## Fait baisser l'exposition (un médicament pris en sortie).
+func lower(amount: float) -> void:
+	if amount <= 0.0 or value <= 0.0:
+		return
+	value = maxf(value - amount, 0.0)
+	changed.emit(value)
+
+
 ## Ajoute de l'exposition, réduite par la protection.
 func add(amount: float) -> void:
 	if amount <= 0.0 or value >= 1.0:

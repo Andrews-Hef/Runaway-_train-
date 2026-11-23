@@ -127,6 +127,19 @@ func drop(id: StringName, amount: int) -> int:
 	return thrown
 
 
+## Consomme `amount` d'une ressource du sac sur place (un médicament qu'on prend) : rien
+## ne tombe au sol, contrairement à drop(). Renvoie la quantité vraiment prise.
+func use(id: StringName, amount: int = 1) -> int:
+	if state == State.ENDED:
+		return 0
+	var used: int = mini(amount, result.get_amount(id))
+	if used <= 0:
+		return 0
+	result.remove_loot(id, used)
+	loot_changed.emit(result)
+	return used
+
+
 ## Combien de cette ressource peut encore entrer (la fin de sa pile, plus les cases
 ## libres ; très grand si le sac est illimité).
 func room_for(id: StringName) -> int:

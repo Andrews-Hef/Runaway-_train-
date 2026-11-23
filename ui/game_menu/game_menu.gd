@@ -6,7 +6,8 @@ extends CanvasLayer
 ## - Inventaire façon Minecraft : le personnage et ses 5 cases d'équipement, le sac en
 ##   cases (piles de 5 ; cases grisées = ce qu'un sac plus grand ajouterait) et le
 ##   casier. On touche une case, l'objet s'affiche en bas avec ce qu'on peut en faire :
-##   « Jeter 1 » / « Jeter la pile » pendant un arrêt (le tas reste au sol), « Équiper »
+##   « Prendre » pour un médicament et « Jeter 1 » / « Jeter la pile » pendant un arrêt
+##   (le tas reste au sol), « Équiper »
 ##   dans le train seulement (on s'équipe avant de descendre),
 ##   équipement à bord ; onglet Grade (mérite, ordre, choix des talents).
 ## - Sur téléphone : deux boutons côte à côte en haut à droite, « Sac » et « II ».
@@ -646,7 +647,8 @@ func _equipment_column() -> VBoxContainer:
 		return column
 	column.add_child(MenuKit.label("PV %d · Armure %d · Prot. %d %%" % [
 		GameState.max_health(), GameState.armor(), roundi(GameState.protection() * 100.0)], MenuKit.MUTED))
-	column.add_child(MenuKit.label("Infection : " + Infection.describe(GameState.infection), Infection.color(GameState.infection)))
+	var infection: float = _infection()
+	column.add_child(MenuKit.label("Infection : " + Infection.describe(infection), Infection.color(infection)))
 	return column
 
 
@@ -768,6 +770,8 @@ func _fill_detail() -> void:
 				_fill_detail()
 				return
 			_detail_line(data.icon, "%s ×%d" % [data.display_name, amount], data.describe())
+			if data.is_medicine():
+				_detail_box.add_child(_medicine_action(data))
 			var pile: int = mini(amount, BagSlots.STACK_SIZE)
 			_detail_box.add_child(_action("Jeter 1", func() -> void: _drop(session, id, 1)))
 			if pile > 1:
@@ -825,6 +829,30 @@ static func _action(text: String, action: Callable) -> Button:
 
 ## Jette du sac (la zone pose le tas), puis redessine l'inventaire : la sélection reste
 ## sur la même ressource s'il en reste.
+## Ton infection en ce moment : pendant un arrêt elle vit sur le joueur (elle monte et
+## baisse en direct), à bord c'est celle de la partie.
+func _infection() -> float:
+	var zone: Node = get_tree().current_scene
+	if zone and zone.has_method(&"player_infection"):
+		return zone.call(&"player_infection")
+	return GameState.infection
+
+
+## « Prendre » un médicament du sac pendant l'arrêt (grisé s'il n'y a rien à soigner).
+func _medicine_action(medicine: LootData) -> Button:
+	var zone: Node = get_tree().current_scene
+	var infection: float = _infection()
+	var take := _action("Prendre (infection −%d %%)" % roundi(medicine.cure * 100.0), func() -> void:
+		if zone.call(&"take_medicine", medicine):
+			if _session() and _session().result.get_amount(medicine.id) <= 0:
+				_selected = _default_selection()
+			_refresh_inventory())
+	take.disabled = infection <= 0.0
+	take.tooltip_text = "Rien à soigner" if take.disabled else ""
+	Audio.tag(take, &"")
+	return take
+
+
 func _drop(session: StopSession, id: StringName, amount: int) -> void:
 	if session.drop(id, amount) <= 0:
 		return

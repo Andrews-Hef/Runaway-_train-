@@ -947,6 +947,23 @@ static func _tool_name_for(tag: StringName) -> String:
 	return "un outil"
 
 
+## Ton infection en ce moment (elle vit sur le joueur pendant l'arrêt).
+func player_infection() -> float:
+	return _player.exposure.value
+
+
+## Prend un médicament du sac en pleine sortie : l'infection baisse tout de suite (sans le
+## bonus de l'infirmerie, qui ne compte qu'à bord). Renvoie false si impossible.
+func take_medicine(medicine: LootData) -> bool:
+	if medicine == null or not medicine.is_medicine() or not _session.is_running() \
+			or _player.exposure.value <= 0.0 or _session.use(medicine.id) <= 0:
+		return false
+	_player.exposure.lower(medicine.cure)
+	Audio.play(&"medicine")
+	_hud.call(&"toast", "%s : infection −%d %%" % [medicine.display_name, roundi(medicine.cure * 100.0)], false)
+	return true
+
+
 ## L'infection change pendant l'arrêt : paliers (PV, vitesse) et, à 100 %, la ruche.
 func _on_infection_changed(value: float) -> void:
 	var stage: int = Infection.stage_for(value)

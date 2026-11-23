@@ -136,7 +136,7 @@ Chaque faction a quatre profils :
 
 **Extraction** : des outils ouvrent de nouvelles ressources (chalumeau sur les épaves de camion, kit de chimie qui tire des produits chimiques des plantes infectées), l'atelier transforme (ferraille → plaques), et les machines du train (serre, laboratoire) produisent pendant les trajets.
 
-**Médicaments et infirmerie** : antiseptique (−10 %) et antibiotiques (−20 %) se trouvent dans les caisses et les armoires, et s'achètent chez les marchands et en gare. Le **sérum de sève** (−35 %) et le **vaccin expérimental** (−60 %) se préparent à l'**infirmerie**, une voiture à construire, avec les plans Pharmacie et Vaccin. Dans l'onglet **Infirmerie** du menu du train, on choisit le **patient** (toi ou un équipier) puis le médicament : **Prendre** ou **Donner à…**. Les lits de quarantaine y sont aussi.
+**Médicaments et infirmerie** : antiseptique (−10 %) et antibiotiques (−20 %) se trouvent dans les caisses et les armoires, et s'achètent chez les marchands et en gare. Le **sérum de sève** (−35 %) et le **vaccin expérimental** (−60 %) se préparent à l'**infirmerie**, une voiture à construire, avec les plans Pharmacie et Vaccin. **Pour toi**, un médicament se prend partout : **dans le sac** pendant une sortie (inventaire → le médicament → **Prendre**), ou **au coffre** du stock à bord, même sans infirmerie. L'infirmerie ajoute son bonus aux médicaments pris à bord. Dans son onglet **Infirmerie**, on choisit le **patient** (toi ou un équipier) puis le médicament : **Prendre** ou **Donner à…**. Les lits de quarantaine y sont aussi.
 
 ## Gares refuges et sauvegarde
 
