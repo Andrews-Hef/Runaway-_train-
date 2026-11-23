@@ -53,6 +53,7 @@ Comment le code est rangé, les principes qui le tiennent, et comment ajouter du
 | `EngineRules` | `core/engine_rules.gd` | Énergie de la chaudière et pannes : coût d'un trajet, combustible, risque de panne, réparation (pur, testable) |
 | `RefugeData` / `RefugeOffer` | `core/` | Une gare refuge et ses offres (échanges, recrues), en `.tres` dans `data/refuges/` |
 | `RefugeRules` | `core/refuge_rules.gd` | Règles des offres d'une gare, payées avec le stock (pur, testable) |
+| `Barter` | `core/barter.gd` | Le troc chez le marchand des gares : prix (valeur des ressources, gare où elles abondent ou manquent), étal du passage, échange, « Compléter » (pur, testable) |
 | `SaveStore` | `core/save_store.gd` | Sauvegardes JSON sur le disque (`user://saves/`), une par emplacement |
 | `Campaign` | `levels/campaign.gd` | Le fil de la campagne : nouvelle partie, continuer, quand sauvegarder, où reprendre |
 | `HealthComponent` | `entities/combat/health_component.gd` | Points de vie (joueur et ennemis), invincibilité après un coup |
@@ -89,7 +90,7 @@ Ouvrir `project.godot` dans Godot puis **F5**. Le jeu démarre sur l'écran titr
 
 **Ajouter un ordre du capitaine** : créer un `OrderData` dans `data/orders/` (texte avec `{n}`, type, cible, fourchette, mérite, premier arrêt) et l'ajouter à `ORDERS` dans `core/captain_orders.gd`. Il n'est tiré que s'il est faisable dans la zone.
 
-**Ajouter une gare refuge** : créer un `RefugeData` dans `data/refuges/` (nom, texte, échanges, recrues), puis l'ajouter à `REFUGES` dans `core/game_state.gd`. Les gares se succèdent dans l'ordre de la liste, puis on recommence. Le rythme (une gare tous les 5 arrêts) est `REFUGE_EVERY`.
+**Ajouter une gare refuge** : créer un `RefugeData` dans `data/refuges/` (nom, texte, ressources qui y abondent et qui y manquent, échanges du comptoir, recrues), puis l'ajouter à `REFUGES` dans `core/game_state.gd`. Les gares se succèdent dans l'ordre de la liste, puis on recommence. Le rythme (une gare tous les 5 arrêts) est `REFUGE_EVERY`.
 
 **Ajouter un type d'arrêt** : dupliquer un fichier de `data/zones/`, choisir son biome, écrire sa spécialité, régler ses fourchettes (objets, nappes de sol piégeux, `extras` comme les fûts), puis l'ajouter à `ZONES` dans `core/game_state.gd`. Aucun autre code à toucher.
 

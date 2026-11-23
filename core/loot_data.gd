@@ -20,6 +20,8 @@ extends Resource
 @export_range(0.0, 1.0) var cure: float = 0.0
 ## Énergie qu'une unité donne en brûlant dans la chaudière (0 : ne brûle pas). Voir EngineRules.
 @export var fuel: int = 0
+## Valeur au troc chez les marchands des gares (10 = une ferraille). Voir Barter.
+@export var value: int = 10
 
 
 func is_medicine() -> bool:

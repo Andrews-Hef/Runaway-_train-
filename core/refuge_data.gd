@@ -8,6 +8,10 @@ extends Resource
 @export var id: StringName
 @export var display_name: String
 @export_multiline var description: String
+## Ressources qui abondent ici : le marchand les vend et les reprend moins cher (Barter).
+@export var abundant: Array[StringName] = []
+## Ressources qui manquent ici : il les paie plus cher, et en a peu.
+@export var scarce: Array[StringName] = []
 ## Échanges du comptoir (répétables).
 @export var trades: Array[RefugeOffer] = []
 ## Recrues du bureau de quarantaine (une fois chacune par passage).

@@ -6,6 +6,7 @@
 - Rendu *Compatibility* (meilleure couverture Android), filtre *Nearest* pour des pixels nets.
 - **Le violet est réservé à l'infection** : aucune autre chose du jeu ne doit l'utiliser.
 - **Sprites temporaires** générés par [td2d](https://github.com/brphillis/threedee-twodee) à partir de modèles 3D décrits en JSON : voir `art/README.md`. Les tuiles du sol viennent de `python tools/gen_placeholders.py`.
+- **Grande gare refuge** : bâtiment voyageurs, remparts, tours, porte fortifiée, lampadaires, étals, fontaine… sont des modèles td2d écrits par `python tools/gen_station_assets.py` ; le sol de la gare (pavés, dalles, bord du quai) et le toit vitré translucide de la marquise sont dessinés par `python tools/gen_refuge_ground.py`. Les halos des lampadaires sont des sprites en mélange additif sur leur propre calque, pas de vraies lumières 2D (trop chères en rendu logiciel et sur mobile).
 - **Police** : [Barlow](https://github.com/jpt/barlow) (SemiBold pour les textes, Bold pour les chiffres du HUD), une police lisse et lisible sur téléphone. Le jeu est rendu en mode `canvas_items` : le pixel art est agrandi par paliers entiers (net), le texte est dessiné à la vraie résolution de l'écran.
 - **Icônes** : pixel art 12 px, générées par `tools/gen_icons.py`.
 - **Interface** : plaques de fer, boutons, onglets et télégramme en pixel art, dessinés par `python tools/gen_ui.py`, puis assemblés en thème Godot par `godot --headless --path . --script tools/build_theme.gd` (écrit `ui/theme/game_theme.tres`).

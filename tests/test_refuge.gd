@@ -87,13 +87,29 @@ func test_la_scene_de_la_gare() -> void:
 	_go_to_stop(5)
 	var scene: Node = REFUGE_SCENE.instantiate()
 	tree.root.add_child(scene)
-	for expected: String in ["Station_trade", "Station_recruit", "Station_depot"]:
-		assert_true(scene.get_node("World").has_node(expected), "%s manquant" % expected)
+	for expected: String in ["Station_market", "Station_trade", "Station_recruit", "Station_depot", "Canopy"]:
+		assert_true(scene.get_node("World").has_node(expected) or scene.has_node(expected), "%s manquant" % expected)
 	var train: Train = scene.get_node("World/Train")
 	assert_true(train.door.prompt == "Repartir", "la porte du train sert à repartir")
 	var top := scene.get_node("Ui/Root/Top") as Control
 	assert_true(top.offset_left > 60.0 and top.anchor_right == 1.0, "le bandeau se cale à droite de la barre d'équipement")
 	scene.free()
+
+
+func test_la_grande_gare_s_eclaire_la_nuit() -> void:
+	_go_to_stop(5)
+	for case: Array in [[12 * 60, false], [23 * 60, true]]:
+		GameState.clock_minutes = case[0]
+		var scene: Node = REFUGE_SCENE.instantiate()
+		tree.root.add_child(scene)
+		var lamps: Array[Node] = tree.get_nodes_in_group(&"refuge_lamps")
+		assert_true(lamps.size() >= 6, "des lampadaires sur le quai et la place")
+		var lit: int = lamps.filter(func(lamp: Node) -> bool: return lamp.has_meta(&"glow")).size()
+		assert_true(lit == (lamps.size() if case[1] else 0), "%d h : %d allumés" % [case[0] / 60, lit])
+		var walkers: int = scene.get_node("World").get_children().filter(
+			func(node: Node) -> bool: return node.name.begins_with("Walker")).size()
+		assert_true(walkers == scene.WALKERS.size(), "des passants")
+		scene.free()
 
 
 func test_le_levier_mene_a_la_gare() -> void:

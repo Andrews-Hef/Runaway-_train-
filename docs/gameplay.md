@@ -140,7 +140,13 @@ Chaque faction a quatre profils :
 
 ## Gares refuges et sauvegarde
 
-- **Gare refuge** (arrêts n°5, 10, 15…) : une ville fortifiée sur la ligne, **zone sûre** sans infection ni chrono. **Comptoir** pour échanger le surplus du stock, **bureau de quarantaine** pour recruter des survivants sains, **dépôt** pour réparer le train et renforcer la locomotive. Chaque offre est une carte en cases, « ce que tu donnes → ce que tu reçois », avec son bouton (la phrase du marchand est en infobulle). On repart en remontant à bord.
+- **Gare refuge** (arrêts n°5, 10, 15…) : une grande gare fortifiée sur la ligne, **zone sûre** sans infection ni chrono. Le train s'arrête sous la **marquise vitrée** du quai ; derrière, le **bâtiment voyageurs** (verrière, horloge) qu'on traverse par ses portes ou qu'on contourne par les allées, puis la **grande place** (fontaine, étals, passants) fermée par les remparts, leurs tours et la porte fortifiée. La nuit, les lampadaires s'allument. On y trouve :
+  - le **marchand** (étal rouge) : **troc libre**. Chaque ressource a une **valeur** (ferraille 10, charbon 20, pièces 40, antibiotiques 100, vaccin 300…). On choisit ce qu'on prend sur son étal et ce qu'on donne de son stock ; l'échange passe si ce qu'on donne vaut au moins ce qu'on prend (la **balance** l'affiche, « Compléter » ajoute ce que tu as le plus). Il vend 25 % plus cher qu'il ne reprend. Chaque gare a ses ressources **pas chères** (qui abondent) et **recherchées** (qu'elle paie mieux) ; acheter dans l'une pour revendre dans l'autre ne rapporte presque rien. Son étal change à chaque passage : ressources, **3 équipements** que tu n'as pas (les meilleurs à partir de la 2e gare) et parfois un **plan**. Ce que tu lui vends rejoint son étal.
+  - le **comptoir** (étal bleu) : des offres fixes, souvent plus avantageuses, en cartes « ce que tu donnes → ce que tu reçois » (dont des plans) ;
+  - le **bureau de quarantaine** (tente à croix rouge) pour recruter des survivants sains ;
+  - le **dépôt** (grue à eau, au bout du quai) pour réparer le train et renforcer la locomotive.
+
+  On repart en remontant à bord.
 - **Campagne continue et sauvegarde** : chaque gare refuge est un **point de reprise**. **Train raté** : on reprend à la dernière gare (ou au départ du train), tout ce qui s'est passé depuis est perdu. La session est aussi sauvegardée à chaque trajet (`user://saves/`), pour reprendre après avoir fermé le jeu.
 
 ## Plateformes

@@ -11,3 +11,4 @@ description = "Brûle longtemps : le meilleur combustible pour la locomotive."
 color = Color(0.36, 0.37, 0.42, 1)
 icon = ExtResource("2_icon")
 fuel = 6
+value = 20

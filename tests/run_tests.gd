@@ -43,6 +43,7 @@ const SUITES: Array[String] = [
 	"res://tests/test_companion.gd",
 	"res://tests/test_audio.gd",
 	"res://tests/test_medicine.gd",
+	"res://tests/test_barter.gd",
 ]
 
 
@@ -84,7 +85,9 @@ func _run_all() -> void:
 	for path: String in SUITES:
 		print(path)
 		var script := load(path) as GDScript
-		if script == null:
+		# Une erreur de syntaxe donne un script vide, pas null : sans ce test, la suite
+		# passerait « 0 test, 0 échec » sans rien dire.
+		if script == null or not script.can_instantiate():
 			failed += 1
 			print("  ÉCHEC  impossible de charger la suite")
 			continue

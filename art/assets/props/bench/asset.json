@@ -1,0 +1,122 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/bench",
+  "type": "prop",
+  "description": "Banc de quai en bois, pieds de fonte.",
+  "frame": {
+    "width": 40,
+    "height": 32
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "seat",
+        "material": "wood",
+        "size": [
+          1.6,
+          0.07,
+          0.42
+        ],
+        "position": [
+          0,
+          0.48,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "back-slat",
+        "material": "wood",
+        "size": [
+          1.6,
+          0.09,
+          0.04
+        ],
+        "position": [
+          0,
+          0.66,
+          -0.19
+        ],
+        "repeat": {
+          "count": 3,
+          "offset": [
+            0,
+            0.13,
+            -0.01
+          ]
+        }
+      },
+      {
+        "type": "box",
+        "id": "leg-l",
+        "material": "iron-black",
+        "size": [
+          0.07,
+          0.48,
+          0.44
+        ],
+        "position": [
+          -0.7,
+          0.24,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "leg-r",
+        "material": "iron-black",
+        "size": [
+          0.07,
+          0.48,
+          0.44
+        ],
+        "position": [
+          0.7,
+          0.24,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "arm-l",
+        "material": "iron-black",
+        "size": [
+          0.07,
+          0.05,
+          0.42
+        ],
+        "position": [
+          -0.76,
+          0.66,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "arm-r",
+        "material": "iron-black",
+        "size": [
+          0.07,
+          0.05,
+          0.42
+        ],
+        "position": [
+          0.76,
+          0.66,
+          0
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

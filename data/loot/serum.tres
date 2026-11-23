@@ -11,3 +11,4 @@ color = Color(0.5, 0.85, 1.0, 1)
 rare = true
 cure = 0.35
 icon = ExtResource("2_icon")
+value = 180

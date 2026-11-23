@@ -11,3 +11,4 @@ description = "Le dispensaire des gares les achète ; le laboratoire en tire des
 color = Color(0.7529412, 0.41960785, 1, 1)
 infected = true
 icon = ExtResource("2_icon")
+value = 40

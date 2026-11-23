@@ -11,3 +11,4 @@ description = "Planches et branches : construire, réparer, fabriquer, ou brûle
 color = Color(0.65882355, 0.45882353, 0.2901961, 1)
 icon = ExtResource("2_icon")
 fuel = 2
+value = 10

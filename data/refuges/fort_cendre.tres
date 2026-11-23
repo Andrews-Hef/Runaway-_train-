@@ -104,6 +104,8 @@ reward = Dictionary[StringName, int]({
 [resource]
 script = ExtResource("2_refuge")
 id = &"fort_cendre"
+abundant = Array[StringName]([&"coal", &"scrap", &"metal_plate"])
+scarce = Array[StringName]([&"herb", &"cloth", &"antibiotics"])
 display_name = "Gare refuge de Fort-Cendre"
 description = "Une ancienne gare de triage derrière une palissade. On y échange, on y soigne, et le dépôt répare les locomotives."
 trades = Array[ExtResource("1_offer")]([SubResource("Resource_t0"), SubResource("Resource_t1"), SubResource("Resource_t2"), SubResource("Resource_fc_coal"), SubResource("Resource_t3"), SubResource("Resource_fc_meds"), SubResource("Resource_fc_plan_metal"), SubResource("Resource_fc_plan_green")])

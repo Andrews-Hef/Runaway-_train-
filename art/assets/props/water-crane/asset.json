@@ -1,0 +1,136 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/water-crane",
+  "type": "prop",
+  "description": "Grue a eau du depot, pour la chaudiere des locomotives.",
+  "frame": {
+    "width": 100,
+    "height": 68
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "id": "plinth",
+        "material": "stone",
+        "radius": 0.45,
+        "height": 0.3,
+        "position": [
+          0,
+          0.15,
+          0
+        ],
+        "segments": 10
+      },
+      {
+        "type": "cylinder",
+        "id": "column",
+        "material": "iron",
+        "radius": 0.18,
+        "height": 2.8,
+        "position": [
+          0,
+          1.7,
+          0
+        ],
+        "segments": 10
+      },
+      {
+        "type": "torus",
+        "id": "band",
+        "material": "brass",
+        "radius": 0.2,
+        "tube": 0.04,
+        "position": [
+          0,
+          1.0,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "arm",
+        "material": "iron",
+        "radius": 0.1,
+        "height": 2.2,
+        "position": [
+          0.95,
+          3.0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          90
+        ],
+        "segments": 8
+      },
+      {
+        "type": "cylinder",
+        "id": "hose",
+        "material": "leather",
+        "radius": 0.08,
+        "height": 1.1,
+        "position": [
+          2.0,
+          2.45,
+          0
+        ],
+        "segments": 8
+      },
+      {
+        "type": "box",
+        "id": "wheel-hub",
+        "material": "iron-black",
+        "size": [
+          0.08,
+          0.08,
+          0.1
+        ],
+        "position": [
+          0,
+          2.2,
+          0.22
+        ]
+      },
+      {
+        "type": "torus",
+        "id": "wheel",
+        "material": "train-red",
+        "radius": 0.25,
+        "tube": 0.04,
+        "position": [
+          0,
+          2.2,
+          0.26
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "sphere",
+        "id": "top",
+        "material": "brass",
+        "radius": 0.14,
+        "position": [
+          0,
+          3.2,
+          0
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

@@ -230,6 +230,77 @@
         "color": "#2c4f66",
         "bands": 3,
         "hueShift": 20
+      },
+      "limestone": {
+        "color": "#b5a888",
+        "bands": 3,
+        "hueShift": 25
+      },
+      "limestone-dark": {
+        "color": "#8f8468",
+        "bands": 3,
+        "hueShift": 25
+      },
+      "slate": {
+        "color": "#47525e",
+        "bands": 3,
+        "hueShift": 20
+      },
+      "glass-roof": {
+        "color": "#7d9fb2",
+        "bands": 3,
+        "hueShift": 15
+      },
+      "clock-face": {
+        "color": "#ece4cc",
+        "bands": 2
+      },
+      "awning-cream": {
+        "color": "#e0d2ac",
+        "bands": 3,
+        "hueShift": 20
+      },
+      "awning-green": {
+        "color": "#4e7d4c",
+        "bands": 3,
+        "hueShift": 25
+      },
+      "awning-blue": {
+        "color": "#3f6e96",
+        "bands": 3,
+        "hueShift": 20
+      },
+      "awning-ochre": {
+        "color": "#c48a34",
+        "bands": 3,
+        "hueShift": 25
+      },
+      "water": {
+        "color": "#4c8fb4",
+        "bands": 2,
+        "hueShift": 15
+      },
+      "flower-red": {
+        "color": "#d0483a",
+        "bands": 2
+      },
+      "flower-yellow": {
+        "color": "#f0cf4a",
+        "bands": 2
+      },
+      "flower-white": {
+        "color": "#efe9dc",
+        "bands": 2
+      },
+      "leaf-dark": {
+        "color": "#3f6b30",
+        "bands": 3,
+        "hueShift": 30
+      },
+      "leather": {
+        "color": "#7a4a2a",
+        "bands": 3,
+        "hueShift": 25
       }
     }
   }

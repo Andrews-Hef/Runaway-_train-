@@ -11,3 +11,4 @@ description = "Pansements, tenues, couchettes."
 color = Color(0.7254902, 0.63529414, 0.47843137, 1)
 rare = true
 icon = ExtResource("2_icon")
+value = 30

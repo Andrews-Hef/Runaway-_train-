@@ -1,0 +1,518 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/city-gate",
+  "type": "prop",
+  "description": "Porte fortifiee de la ville refuge : arche, battants cloutes, deux tourelles.",
+  "frame": {
+    "width": 160,
+    "height": 124
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "wall",
+        "material": "stone",
+        "size": [
+          7.0,
+          3.2,
+          1.6
+        ],
+        "position": [
+          0,
+          1.6,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "plinth",
+        "material": "concrete-dark",
+        "size": [
+          7.0,
+          0.4,
+          1.8
+        ],
+        "position": [
+          0,
+          0.2,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "door-l",
+        "material": "panel-wood",
+        "size": [
+          1.25,
+          2.1,
+          0.1
+        ],
+        "position": [
+          -0.64,
+          1.05,
+          0.86
+        ]
+      },
+      {
+        "type": "box",
+        "id": "door-r",
+        "material": "panel-wood",
+        "size": [
+          1.25,
+          2.1,
+          0.1
+        ],
+        "position": [
+          0.64,
+          1.05,
+          0.86
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "door-top",
+        "material": "panel-wood",
+        "radius": 1.28,
+        "height": 0.1,
+        "position": [
+          0,
+          2.1,
+          0.86
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ],
+        "segments": 20
+      },
+      {
+        "type": "box",
+        "id": "door-split",
+        "material": "iron-black",
+        "size": [
+          0.06,
+          2.9,
+          0.04
+        ],
+        "position": [
+          0,
+          1.75,
+          0.93
+        ]
+      },
+      {
+        "type": "box",
+        "id": "door-band",
+        "material": "iron-black",
+        "size": [
+          2.5,
+          0.08,
+          0.04
+        ],
+        "position": [
+          0,
+          0.5,
+          0.93
+        ],
+        "repeat": {
+          "count": 3,
+          "offset": [
+            0,
+            0.7,
+            0
+          ]
+        }
+      },
+      {
+        "type": "box",
+        "id": "jamb-l",
+        "material": "limestone-dark",
+        "size": [
+          0.3,
+          2.1,
+          0.2
+        ],
+        "position": [
+          -1.45,
+          1.05,
+          0.86
+        ]
+      },
+      {
+        "type": "box",
+        "id": "jamb-r",
+        "material": "limestone-dark",
+        "size": [
+          0.3,
+          2.1,
+          0.2
+        ],
+        "position": [
+          1.45,
+          1.05,
+          0.86
+        ]
+      },
+      {
+        "type": "box",
+        "id": "arch-0",
+        "material": "limestone-dark",
+        "size": [
+          0.5820673055401089,
+          0.3,
+          0.2
+        ],
+        "position": [
+          1.4279712418677015,
+          2.351789857617049,
+          0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          100.0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "arch-1",
+        "material": "limestone-dark",
+        "size": [
+          0.5820673055401089,
+          0.3,
+          0.2
+        ],
+        "position": [
+          1.255736835487436,
+          2.825,
+          0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          120.0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "arch-2",
+        "material": "limestone-dark",
+        "size": [
+          0.5820673055401089,
+          0.3,
+          0.2
+        ],
+        "position": [
+          0.932042034045482,
+          3.2107644425225184,
+          0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          140.0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "arch-3",
+        "material": "limestone-dark",
+        "size": [
+          0.5820673055401089,
+          0.3,
+          0.2
+        ],
+        "position": [
+          0.4959292078222198,
+          3.4625543001395673,
+          0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          160.0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "arch-4",
+        "material": "limestone-dark",
+        "size": [
+          0.5820673055401089,
+          0.3,
+          0.2
+        ],
+        "position": [
+          8.878689293818311e-17,
+          3.55,
+          0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          180.0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "arch-5",
+        "material": "limestone-dark",
+        "size": [
+          0.5820673055401089,
+          0.3,
+          0.2
+        ],
+        "position": [
+          -0.4959292078222193,
+          3.4625543001395673,
+          0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          200.0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "arch-6",
+        "material": "limestone-dark",
+        "size": [
+          0.5820673055401089,
+          0.3,
+          0.2
+        ],
+        "position": [
+          -0.932042034045482,
+          3.2107644425225184,
+          0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          220.0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "arch-7",
+        "material": "limestone-dark",
+        "size": [
+          0.5820673055401089,
+          0.3,
+          0.2
+        ],
+        "position": [
+          -1.2557368354874359,
+          2.8250000000000006,
+          0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          239.99999999999997
+        ]
+      },
+      {
+        "type": "box",
+        "id": "arch-8",
+        "material": "limestone-dark",
+        "size": [
+          0.5820673055401089,
+          0.3,
+          0.2
+        ],
+        "position": [
+          -1.4279712418677015,
+          2.351789857617049,
+          0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          260.0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "merlon",
+        "material": "stone",
+        "size": [
+          0.42,
+          0.6,
+          0.32
+        ],
+        "position": [
+          -2.94,
+          3.5,
+          0.6
+        ],
+        "repeat": {
+          "count": 8,
+          "offset": [
+            0.84,
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "type": "box",
+        "id": "banner",
+        "material": "train-red",
+        "size": [
+          0.8,
+          1.5,
+          0.05
+        ],
+        "position": [
+          0,
+          3.05,
+          0.95
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "turret-l",
+        "material": "stone",
+        "radius": 1.1,
+        "height": 4.4,
+        "position": [
+          -3.3,
+          2.2,
+          0.1
+        ],
+        "segments": 12
+      },
+      {
+        "type": "cylinder",
+        "id": "turret-l-top",
+        "material": "limestone-dark",
+        "radius": 1.25,
+        "height": 0.35,
+        "position": [
+          -3.3,
+          4.55,
+          0.1
+        ],
+        "segments": 12
+      },
+      {
+        "type": "cone",
+        "id": "turret-l-roof",
+        "material": "slate",
+        "radius": 1.3,
+        "height": 1.6,
+        "position": [
+          -3.3,
+          5.5,
+          0.1
+        ],
+        "segments": 12
+      },
+      {
+        "type": "box",
+        "id": "turret-l-loop",
+        "material": "dark",
+        "size": [
+          0.14,
+          0.6,
+          0.05
+        ],
+        "position": [
+          -3.3,
+          2.8,
+          1.2
+        ]
+      },
+      {
+        "type": "sphere",
+        "id": "turret-l-ball",
+        "material": "brass",
+        "radius": 0.1,
+        "position": [
+          -3.3,
+          6.35,
+          0.1
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "turret-r",
+        "material": "stone",
+        "radius": 1.1,
+        "height": 4.4,
+        "position": [
+          3.3,
+          2.2,
+          0.1
+        ],
+        "segments": 12
+      },
+      {
+        "type": "cylinder",
+        "id": "turret-r-top",
+        "material": "limestone-dark",
+        "radius": 1.25,
+        "height": 0.35,
+        "position": [
+          3.3,
+          4.55,
+          0.1
+        ],
+        "segments": 12
+      },
+      {
+        "type": "cone",
+        "id": "turret-r-roof",
+        "material": "slate",
+        "radius": 1.3,
+        "height": 1.6,
+        "position": [
+          3.3,
+          5.5,
+          0.1
+        ],
+        "segments": 12
+      },
+      {
+        "type": "box",
+        "id": "turret-r-loop",
+        "material": "dark",
+        "size": [
+          0.14,
+          0.6,
+          0.05
+        ],
+        "position": [
+          3.3,
+          2.8,
+          1.2
+        ]
+      },
+      {
+        "type": "sphere",
+        "id": "turret-r-ball",
+        "material": "brass",
+        "radius": 0.1,
+        "position": [
+          3.3,
+          6.35,
+          0.1
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

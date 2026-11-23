@@ -31,7 +31,11 @@ Le train est **noir** (`iron-black`) avec des liserés rouges (`train-red`) et d
 | `props/house-ruin`, `props/cache` | 1 | — | Village abandonné : maison en ruine, caisse à fouiller |
 | `props/shelter`, `props/cart` | 1 | — | Refuge (abri de fortune), charrette du marchand |
 | `props/backpack`, `props/locker` | 1 | — | Petites rencontres : sac abandonné, armoire métallique |
-| `props/station-house`, `props/palisade` | 1 | — | Gare refuge : bâtiment de la gare, palissade de pieux |
+| `props/station-house`, `props/palisade` | 1 | — | Ancienne gare refuge (plus utilisés en jeu) |
+| `props/grand-station` | 1 | — | Grande gare refuge : bâtiment voyageurs (verrière en berceau, rosace vitrée, horloge, ailes, pavillons d'angle) |
+| `props/rampart`, `props/rampart-side`, `props/watchtower`, `props/city-gate` | 1 | — | Remparts (axe est-ouest et nord-sud, 3 m bout à bout), tours de guet, porte fortifiée |
+| `props/lamp-post`, `props/platform-clock`, `props/bench`, `props/luggage`, `props/canopy-column`, `props/water-crane` | 1 | — | Quai : lampadaires, horloge, bancs, malles, colonnes de la marquise, grue à eau du dépôt |
+| `props/market-stall-red`, `-green`, `-blue`, `props/fountain`, `props/square-tree`, `props/planter`, `props/quarantine-tent` | 1 | — | Place : étals (marchand, comptoir), fontaine, arbres, jardinières, tente de la quarantaine |
 | `props/truck-wreck` | 1 | — | Épave de camion (il faut un chalumeau) |
 | `props/dropped-bundle` | 1 | — | Tas de ce que le joueur a jeté de son sac (ballot de toile, planche, ferraille) |
 | `characters/refugee`, `characters/merchant` | 1 (s) | `idle` | PNJ : réfugié à recruter, marchand |
@@ -52,6 +56,8 @@ L'intérieur utilise la même caméra trois-quarts et les mêmes 16 px par mètr
 | `interior/chest`, `interior/workbench`, `interior/locker`, `interior/bunk`, `interior/engine-panel` | 1 | — | Coffre, établi, casier, couchettes, chaudière et levier |
 | `interior/plan-table` | 1 | — | Table des plans : plans du train (cabine), étude des plans (atelier) |
 | `interior/med-cabinet`, `interior/planter`, `interior/still` | 1 | — | Infirmerie (armoire à pharmacie), serre (bacs), laboratoire (alambic) |
+
+Les définitions de la grande gare sont écrites par `python tools/gen_station_assets.py` (fonctions Python : arcs en claveaux, créneaux, fenêtres cintrées) : modifier le script, pas les JSON.
 
 ## Générer et mettre à jour les sprites
 

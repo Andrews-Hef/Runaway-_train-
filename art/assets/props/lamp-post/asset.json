@@ -1,0 +1,153 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/lamp-post",
+  "type": "prop",
+  "description": "Lampadaire de quai a deux lanternes, fonte noire et laiton.",
+  "frame": {
+    "width": 40,
+    "height": 64
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "id": "foot",
+        "material": "iron-black",
+        "radius": 0.16,
+        "height": 0.4,
+        "position": [
+          0,
+          0.2,
+          0
+        ],
+        "segments": 8
+      },
+      {
+        "type": "cylinder",
+        "id": "pole",
+        "material": "iron-black",
+        "radius": 0.05,
+        "height": 2.9,
+        "position": [
+          0,
+          1.85,
+          0
+        ]
+      },
+      {
+        "type": "torus",
+        "id": "collar",
+        "material": "brass",
+        "radius": 0.07,
+        "tube": 0.03,
+        "position": [
+          0,
+          1.2,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "arm",
+        "material": "iron-black",
+        "size": [
+          1.0,
+          0.05,
+          0.05
+        ],
+        "position": [
+          0,
+          3.1,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "lamp-l",
+        "material": "lamp",
+        "size": [
+          0.2,
+          0.32,
+          0.2
+        ],
+        "position": [
+          -0.45,
+          2.88,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "lamp-r",
+        "material": "lamp",
+        "size": [
+          0.2,
+          0.32,
+          0.2
+        ],
+        "position": [
+          0.45,
+          2.88,
+          0
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "cap-l",
+        "material": "iron-black",
+        "radius": 0.18,
+        "height": 0.16,
+        "position": [
+          -0.45,
+          3.12,
+          0
+        ],
+        "rotation": [
+          0,
+          45,
+          0
+        ],
+        "segments": 4
+      },
+      {
+        "type": "cone",
+        "id": "cap-r",
+        "material": "iron-black",
+        "radius": 0.18,
+        "height": 0.16,
+        "position": [
+          0.45,
+          3.12,
+          0
+        ],
+        "rotation": [
+          0,
+          45,
+          0
+        ],
+        "segments": 4
+      },
+      {
+        "type": "sphere",
+        "id": "finial",
+        "material": "brass",
+        "radius": 0.07,
+        "position": [
+          0,
+          3.45,
+          0
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

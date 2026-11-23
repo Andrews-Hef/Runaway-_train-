@@ -1383,6 +1383,33 @@ func use_refuge_offer(offer: RefugeOffer, rng: RandomNumberGenerator, done: bool
 	return true
 
 
+## L'étal du marchand de la gare refuge, pour ce passage (toujours le même pour une
+## même gare au même arrêt).
+func market_stall(refuge: RefugeData, rng_seed: int) -> Barter.Stall:
+	return Barter.stall(refuge, rng_seed ^ hash(refuge.id if refuge else &""), owned_items, LOOT_TYPES,
+		unfound_plans(), Barter.max_tier(stop_number))
+
+
+func barter_problem(refuge: RefugeData, deal: Barter.Deal, stall: Barter.Stall) -> Barter.Problem:
+	return Barter.problem(refuge, deal, stall, storage, storage_free(), owned_items, found_plans + researched_plans)
+
+
+## Troc avec le marchand : ce que tu donnes sort du stock, ce que tu prends y entre ;
+## équipements et plans achetés sont à toi. Renvoie false si l'échange ne passe pas.
+func barter(refuge: RefugeData, deal: Barter.Deal, stall: Barter.Stall) -> bool:
+	if barter_problem(refuge, deal, stall) != Barter.Problem.NONE:
+		return false
+	var plans: Array[StringName] = deal.plans.duplicate()
+	var bought_items: bool = not deal.items.is_empty()
+	Barter.apply(refuge, deal, stall, storage, owned_items)
+	for plan_id: StringName in plans:
+		add_plan(plan_id)
+	storage_changed.emit()
+	if bought_items:
+		equipment_changed.emit()
+	return true
+
+
 ## Renforce la locomotive : elle tire une voiture de plus. Se fait au dépôt d'une
 ## gare refuge (c'est l'interface de la gare qui le propose).
 func upgrade_locomotive() -> bool:

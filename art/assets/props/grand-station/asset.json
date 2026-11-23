@@ -1,0 +1,2313 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/grand-station",
+  "type": "prop",
+  "description": "Gare refuge : batiment voyageurs, verriere en berceau, rosace vitree, horloge, ailes et pavillons.",
+  "frame": {
+    "width": 380,
+    "height": 200
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "plinth",
+        "material": "stone",
+        "size": [
+          22.4,
+          0.35,
+          5.6
+        ],
+        "position": [
+          0,
+          0.175,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "steps",
+        "material": "stone",
+        "size": [
+          6.0,
+          0.18,
+          0.8
+        ],
+        "position": [
+          0,
+          0.09,
+          3.1
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wing-l",
+        "material": "limestone",
+        "size": [
+          6.5,
+          3.6,
+          4.6
+        ],
+        "position": [
+          -6.75,
+          2.15,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wing-l-cornice",
+        "material": "limestone-dark",
+        "size": [
+          6.7,
+          0.22,
+          4.8
+        ],
+        "position": [
+          -6.75,
+          3.95,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wing-l-base",
+        "material": "limestone-dark",
+        "size": [
+          6.6,
+          0.5,
+          4.7
+        ],
+        "position": [
+          -6.75,
+          0.6,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wing-l-roof-f",
+        "material": "slate",
+        "size": [
+          6.7,
+          0.14,
+          1.75
+        ],
+        "position": [
+          -6.75,
+          4.55,
+          0.95
+        ],
+        "rotation": [
+          32,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wing-l-roof-b",
+        "material": "slate",
+        "size": [
+          6.7,
+          0.14,
+          1.75
+        ],
+        "position": [
+          -6.75,
+          4.55,
+          -0.95
+        ],
+        "rotation": [
+          -32,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wing-l-ridge",
+        "material": "iron-black",
+        "size": [
+          6.75,
+          0.1,
+          0.14
+        ],
+        "position": [
+          -6.75,
+          5.05,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "dormer-l0",
+        "material": "limestone",
+        "size": [
+          0.7,
+          0.6,
+          0.5
+        ],
+        "position": [
+          -8.35,
+          4.35,
+          1.35
+        ]
+      },
+      {
+        "type": "box",
+        "id": "dormer-l0-glass",
+        "material": "glass",
+        "size": [
+          0.4,
+          0.38,
+          0.05
+        ],
+        "position": [
+          -8.35,
+          4.32,
+          1.61
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "dormer-l0-cap",
+        "material": "slate",
+        "radius": 0.5,
+        "height": 0.35,
+        "position": [
+          -8.35,
+          4.82,
+          1.35
+        ],
+        "rotation": [
+          0,
+          45,
+          0
+        ],
+        "segments": 4
+      },
+      {
+        "type": "box",
+        "id": "dormer-l1",
+        "material": "limestone",
+        "size": [
+          0.7,
+          0.6,
+          0.5
+        ],
+        "position": [
+          -5.15,
+          4.35,
+          1.35
+        ]
+      },
+      {
+        "type": "box",
+        "id": "dormer-l1-glass",
+        "material": "glass",
+        "size": [
+          0.4,
+          0.38,
+          0.05
+        ],
+        "position": [
+          -5.15,
+          4.32,
+          1.61
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "dormer-l1-cap",
+        "material": "slate",
+        "radius": 0.5,
+        "height": 0.35,
+        "position": [
+          -5.15,
+          4.82,
+          1.35
+        ],
+        "rotation": [
+          0,
+          45,
+          0
+        ],
+        "segments": 4
+      },
+      {
+        "type": "box",
+        "id": "win-l0-frame",
+        "material": "limestone-dark",
+        "size": [
+          0.9600000000000001,
+          1.6,
+          0.05
+        ],
+        "position": [
+          -9.15,
+          1.85,
+          2.31
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "win-l0-frame-top",
+        "material": "limestone-dark",
+        "radius": 0.48000000000000004,
+        "height": 0.05,
+        "position": [
+          -9.15,
+          2.6500000000000004,
+          2.31
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "win-l0",
+        "material": "glass",
+        "size": [
+          0.8,
+          1.6,
+          0.07
+        ],
+        "position": [
+          -9.15,
+          1.85,
+          2.33
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "win-l0-top",
+        "material": "glass",
+        "radius": 0.4,
+        "height": 0.07,
+        "position": [
+          -9.15,
+          2.6500000000000004,
+          2.33
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "win-l1-frame",
+        "material": "limestone-dark",
+        "size": [
+          0.9600000000000001,
+          1.6,
+          0.05
+        ],
+        "position": [
+          -7.550000000000001,
+          1.85,
+          2.31
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "win-l1-frame-top",
+        "material": "limestone-dark",
+        "radius": 0.48000000000000004,
+        "height": 0.05,
+        "position": [
+          -7.550000000000001,
+          2.6500000000000004,
+          2.31
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "win-l1",
+        "material": "glass",
+        "size": [
+          0.8,
+          1.6,
+          0.07
+        ],
+        "position": [
+          -7.550000000000001,
+          1.85,
+          2.33
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "win-l1-top",
+        "material": "glass",
+        "radius": 0.4,
+        "height": 0.07,
+        "position": [
+          -7.550000000000001,
+          2.6500000000000004,
+          2.33
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "win-l2-frame",
+        "material": "limestone-dark",
+        "size": [
+          0.9600000000000001,
+          1.6,
+          0.05
+        ],
+        "position": [
+          -5.95,
+          1.85,
+          2.31
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "win-l2-frame-top",
+        "material": "limestone-dark",
+        "radius": 0.48000000000000004,
+        "height": 0.05,
+        "position": [
+          -5.95,
+          2.6500000000000004,
+          2.31
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "win-l2",
+        "material": "glass",
+        "size": [
+          0.8,
+          1.6,
+          0.07
+        ],
+        "position": [
+          -5.95,
+          1.85,
+          2.33
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "win-l2-top",
+        "material": "glass",
+        "radius": 0.4,
+        "height": 0.07,
+        "position": [
+          -5.95,
+          2.6500000000000004,
+          2.33
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "win-l3-frame",
+        "material": "limestone-dark",
+        "size": [
+          0.9600000000000001,
+          1.6,
+          0.05
+        ],
+        "position": [
+          -4.35,
+          1.85,
+          2.31
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "win-l3-frame-top",
+        "material": "limestone-dark",
+        "radius": 0.48000000000000004,
+        "height": 0.05,
+        "position": [
+          -4.35,
+          2.6500000000000004,
+          2.31
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "win-l3",
+        "material": "glass",
+        "size": [
+          0.8,
+          1.6,
+          0.07
+        ],
+        "position": [
+          -4.35,
+          1.85,
+          2.33
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "win-l3-top",
+        "material": "glass",
+        "radius": 0.4,
+        "height": 0.07,
+        "position": [
+          -4.35,
+          2.6500000000000004,
+          2.33
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wing-r",
+        "material": "limestone",
+        "size": [
+          6.5,
+          3.6,
+          4.6
+        ],
+        "position": [
+          6.75,
+          2.15,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wing-r-cornice",
+        "material": "limestone-dark",
+        "size": [
+          6.7,
+          0.22,
+          4.8
+        ],
+        "position": [
+          6.75,
+          3.95,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wing-r-base",
+        "material": "limestone-dark",
+        "size": [
+          6.6,
+          0.5,
+          4.7
+        ],
+        "position": [
+          6.75,
+          0.6,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wing-r-roof-f",
+        "material": "slate",
+        "size": [
+          6.7,
+          0.14,
+          1.75
+        ],
+        "position": [
+          6.75,
+          4.55,
+          0.95
+        ],
+        "rotation": [
+          32,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wing-r-roof-b",
+        "material": "slate",
+        "size": [
+          6.7,
+          0.14,
+          1.75
+        ],
+        "position": [
+          6.75,
+          4.55,
+          -0.95
+        ],
+        "rotation": [
+          -32,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "wing-r-ridge",
+        "material": "iron-black",
+        "size": [
+          6.75,
+          0.1,
+          0.14
+        ],
+        "position": [
+          6.75,
+          5.05,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "dormer-r0",
+        "material": "limestone",
+        "size": [
+          0.7,
+          0.6,
+          0.5
+        ],
+        "position": [
+          5.15,
+          4.35,
+          1.35
+        ]
+      },
+      {
+        "type": "box",
+        "id": "dormer-r0-glass",
+        "material": "glass",
+        "size": [
+          0.4,
+          0.38,
+          0.05
+        ],
+        "position": [
+          5.15,
+          4.32,
+          1.61
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "dormer-r0-cap",
+        "material": "slate",
+        "radius": 0.5,
+        "height": 0.35,
+        "position": [
+          5.15,
+          4.82,
+          1.35
+        ],
+        "rotation": [
+          0,
+          45,
+          0
+        ],
+        "segments": 4
+      },
+      {
+        "type": "box",
+        "id": "dormer-r1",
+        "material": "limestone",
+        "size": [
+          0.7,
+          0.6,
+          0.5
+        ],
+        "position": [
+          8.35,
+          4.35,
+          1.35
+        ]
+      },
+      {
+        "type": "box",
+        "id": "dormer-r1-glass",
+        "material": "glass",
+        "size": [
+          0.4,
+          0.38,
+          0.05
+        ],
+        "position": [
+          8.35,
+          4.32,
+          1.61
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "dormer-r1-cap",
+        "material": "slate",
+        "radius": 0.5,
+        "height": 0.35,
+        "position": [
+          8.35,
+          4.82,
+          1.35
+        ],
+        "rotation": [
+          0,
+          45,
+          0
+        ],
+        "segments": 4
+      },
+      {
+        "type": "box",
+        "id": "win-r0-frame",
+        "material": "limestone-dark",
+        "size": [
+          0.9600000000000001,
+          1.6,
+          0.05
+        ],
+        "position": [
+          4.35,
+          1.85,
+          2.31
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "win-r0-frame-top",
+        "material": "limestone-dark",
+        "radius": 0.48000000000000004,
+        "height": 0.05,
+        "position": [
+          4.35,
+          2.6500000000000004,
+          2.31
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "win-r0",
+        "material": "glass",
+        "size": [
+          0.8,
+          1.6,
+          0.07
+        ],
+        "position": [
+          4.35,
+          1.85,
+          2.33
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "win-r0-top",
+        "material": "glass",
+        "radius": 0.4,
+        "height": 0.07,
+        "position": [
+          4.35,
+          2.6500000000000004,
+          2.33
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "win-r1-frame",
+        "material": "limestone-dark",
+        "size": [
+          0.9600000000000001,
+          1.6,
+          0.05
+        ],
+        "position": [
+          5.949999999999999,
+          1.85,
+          2.31
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "win-r1-frame-top",
+        "material": "limestone-dark",
+        "radius": 0.48000000000000004,
+        "height": 0.05,
+        "position": [
+          5.949999999999999,
+          2.6500000000000004,
+          2.31
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "win-r1",
+        "material": "glass",
+        "size": [
+          0.8,
+          1.6,
+          0.07
+        ],
+        "position": [
+          5.949999999999999,
+          1.85,
+          2.33
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "win-r1-top",
+        "material": "glass",
+        "radius": 0.4,
+        "height": 0.07,
+        "position": [
+          5.949999999999999,
+          2.6500000000000004,
+          2.33
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "win-r2-frame",
+        "material": "limestone-dark",
+        "size": [
+          0.9600000000000001,
+          1.6,
+          0.05
+        ],
+        "position": [
+          7.55,
+          1.85,
+          2.31
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "win-r2-frame-top",
+        "material": "limestone-dark",
+        "radius": 0.48000000000000004,
+        "height": 0.05,
+        "position": [
+          7.55,
+          2.6500000000000004,
+          2.31
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "win-r2",
+        "material": "glass",
+        "size": [
+          0.8,
+          1.6,
+          0.07
+        ],
+        "position": [
+          7.55,
+          1.85,
+          2.33
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "win-r2-top",
+        "material": "glass",
+        "radius": 0.4,
+        "height": 0.07,
+        "position": [
+          7.55,
+          2.6500000000000004,
+          2.33
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "win-r3-frame",
+        "material": "limestone-dark",
+        "size": [
+          0.9600000000000001,
+          1.6,
+          0.05
+        ],
+        "position": [
+          9.15,
+          1.85,
+          2.31
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "win-r3-frame-top",
+        "material": "limestone-dark",
+        "radius": 0.48000000000000004,
+        "height": 0.05,
+        "position": [
+          9.15,
+          2.6500000000000004,
+          2.31
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "win-r3",
+        "material": "glass",
+        "size": [
+          0.8,
+          1.6,
+          0.07
+        ],
+        "position": [
+          9.15,
+          1.85,
+          2.33
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "win-r3-top",
+        "material": "glass",
+        "radius": 0.4,
+        "height": 0.07,
+        "position": [
+          9.15,
+          2.6500000000000004,
+          2.33
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "pav-l",
+        "material": "limestone",
+        "size": [
+          2.3,
+          4.6,
+          5.0
+        ],
+        "position": [
+          -10.25,
+          2.65,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "pav-l-quoin-a",
+        "material": "limestone-dark",
+        "size": [
+          0.25,
+          4.6,
+          0.25
+        ],
+        "position": [
+          -11.35,
+          2.65,
+          2.5
+        ]
+      },
+      {
+        "type": "box",
+        "id": "pav-l-quoin-b",
+        "material": "limestone-dark",
+        "size": [
+          0.25,
+          4.6,
+          0.25
+        ],
+        "position": [
+          -9.15,
+          2.65,
+          2.5
+        ]
+      },
+      {
+        "type": "box",
+        "id": "pav-l-cornice",
+        "material": "limestone-dark",
+        "size": [
+          2.5,
+          0.25,
+          5.2
+        ],
+        "position": [
+          -10.25,
+          5.0,
+          0
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "pav-l-roof",
+        "material": "slate",
+        "radius": 2.0,
+        "height": 2.2,
+        "position": [
+          -10.25,
+          6.2,
+          0
+        ],
+        "rotation": [
+          0,
+          45,
+          0
+        ],
+        "segments": 4
+      },
+      {
+        "type": "cylinder",
+        "id": "pav-l-finial",
+        "material": "brass",
+        "radius": 0.05,
+        "height": 0.6,
+        "position": [
+          -10.25,
+          7.5,
+          0
+        ]
+      },
+      {
+        "type": "sphere",
+        "id": "pav-l-finial-ball",
+        "material": "brass",
+        "radius": 0.12,
+        "position": [
+          -10.25,
+          7.85,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "pav-l-win-frame",
+        "material": "limestone-dark",
+        "size": [
+          1.16,
+          2.1,
+          0.05
+        ],
+        "position": [
+          -10.25,
+          2.45,
+          2.51
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "pav-l-win-frame-top",
+        "material": "limestone-dark",
+        "radius": 0.58,
+        "height": 0.05,
+        "position": [
+          -10.25,
+          3.5,
+          2.51
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "pav-l-win",
+        "material": "glass",
+        "size": [
+          1.0,
+          2.1,
+          0.07
+        ],
+        "position": [
+          -10.25,
+          2.45,
+          2.53
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "pav-l-win-top",
+        "material": "glass",
+        "radius": 0.5,
+        "height": 0.07,
+        "position": [
+          -10.25,
+          3.5,
+          2.53
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "pav-l-oculus",
+        "material": "glass",
+        "radius": 0.32,
+        "height": 0.06,
+        "position": [
+          -10.25,
+          4.35,
+          2.53
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "torus",
+        "id": "pav-l-oculus-ring",
+        "material": "limestone-dark",
+        "radius": 0.34,
+        "tube": 0.06,
+        "position": [
+          -10.25,
+          4.35,
+          2.54
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "pav-r",
+        "material": "limestone",
+        "size": [
+          2.3,
+          4.6,
+          5.0
+        ],
+        "position": [
+          10.25,
+          2.65,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "pav-r-quoin-a",
+        "material": "limestone-dark",
+        "size": [
+          0.25,
+          4.6,
+          0.25
+        ],
+        "position": [
+          9.15,
+          2.65,
+          2.5
+        ]
+      },
+      {
+        "type": "box",
+        "id": "pav-r-quoin-b",
+        "material": "limestone-dark",
+        "size": [
+          0.25,
+          4.6,
+          0.25
+        ],
+        "position": [
+          11.35,
+          2.65,
+          2.5
+        ]
+      },
+      {
+        "type": "box",
+        "id": "pav-r-cornice",
+        "material": "limestone-dark",
+        "size": [
+          2.5,
+          0.25,
+          5.2
+        ],
+        "position": [
+          10.25,
+          5.0,
+          0
+        ]
+      },
+      {
+        "type": "cone",
+        "id": "pav-r-roof",
+        "material": "slate",
+        "radius": 2.0,
+        "height": 2.2,
+        "position": [
+          10.25,
+          6.2,
+          0
+        ],
+        "rotation": [
+          0,
+          45,
+          0
+        ],
+        "segments": 4
+      },
+      {
+        "type": "cylinder",
+        "id": "pav-r-finial",
+        "material": "brass",
+        "radius": 0.05,
+        "height": 0.6,
+        "position": [
+          10.25,
+          7.5,
+          0
+        ]
+      },
+      {
+        "type": "sphere",
+        "id": "pav-r-finial-ball",
+        "material": "brass",
+        "radius": 0.12,
+        "position": [
+          10.25,
+          7.85,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "pav-r-win-frame",
+        "material": "limestone-dark",
+        "size": [
+          1.16,
+          2.1,
+          0.05
+        ],
+        "position": [
+          10.25,
+          2.45,
+          2.51
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "pav-r-win-frame-top",
+        "material": "limestone-dark",
+        "radius": 0.58,
+        "height": 0.05,
+        "position": [
+          10.25,
+          3.5,
+          2.51
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "pav-r-win",
+        "material": "glass",
+        "size": [
+          1.0,
+          2.1,
+          0.07
+        ],
+        "position": [
+          10.25,
+          2.45,
+          2.53
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "pav-r-win-top",
+        "material": "glass",
+        "radius": 0.5,
+        "height": 0.07,
+        "position": [
+          10.25,
+          3.5,
+          2.53
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "pav-r-oculus",
+        "material": "glass",
+        "radius": 0.32,
+        "height": 0.06,
+        "position": [
+          10.25,
+          4.35,
+          2.53
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "torus",
+        "id": "pav-r-oculus-ring",
+        "material": "limestone-dark",
+        "radius": 0.34,
+        "tube": 0.06,
+        "position": [
+          10.25,
+          4.35,
+          2.54
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "hall",
+        "material": "limestone",
+        "size": [
+          7.2,
+          4.8,
+          5.0
+        ],
+        "position": [
+          0,
+          2.75,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "hall-pilaster-l",
+        "material": "limestone-dark",
+        "size": [
+          0.45,
+          5.4,
+          0.3
+        ],
+        "position": [
+          -3.5,
+          2.95,
+          2.6
+        ]
+      },
+      {
+        "type": "box",
+        "id": "hall-pilaster-r",
+        "material": "limestone-dark",
+        "size": [
+          0.45,
+          5.4,
+          0.3
+        ],
+        "position": [
+          3.5,
+          2.95,
+          2.6
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "vault",
+        "material": "glass-roof",
+        "radius": 3.3,
+        "height": 4.7,
+        "position": [
+          0,
+          5.15,
+          -0.1
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ],
+        "segments": 24
+      },
+      {
+        "type": "torus",
+        "id": "vault-rib",
+        "material": "iron-black",
+        "radius": 3.32,
+        "tube": 0.07,
+        "position": [
+          0,
+          5.15,
+          -2.1
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ],
+        "repeat": {
+          "count": 5,
+          "offset": [
+            0,
+            0,
+            1.0
+          ]
+        }
+      },
+      {
+        "type": "box",
+        "id": "vault-ridge",
+        "material": "iron-black",
+        "size": [
+          0.12,
+          0.1,
+          4.7
+        ],
+        "position": [
+          0,
+          8.469999999999999,
+          -0.1
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "rose",
+        "material": "glass-roof",
+        "radius": 2.7,
+        "height": 0.08,
+        "position": [
+          0,
+          3.0,
+          2.53
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ],
+        "segments": 24
+      },
+      {
+        "type": "box",
+        "id": "rose-low",
+        "material": "glass-roof",
+        "size": [
+          5.4,
+          1.6,
+          0.08
+        ],
+        "position": [
+          0,
+          2.2,
+          2.53
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-arch-0",
+        "material": "limestone-dark",
+        "size": [
+          0.7837065365839769,
+          0.3,
+          0.14
+        ],
+        "position": [
+          2.7994390249565124,
+          3.339913438320011,
+          2.56
+        ],
+        "rotation": [
+          0,
+          0,
+          96.92307692307692
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-arch-1",
+        "material": "limestone-dark",
+        "size": [
+          0.7837065365839769,
+          0.3,
+          0.14
+        ],
+        "position": [
+          2.63674580437287,
+          3.9999857814599507,
+          2.56
+        ],
+        "rotation": [
+          0,
+          0,
+          110.76923076923077
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-arch-2",
+        "material": "limestone-dark",
+        "size": [
+          0.7837065365839769,
+          0.3,
+          0.14
+        ],
+        "position": [
+          2.320814501820111,
+          4.60194258578186,
+          2.56
+        ],
+        "rotation": [
+          0,
+          0,
+          124.61538461538461
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-arch-3",
+        "material": "limestone-dark",
+        "size": [
+          0.7837065365839769,
+          0.3,
+          0.14
+        ],
+        "position": [
+          1.870005896239043,
+          5.110800309842505,
+          2.56
+        ],
+        "rotation": [
+          0,
+          0,
+          138.46153846153845
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-arch-4",
+        "material": "limestone-dark",
+        "size": [
+          0.7837065365839769,
+          0.3,
+          0.14
+        ],
+        "position": [
+          1.3105193451634276,
+          5.4969859923420525,
+          2.56
+        ],
+        "rotation": [
+          0,
+          0,
+          152.30769230769232
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-arch-5",
+        "material": "limestone-dark",
+        "size": [
+          0.7837065365839769,
+          0.3,
+          0.14
+        ],
+        "position": [
+          0.6748701732909137,
+          5.738055925141467,
+          2.56
+        ],
+        "rotation": [
+          0,
+          0,
+          166.15384615384613
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-arch-6",
+        "material": "limestone-dark",
+        "size": [
+          0.7837065365839769,
+          0.3,
+          0.14
+        ],
+        "position": [
+          -4.534905872088115e-16,
+          5.82,
+          2.56
+        ],
+        "rotation": [
+          0,
+          0,
+          180.0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-arch-7",
+        "material": "limestone-dark",
+        "size": [
+          0.7837065365839769,
+          0.3,
+          0.14
+        ],
+        "position": [
+          -0.6748701732909121,
+          5.738055925141467,
+          2.56
+        ],
+        "rotation": [
+          0,
+          0,
+          193.84615384615384
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-arch-8",
+        "material": "limestone-dark",
+        "size": [
+          0.7837065365839769,
+          0.3,
+          0.14
+        ],
+        "position": [
+          -1.3105193451634274,
+          5.4969859923420525,
+          2.56
+        ],
+        "rotation": [
+          0,
+          0,
+          207.69230769230768
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-arch-9",
+        "material": "limestone-dark",
+        "size": [
+          0.7837065365839769,
+          0.3,
+          0.14
+        ],
+        "position": [
+          -1.870005896239042,
+          5.1108003098425066,
+          2.56
+        ],
+        "rotation": [
+          0,
+          0,
+          221.53846153846152
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-arch-10",
+        "material": "limestone-dark",
+        "size": [
+          0.7837065365839769,
+          0.3,
+          0.14
+        ],
+        "position": [
+          -2.320814501820111,
+          4.60194258578186,
+          2.56
+        ],
+        "rotation": [
+          0,
+          0,
+          235.3846153846154
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-arch-11",
+        "material": "limestone-dark",
+        "size": [
+          0.7837065365839769,
+          0.3,
+          0.14
+        ],
+        "position": [
+          -2.63674580437287,
+          3.999985781459951,
+          2.56
+        ],
+        "rotation": [
+          0,
+          0,
+          249.23076923076923
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-arch-12",
+        "material": "limestone-dark",
+        "size": [
+          0.7837065365839769,
+          0.3,
+          0.14
+        ],
+        "position": [
+          -2.7994390249565124,
+          3.339913438320011,
+          2.56
+        ],
+        "rotation": [
+          0,
+          0,
+          263.0769230769231
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-jamb-0",
+        "material": "limestone-dark",
+        "size": [
+          0.3,
+          2.65,
+          0.14
+        ],
+        "position": [
+          -2.8200000000000003,
+          1.6749999999999998,
+          2.56
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-jamb-1",
+        "material": "limestone-dark",
+        "size": [
+          0.3,
+          2.65,
+          0.14
+        ],
+        "position": [
+          2.8200000000000003,
+          1.6749999999999998,
+          2.56
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-spoke-0",
+        "material": "iron-black",
+        "size": [
+          0.07,
+          2.7,
+          0.05
+        ],
+        "position": [
+          -1.1691342951089922,
+          3.6750000000000003,
+          2.59
+        ],
+        "rotation": [
+          0,
+          0,
+          60
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-spoke-1",
+        "material": "iron-black",
+        "size": [
+          0.07,
+          2.7,
+          0.05
+        ],
+        "position": [
+          -0.6749999999999999,
+          4.169134295108992,
+          2.59
+        ],
+        "rotation": [
+          0,
+          0,
+          30
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-spoke-2",
+        "material": "iron-black",
+        "size": [
+          0.07,
+          2.7,
+          0.05
+        ],
+        "position": [
+          0.0,
+          4.35,
+          2.59
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-spoke-3",
+        "material": "iron-black",
+        "size": [
+          0.07,
+          2.7,
+          0.05
+        ],
+        "position": [
+          0.6749999999999999,
+          4.169134295108992,
+          2.59
+        ],
+        "rotation": [
+          0,
+          0,
+          -30
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-spoke-4",
+        "material": "iron-black",
+        "size": [
+          0.07,
+          2.7,
+          0.05
+        ],
+        "position": [
+          1.1691342951089922,
+          3.6750000000000003,
+          2.59
+        ],
+        "rotation": [
+          0,
+          0,
+          -60
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rose-transom",
+        "material": "iron-black",
+        "size": [
+          5.4,
+          0.09,
+          0.05
+        ],
+        "position": [
+          0,
+          3.0,
+          2.59
+        ]
+      },
+      {
+        "type": "box",
+        "id": "door-0",
+        "material": "panel-wood",
+        "size": [
+          1.0,
+          1.7,
+          0.08
+        ],
+        "position": [
+          -1.6,
+          1.2,
+          2.6
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "door-0-top",
+        "material": "panel-wood",
+        "radius": 0.5,
+        "height": 0.08,
+        "position": [
+          -1.6,
+          2.05,
+          2.6
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "door-0-handle",
+        "material": "brass",
+        "size": [
+          0.06,
+          0.2,
+          0.05
+        ],
+        "position": [
+          -1.3,
+          1.2,
+          2.66
+        ]
+      },
+      {
+        "type": "box",
+        "id": "door-1",
+        "material": "panel-wood",
+        "size": [
+          1.0,
+          1.7,
+          0.08
+        ],
+        "position": [
+          0.0,
+          1.2,
+          2.6
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "door-1-top",
+        "material": "panel-wood",
+        "radius": 0.5,
+        "height": 0.08,
+        "position": [
+          0.0,
+          2.05,
+          2.6
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "door-1-handle",
+        "material": "brass",
+        "size": [
+          0.06,
+          0.2,
+          0.05
+        ],
+        "position": [
+          0.3,
+          1.2,
+          2.66
+        ]
+      },
+      {
+        "type": "box",
+        "id": "door-2",
+        "material": "panel-wood",
+        "size": [
+          1.0,
+          1.7,
+          0.08
+        ],
+        "position": [
+          1.6,
+          1.2,
+          2.6
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "door-2-top",
+        "material": "panel-wood",
+        "radius": 0.5,
+        "height": 0.08,
+        "position": [
+          1.6,
+          2.05,
+          2.6
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "door-2-handle",
+        "material": "brass",
+        "size": [
+          0.06,
+          0.2,
+          0.05
+        ],
+        "position": [
+          1.9000000000000001,
+          1.2,
+          2.66
+        ]
+      },
+      {
+        "type": "box",
+        "id": "attic",
+        "material": "limestone",
+        "size": [
+          7.6000000000000005,
+          0.9,
+          0.6
+        ],
+        "position": [
+          0,
+          5.6,
+          2.4
+        ]
+      },
+      {
+        "type": "box",
+        "id": "attic-cornice",
+        "material": "limestone-dark",
+        "size": [
+          7.8,
+          0.18,
+          0.75
+        ],
+        "position": [
+          0,
+          6.1,
+          2.4
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "clock-case",
+        "material": "limestone-dark",
+        "radius": 0.95,
+        "height": 0.35,
+        "position": [
+          0,
+          6.75,
+          2.45
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ],
+        "segments": 20
+      },
+      {
+        "type": "cylinder",
+        "id": "clock",
+        "material": "clock-face",
+        "radius": 0.75,
+        "height": 0.1,
+        "position": [
+          0,
+          6.75,
+          2.64
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ],
+        "segments": 20
+      },
+      {
+        "type": "torus",
+        "id": "clock-rim",
+        "material": "brass",
+        "radius": 0.78,
+        "tube": 0.06,
+        "position": [
+          0,
+          6.75,
+          2.68
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "clock-hour",
+        "material": "iron-black",
+        "size": [
+          0.08,
+          0.42,
+          0.04
+        ],
+        "position": [
+          0.08,
+          6.88,
+          2.71
+        ],
+        "rotation": [
+          0,
+          0,
+          -40
+        ]
+      },
+      {
+        "type": "box",
+        "id": "clock-minute",
+        "material": "iron-black",
+        "size": [
+          0.06,
+          0.6,
+          0.04
+        ],
+        "position": [
+          0,
+          7.02,
+          2.72
+        ]
+      },
+      {
+        "type": "box",
+        "id": "pediment-l",
+        "material": "limestone",
+        "size": [
+          1.6,
+          0.3,
+          0.5
+        ],
+        "position": [
+          -1.4,
+          6.45,
+          2.35
+        ],
+        "rotation": [
+          0,
+          0,
+          18
+        ]
+      },
+      {
+        "type": "box",
+        "id": "pediment-r",
+        "material": "limestone",
+        "size": [
+          1.6,
+          0.3,
+          0.5
+        ],
+        "position": [
+          1.4,
+          6.45,
+          2.35
+        ],
+        "rotation": [
+          0,
+          0,
+          -18
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "crest-pole",
+        "material": "iron-black",
+        "radius": 0.04,
+        "height": 1.2,
+        "position": [
+          0,
+          8.0,
+          2.3
+        ]
+      },
+      {
+        "type": "box",
+        "id": "crest-flag",
+        "material": "train-red",
+        "size": [
+          0.8,
+          0.45,
+          0.04
+        ],
+        "position": [
+          0.42,
+          8.35,
+          2.3
+        ]
+      },
+      {
+        "type": "box",
+        "id": "sign",
+        "material": "panel-wood",
+        "size": [
+          3.4,
+          0.36,
+          0.07
+        ],
+        "position": [
+          0,
+          2.55,
+          2.63
+        ]
+      },
+      {
+        "type": "box",
+        "id": "sign-band",
+        "material": "brass",
+        "size": [
+          3.0,
+          0.08,
+          0.06
+        ],
+        "position": [
+          0,
+          2.55,
+          2.68
+        ]
+      },
+      {
+        "type": "box",
+        "id": "lantern-arm-0",
+        "material": "iron-black",
+        "size": [
+          0.06,
+          0.06,
+          0.4
+        ],
+        "position": [
+          -3.5,
+          2.6,
+          2.85
+        ]
+      },
+      {
+        "type": "box",
+        "id": "lantern-0",
+        "material": "lamp",
+        "size": [
+          0.22,
+          0.3,
+          0.22
+        ],
+        "position": [
+          -3.5,
+          2.45,
+          3.0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "lantern-arm-1",
+        "material": "iron-black",
+        "size": [
+          0.06,
+          0.06,
+          0.4
+        ],
+        "position": [
+          3.5,
+          2.6,
+          2.85
+        ]
+      },
+      {
+        "type": "box",
+        "id": "lantern-1",
+        "material": "lamp",
+        "size": [
+          0.22,
+          0.3,
+          0.22
+        ],
+        "position": [
+          3.5,
+          2.45,
+          3.0
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

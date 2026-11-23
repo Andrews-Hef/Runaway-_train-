@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://levels/refuge/refuge.gd" id="1_refuge"]
-[ext_resource type="TileSet" path="res://assets/tiles/ground_tileset.tres" id="2_tileset"]
+[ext_resource type="TileSet" path="res://assets/tiles/ground_refuge_tileset.tres" id="2_tileset"]
 [ext_resource type="PackedScene" path="res://entities/train/train.tscn" id="3_train"]
 [ext_resource type="PackedScene" path="res://entities/player/player.tscn" id="4_player"]
 [ext_resource type="Theme" path="res://ui/theme/game_theme.tres" id="5_theme"]
@@ -29,6 +29,7 @@ position_smoothing_enabled = true
 position_smoothing_speed = 8.0
 
 [node name="Ui" type="CanvasLayer" parent="."]
+layer = 2
 
 [node name="Root" type="Control" parent="Ui"]
 layout_mode = 3

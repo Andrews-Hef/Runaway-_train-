@@ -1,0 +1,130 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/planter",
+  "type": "prop",
+  "description": "Jardiniere de pierre fleurie.",
+  "frame": {
+    "width": 36,
+    "height": 28
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "id": "box",
+        "material": "limestone",
+        "size": [
+          1.4,
+          0.55,
+          0.6
+        ],
+        "position": [
+          0,
+          0.28,
+          0
+        ]
+      },
+      {
+        "type": "box",
+        "id": "rim",
+        "material": "limestone-dark",
+        "size": [
+          1.5,
+          0.08,
+          0.7
+        ],
+        "position": [
+          0,
+          0.57,
+          0
+        ]
+      },
+      {
+        "type": "sphere",
+        "id": "leaf",
+        "material": "leaf-dark",
+        "radius": 0.22,
+        "position": [
+          -0.5,
+          0.7,
+          0
+        ],
+        "repeat": {
+          "count": 5,
+          "offset": [
+            0.25,
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "type": "sphere",
+        "id": "flower-a",
+        "material": "flower-red",
+        "radius": 0.09,
+        "position": [
+          -0.55,
+          0.88,
+          0.1
+        ],
+        "repeat": {
+          "count": 4,
+          "offset": [
+            0.36,
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "type": "sphere",
+        "id": "flower-b",
+        "material": "flower-yellow",
+        "radius": 0.08,
+        "position": [
+          -0.38,
+          0.86,
+          -0.05
+        ],
+        "repeat": {
+          "count": 3,
+          "offset": [
+            0.38,
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "type": "sphere",
+        "id": "flower-c",
+        "material": "flower-white",
+        "radius": 0.07,
+        "position": [
+          -0.2,
+          0.92,
+          0.12
+        ],
+        "repeat": {
+          "count": 2,
+          "offset": [
+            0.45,
+            0,
+            0
+          ]
+        }
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

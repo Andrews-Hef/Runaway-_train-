@@ -749,6 +749,24 @@ def check() -> Image.Image:
     ], {"g": "#9ad97a"}))
 
 
+def balance() -> Image.Image:
+    """Balance du marchand : la valeur d'un troc (ce que tu donnes contre ce que tu prends)."""
+    return outline(from_map([
+        "............",
+        ".....y......",
+        ".yyyyyyyyy..",
+        ".y...y...y..",
+        "y.y..y..y.y.",
+        "yyy..y..yyy.",
+        "YYY..y..YYY.",
+        ".....y......",
+        ".....y......",
+        "...yyyyy....",
+        "...YYYYY....",
+        "............",
+    ], {"y": "#e0b84a", "Y": "#9a7426"}))
+
+
 def hammer() -> Image.Image:
     return outline(from_map([
         "............",
@@ -885,7 +903,7 @@ ICONS = {
     "cloth": cloth, "parts": gear, "metal_plate": metal_plate, "chemicals": flask,
     "antiseptic": bottle, "antibiotics": capsule,
     "serum": lambda: vial("#5aa8e6", "#c9e8ff"), "vaccine": syringe,
-    "lock": lock, "plus": plus, "arrow": arrow, "check": check, "hammer": hammer, "bed": bed, "crate": crate,
+    "lock": lock, "plus": plus, "balance": balance, "arrow": arrow, "check": check, "hammer": hammer, "bed": bed, "crate": crate,
     "wagon": wagon, "locomotive": locomotive, "cross": cross, "sprout": sprout, "tubes": tubes,
 }
 

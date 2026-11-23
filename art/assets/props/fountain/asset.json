@@ -1,0 +1,138 @@
+{
+  "$schema": "../../../.td2d/schemas/asset.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "props/fountain",
+  "type": "prop",
+  "description": "Fontaine de la place, deux vasques de pierre.",
+  "frame": {
+    "width": 72,
+    "height": 64
+  },
+  "directions": "d1",
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "id": "basin",
+        "material": "limestone",
+        "radius": 1.8,
+        "height": 0.6,
+        "position": [
+          0,
+          0.3,
+          0
+        ],
+        "segments": 16
+      },
+      {
+        "type": "cylinder",
+        "id": "rim",
+        "material": "limestone-dark",
+        "radius": 1.9,
+        "height": 0.12,
+        "position": [
+          0,
+          0.62,
+          0
+        ],
+        "segments": 16
+      },
+      {
+        "type": "cylinder",
+        "id": "water",
+        "material": "water",
+        "radius": 1.6,
+        "height": 0.05,
+        "position": [
+          0,
+          0.6,
+          0
+        ],
+        "segments": 16
+      },
+      {
+        "type": "cylinder",
+        "id": "column",
+        "material": "limestone",
+        "radius": 0.25,
+        "height": 1.5,
+        "position": [
+          0,
+          1.2,
+          0
+        ],
+        "segments": 10
+      },
+      {
+        "type": "cylinder",
+        "id": "bowl",
+        "material": "limestone",
+        "radius": 0.75,
+        "height": 0.22,
+        "position": [
+          0,
+          1.95,
+          0
+        ],
+        "segments": 14
+      },
+      {
+        "type": "cylinder",
+        "id": "bowl-water",
+        "material": "water",
+        "radius": 0.62,
+        "height": 0.04,
+        "position": [
+          0,
+          2.06,
+          0
+        ],
+        "segments": 14
+      },
+      {
+        "type": "cylinder",
+        "id": "spout",
+        "material": "limestone-dark",
+        "radius": 0.1,
+        "height": 0.45,
+        "position": [
+          0,
+          2.28,
+          0
+        ],
+        "segments": 8
+      },
+      {
+        "type": "sphere",
+        "id": "top",
+        "material": "brass",
+        "radius": 0.14,
+        "position": [
+          0,
+          2.55,
+          0
+        ]
+      },
+      {
+        "type": "cylinder",
+        "id": "jet",
+        "material": "water",
+        "radius": 0.04,
+        "height": 0.35,
+        "position": [
+          0,
+          2.75,
+          0
+        ]
+      }
+    ]
+  },
+  "animation": {
+    "fps": 10,
+    "clips": {
+      "idle": {
+        "duration": 0.1
+      }
+    }
+  }
+}

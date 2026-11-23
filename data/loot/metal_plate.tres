@@ -11,3 +11,4 @@ description = "Tôle découpée au chalumeau : plastron, voitures agrandies."
 color = Color(0.7, 0.72, 0.78, 1)
 rare = true
 icon = ExtResource("2_icon")
+value = 50
