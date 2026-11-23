@@ -7,8 +7,9 @@
 script = ExtResource("1_l6p2w")
 id = &"cloth"
 display_name = "Tissu"
-description = "Pansements, tenues, couchettes."
+description = "Tenues, couchettes ; à bord, il panse l'équipage."
 color = Color(0.7254902, 0.63529414, 0.47843137, 1)
 rare = true
 icon = ExtResource("2_icon")
 value = 30
+heal = 3

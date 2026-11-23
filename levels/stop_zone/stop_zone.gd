@@ -967,6 +967,23 @@ func take_medicine(medicine: LootData) -> bool:
 	return true
 
 
+## PV du joueur en ce moment : (actuels, maximum).
+func player_health() -> Vector2i:
+	return Vector2i(_player.health.health, _player.health.max_health)
+
+
+## Se panser avec ce qu'on a dans le sac (tissu) : des PV tout de suite. Rien si on est
+## déjà à fond (on ne gaspille pas le tissu).
+func apply_bandage(loot: LootData) -> bool:
+	if loot == null or loot.heal <= 0 or not _session.is_running() \
+			or _player.health.health >= _player.health.max_health or _session.use(loot.id) <= 0:
+		return false
+	_player.health.heal(loot.heal)
+	Audio.play(&"medicine")
+	_hud.call(&"toast", "Pansement : +%d PV" % loot.heal, false)
+	return true
+
+
 ## L'infection change pendant l'arrêt : paliers (PV, vitesse) et, à 100 %, la ruche.
 func _on_infection_changed(value: float) -> void:
 	var stage: int = Infection.stage_for(value)

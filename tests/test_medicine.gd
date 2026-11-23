@@ -8,6 +8,7 @@ const TRAIN_MENU: PackedScene = preload("res://ui/train/train_menu.tscn")
 const TrainMenu = preload("res://ui/train/train_menu.gd")
 const ANTIBIOTICS: LootData = preload("res://data/loot/antibiotics.tres")
 const WOOD: LootData = preload("res://data/loot/wood.tres")
+const CLOTH: LootData = preload("res://data/loot/cloth.tres")
 
 var _nodes: Array[Node] = []
 
@@ -101,6 +102,33 @@ func test_a_bord_sans_infirmerie_le_coffre_soigne() -> void:
 	take.pressed.emit()
 	assert_almost(GameState.infection, 0.3, "infection −20 %")
 	assert_true(GameState.storage_amount(&"antibiotics") == 0, "consommé")
+
+
+func test_en_sortie_le_tissu_sert_de_pansement() -> void:
+	var zone := _zone()
+	var health: HealthComponent = (zone.get(&"_player") as Node).get(&"health")
+	_session(zone).add_loot(CLOTH, 2)
+	assert_false(zone.call(&"apply_bandage", CLOTH), "PV pleins : on ne gâche pas le tissu")
+	health.take_damage(5)
+	var before: int = health.health
+	GameMenu.open_inventory()
+	GameMenu.set(&"_selected", {"kind": &"bag", "id": &"cloth"})
+	GameMenu.call(&"_fill_detail")
+	var bandage := _button(GameMenu, "Se panser (+%d PV)" % CLOTH.heal)
+	assert_true(bandage != null and not bandage.disabled, "« Se panser » dans le sac")
+	bandage.pressed.emit()
+	assert_true(health.health == mini(before + CLOTH.heal, health.max_health), "PV rendus")
+	assert_true(_session(zone).result.get_amount(&"cloth") == 1, "un tissu utilisé")
+	assert_false(zone.call(&"apply_bandage", WOOD), "le bois ne panse pas")
+
+
+func test_chaque_objet_utilisable_a_son_bouton() -> void:
+	# Ce qui soigne (infection ou PV) doit pouvoir se prendre depuis le sac : sinon on
+	# le ramasse sans pouvoir s'en servir (bug vu en test avec les antibiotiques).
+	for loot: LootData in GameState.LOOT_TYPES:
+		if loot.is_medicine() or loot.heal > 0:
+			assert_false(loot.describe().is_empty(), "%s dit à quoi il sert" % loot.id)
+			assert_true(loot.is_medicine() != (loot.heal > 0), "%s : un seul usage (médicament ou pansement)" % loot.id)
 
 
 func _button(root: Node, text: String) -> Button:

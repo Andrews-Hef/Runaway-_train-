@@ -154,7 +154,7 @@ func trade() -> bool:
 		return false
 	_note = "Marché conclu."
 	if gear:
-		_note += " L'équipement t'attend dans l'inventaire (Pause)."
+		_note += " Équipe-le depuis l'inventaire (Pause), ici même."
 	elif plans:
 		_note += " Le plan est à étudier à la table des plans."
 	_refresh_market.call_deferred()

@@ -46,6 +46,17 @@ func test_dans_le_train_on_s_equipe_depuis_le_casier() -> void:
 	assert_true(_find_label("Machette · Arme (porté)") != null, "la sélection suit l'objet porté")
 
 
+func test_en_gare_refuge_on_s_equipe() -> void:
+	# Ce qu'on achète au marchand de la gare doit pouvoir se porter tout de suite.
+	GameState.new_run(4)
+	GameState.owned_items.append(MACHETE)
+	_scene("res://levels/refuge/refuge.tscn")
+	GameMenu.open_inventory()
+	assert_true(_find_button("Équiper") != null, "le casier est actif en gare")
+	_find_button("Équiper").pressed.emit()
+	assert_true(GameState.loadout.get_item(ItemData.Slot.WEAPON) == MACHETE, "machette en main")
+
+
 func test_pendant_un_arret_le_casier_est_au_train() -> void:
 	GameState.new_run(4)
 	GameState.owned_items.append(MACHETE)
@@ -56,7 +67,7 @@ func test_pendant_un_arret_le_casier_est_au_train() -> void:
 	session.add_loot(WOOD, 7)
 	GameMenu.open_inventory()
 	assert_true(_find_button("Équiper") == null, "pas d'Équiper en zone")
-	assert_true(_find_label("Casier · dans le train") != null, "le casier dit où il est")
+	assert_true(_find_label("Casier · à bord") != null, "le casier dit où il est")
 	var bag := _cells("BagGrid")
 	assert_true(bag.size() == 8, "2 rangées de 4 cases")
 	var greyed: int = 0

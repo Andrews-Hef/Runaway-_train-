@@ -20,6 +20,8 @@ extends Resource
 @export_range(0.0, 1.0) var cure: float = 0.0
 ## Énergie qu'une unité donne en brûlant dans la chaudière (0 : ne brûle pas). Voir EngineRules.
 @export var fuel: int = 0
+## PV rendus quand on s'en sert pour se panser en sortie (0 : pas un pansement).
+@export var heal: int = 0
 ## Valeur au troc chez les marchands des gares (10 = une ferraille). Voir Barter.
 @export var value: int = 10
 
@@ -33,6 +35,8 @@ func describe() -> String:
 	var effect: String = ""
 	if cure > 0.0:
 		effect = "Médicament : l'infection baisse de %d %%." % roundi(cure * 100.0)
+	elif heal > 0:
+		effect = "Pansement : +%d PV en sortie." % heal
 	elif fuel > 0:
 		effect = "Chaudière : %d d'énergie." % fuel
 	if effect.is_empty():

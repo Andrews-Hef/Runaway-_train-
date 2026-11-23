@@ -512,9 +512,10 @@ func _refresh_inventory() -> void:
 	_inventory_tabs.set_tab_title(InventoryTab.GRADE, title)
 
 
-## On change d'équipement dans le train seulement.
+## On change d'équipement à bord, ou en gare refuge (zone sûre, le train est là :
+## ce qu'on achète au marchand s'équipe tout de suite). Jamais pendant une sortie.
 func can_change_equipment() -> bool:
-	return scene_kind() == &"train"
+	return scene_kind() == &"train" or scene_kind() == &"refuge"
 
 
 func _session() -> StopSession:
@@ -645,8 +646,12 @@ func _equipment_column() -> VBoxContainer:
 			gear.armor(), roundi(gear.protection() * 100.0), gear.damage()], MenuKit.MUTED))
 		column.add_child(MenuKit.stats_grid(_wearer))
 		return column
-	column.add_child(MenuKit.label("PV %d · Armure %d · Prot. %d %%" % [
-		GameState.max_health(), GameState.armor(), roundi(GameState.protection() * 100.0)], MenuKit.MUTED))
+	# En sortie, les PV du moment (pour savoir s'il faut se panser) ; ailleurs, le maximum.
+	var health: Vector2i = _health()
+	var health_text: String = "PV %d/%d" % [health.x, health.y] if health.x < health.y else "PV %d" % health.y
+	column.add_child(MenuKit.label("%s · Armure %d · Prot. %d %%" % [
+		health_text, GameState.armor(), roundi(GameState.protection() * 100.0)],
+		MenuKit.BAD if health.x < health.y else MenuKit.MUTED))
 	var infection: float = _infection()
 	column.add_child(MenuKit.label("Infection : " + Infection.describe(infection), Infection.color(infection)))
 	return column
@@ -726,7 +731,7 @@ func _locker_column() -> VBoxContainer:
 	column.add_theme_constant_override(&"separation", 3)
 	var active: bool = can_change_equipment()
 	var spare := GameState.spare_items()
-	column.add_child(MenuKit.label("Casier · %d" % spare.size() if active else "Casier · dans le train", MenuKit.GOLD if active else MenuKit.MUTED))
+	column.add_child(MenuKit.label("Casier · %d" % spare.size() if active else "Casier · à bord", MenuKit.GOLD if active else MenuKit.MUTED))
 	var grid := GridContainer.new()
 	grid.name = "LockerGrid"
 	grid.columns = LOCKER_COLUMNS
@@ -745,7 +750,7 @@ func _locker_column() -> VBoxContainer:
 			grid.add_child(_slot(null, 0, "", false, Callable()))
 	var text: String = ("Touche un objet, puis « Équiper » : il remplace celui que tu portes." if _wearer == null
 		else "Touche un objet, puis « Donner » : il remplace ce que %s porte." % _wearer.display_name) if active \
-		else "On change d'équipement dans le train, avant de descendre."
+		else "On change d'équipement à bord ou en gare refuge, pas en sortie."
 	if spare.is_empty():
 		text = "Rien d'autre : fabrique-en à l'établi."
 	var note := MenuKit.label(text, MenuKit.MUTED)
@@ -772,6 +777,8 @@ func _fill_detail() -> void:
 			_detail_line(data.icon, "%s ×%d" % [data.display_name, amount], data.describe())
 			if data.is_medicine():
 				_detail_box.add_child(_medicine_action(data))
+			elif data.heal > 0:
+				_detail_box.add_child(_bandage_action(data))
 			var pile: int = mini(amount, BagSlots.STACK_SIZE)
 			_detail_box.add_child(_action("Jeter 1", func() -> void: _drop(session, id, 1)))
 			if pile > 1:
@@ -851,6 +858,29 @@ func _medicine_action(medicine: LootData) -> Button:
 	take.tooltip_text = "Rien à soigner" if take.disabled else ""
 	Audio.tag(take, &"")
 	return take
+
+
+## PV du joueur : ceux du moment en sortie, le maximum ailleurs.
+func _health() -> Vector2i:
+	var zone: Node = get_tree().current_scene
+	if zone and zone.has_method(&"player_health"):
+		return zone.call(&"player_health")
+	return Vector2i(GameState.max_health(), GameState.max_health())
+
+
+## « Se panser » avec du tissu du sac pendant l'arrêt (grisé si les PV sont pleins).
+func _bandage_action(loot: LootData) -> Button:
+	var zone: Node = get_tree().current_scene
+	var health: Vector2i = _health()
+	var bandage := _action("Se panser (+%d PV)" % loot.heal, func() -> void:
+		if zone.call(&"apply_bandage", loot):
+			if _session() and _session().result.get_amount(loot.id) <= 0:
+				_selected = _default_selection()
+			_refresh_inventory())
+	bandage.disabled = health.x >= health.y
+	bandage.tooltip_text = "PV au maximum" if bandage.disabled else ""
+	Audio.tag(bandage, &"")
+	return bandage
 
 
 func _drop(session: StopSession, id: StringName, amount: int) -> void:
