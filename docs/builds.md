@@ -15,7 +15,8 @@ Code de sortie 0 = tout est vert. Une erreur de script pendant un test le fait �
 La CI GitHub Actions (`.github/workflows/ci.yml`) lance les tests à chaque push et pull request. Elle fabrique aussi les builds **Android (APK)**, **Windows** et **Linux** :
 
 - **À la demande** : onglet *Actions* → *CI* → *Run workflow*. Les fichiers sont dans les artefacts du run (14 jours), avec un nom de version `<version>-dev.<n° du run>`.
-- **À chaque tag** poussé (ex. `0.0.2-rc1`) : les fichiers sont ajoutés à la Release du tag. Si elle n'existe pas encore, elle est créée **en brouillon** (pré-version pour `rc`, `alpha`, `beta`) : tu la relis et la publies toi-même. Le tag `0.0.1-rc1` est antérieur à la CI : la CI ne peut pas le construire, elle prendra le suivant.
+- **À chaque tag** poussé (ex. `0.0.2-rc1`) : la CI publie la Release du tag avec ses fichiers (`-android.apk`, `-windows.exe`, `-linux.zip`), en pré-version pour `rc`, `alpha`, `beta`. **Ne crée pas la Release à la main** : pousse le tag, attends la fin du run (3 minutes environ), c'est en ligne. Si une Release existe déjà pour ce tag (faite à la main, ou un brouillon), la CI y range les fichiers et la publie au lieu d'en créer une deuxième ; tu peux ensuite retoucher son texte. Le tag `0.0.1-rc1` est antérieur à la CI : la CI ne peut pas le construire.
+- Le `.exe` Windows contient tout le jeu (pck intégré). Il n'est pas signé : Windows SmartScreen le signale au premier lancement (« Informations complémentaires » → « Exécuter quand même »).
 
 Le code de version Android est le n° du run : il ne fait que monter, donc chaque APK s'installe par-dessus le précédent. Le résumé du run donne la version, la signature utilisée et l'**empreinte du certificat**, qui doit rester la même d'une version à l'autre.
 

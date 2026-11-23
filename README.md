@@ -8,13 +8,15 @@ Tu es la nouvelle recrue. À chaque arrêt, tu as une à deux minutes pour fouil
 
 ## Jouer
 
-**Télécharger** : page [Releases](../../releases), dernière version. APK pour Android, zip pour Windows et Linux.
+**Télécharger** : page [Releases](../../releases), dernière version. APK pour Android, `.exe` pour Windows, zip pour Linux.
 
 **Installer sur Android** (téléphone 64 bits) :
 
 1. Télécharge l'APK sur le téléphone et ouvre-le.
 2. Android demande d'autoriser l'installation pour l'app qui l'ouvre (Fichiers, Chrome, Discord…) : accepte.
 3. Si Play Protect affiche « application inconnue » : **Installer quand même**.
+
+**Sur Windows** : lance le `.exe`, c'est tout le jeu en un fichier. Le jeu n'est pas signé : si Windows affiche « Windows a protégé votre ordinateur », clique sur **Informations complémentaires** puis **Exécuter quand même**.
 
 Une nouvelle version s'installe par-dessus l'ancienne et garde la sauvegarde.
 
@@ -48,7 +50,7 @@ godot --headless --path . --script res://tests/run_tests.gd
 
 Sous Windows : `Godot_v4.7-stable_win64_console.exe` à la place de `godot`.
 
-**Builds** : la CI GitHub teste chaque push. Elle fabrique l'APK et les versions Windows et Linux à la demande (*Actions* → *CI* → *Run workflow*) ou à chaque tag poussé (`git tag 0.0.2-rc1` puis `git push origin 0.0.2-rc1` : Release créée en brouillon, à publier).
+**Builds** : la CI GitHub teste chaque push. Elle fabrique l'APK et les versions Windows et Linux à la demande (*Actions* → *CI* → *Run workflow*) ou à chaque tag poussé (`git tag 0.0.2-rc1` puis `git push origin 0.0.2-rc1` : la Release est publiée avec ses fichiers, rien à créer à la main).
 
 | Doc | Contenu |
 |---|---|
